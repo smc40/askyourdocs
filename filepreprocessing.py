@@ -6,17 +6,19 @@ from nltk import word_tokenize
 # given pdffile path returns list of text sections with overlap, based on wordcount
 def pdf_get_text_chunks(file_path, chunk_size, overlap):
     chunks = []
+    filename = os.path.basename(file_path)  # Get the filename from the file path
+
     # open pdf file based on path
     with open(file_path, 'rb') as file:
         reader = PyPDF2.PdfReader(file)
         num_pages = len(reader.pages)
-        
+
         # extract all text of pdf
         text = ""
         for page_num in range(num_pages):
             page = reader.pages[page_num]
             text += page.extract_text()
-        
+
         # tokenize text to words
         words = word_tokenize(text)
         num_words = len(words)
@@ -29,7 +31,7 @@ def pdf_get_text_chunks(file_path, chunk_size, overlap):
             chunks.append(chunk)
             i += chunk_size - overlap
 
-    return chunks
+    return (filename, chunks)
 
 
 # calls pdf_get_text_chunks for entire folder returning filename and chunks
@@ -40,7 +42,7 @@ def pdf_folder_to_chunks(folder_path, chunk_size, overlap):
         if filename.endswith('.pdf'):
             file_path = os.path.join(folder_path, filename)
             chunks = pdf_get_text_chunks(file_path, chunk_size, overlap)
-            folder.append((filename, chunks))
+            folder.append(chunks)
 
     return folder
 
