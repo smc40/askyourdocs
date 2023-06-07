@@ -1,4 +1,5 @@
 shiny
 htmltools
+PyPDF2
 pandas
 numpy
