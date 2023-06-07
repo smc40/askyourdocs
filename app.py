@@ -15,6 +15,7 @@ app_ui = ui.page_fluid(
                ui.layout_sidebar(
                    ui.panel_sidebar(
                        ui.input_text_area('question_input_db', 'What wisdom do you seek from the database?', rows=4),
+                       ui.input_slider('n_chunks_db', 'Number of chunks', min=1, max=5, value=3),
                        ui.input_action_button(id="run_process_db", label="Do Magic", class_='btn-success'),
                        "\n",
                        width=4
@@ -36,6 +37,7 @@ app_ui = ui.page_fluid(
                                      multiple=False, accept='.pdf', button_label='Select',
                                      placeholder='Your PDF here..'),
                        ui.input_text_area('question_input_file', 'What wisdom do you seek from this file?', rows=4),
+                       ui.input_slider('n_chunks_file', 'Number of chunks', min=1, max=5, value=3),
                        ui.input_action_button(id="run_process_file", label="Do Magic", class_='btn-success'),
                        "\n",
                        width=4
@@ -68,12 +70,24 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
+    val = reactive.Value(3)
+    @reactive.Effect
+    @reactive.event(input.n_chunks_db)
+    def _():
+        val.set(input.n_chunks_db())
+
+    val = reactive.Value(3)
+    @reactive.Effect
+    @reactive.event(input.n_chunks_file)
+    def _():
+        val.set(input.n_chunks_file())
 
     @output()
     @render.text
     @reactive.event(input.run_process_db)
     async def get_answer_db():
         placeholder_answer = 'Bleep bloop, I do not compute (yet)....'
+        n_chunks = input.n_chunks_db()
         return placeholder_answer
 
 
@@ -89,11 +103,11 @@ def server(input, output, session):
         pdfFileObj = open(input.document_input_file()[0]['datapath'], 'rb')
         pdfReader = PyPDF2.PdfReader(pdfFileObj)
 
-        num_pages = str(len(pdfReader.pages))
+        num_pages = str(len(pdfReader.pages) * input.n_chunks_file())
         return num_pages
 
         # TODO - add pipeline steps here, and replace them with the num_pages (demo version)
-        # db_items = embedding_loaded_pdf(file_path=input.document_input_file()[0]['datapath'], chunk_size=200, overlap=10)
+        # db_items = embedding_loaded_pdf(file_path=input.document_input_file()[0]['datapath'], n_chunks=input.n_chunks_file(), chunk_size=200, overlap=10)
         # ......
 
 
