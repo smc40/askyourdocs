@@ -1,6 +1,5 @@
 from shiny import *
 
-
 app_ui = ui.page_fluid(
     ui.panel_title("Ask Your Docs - DEMO"),
     ui.navset_tab_card(

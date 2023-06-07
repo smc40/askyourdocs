@@ -2,6 +2,7 @@ import os
 import PyPDF2
 from nltk import word_tokenize
 
+
 # given pdffile path returns list of text sections with overlap, based on wordcount
 def pdf_get_text_chunks(file_path, chunk_size, overlap):
     chunks = []

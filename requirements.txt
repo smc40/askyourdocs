@@ -2,3 +2,6 @@ shiny
 htmltools
 pandas
 numpy
+langchain
+sentence-transformers
+chromadb
