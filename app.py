@@ -1,5 +1,7 @@
 from shiny import *
 import PyPDF2
+from pipelines import embedding_loaded_pdf
+#embedding_loaded_pdf(file_path='example.pdf', chunk_size=200, overlap=10)
 
 app_ui = ui.page_fluid(
     ui.panel_title("Ask Your Docs - DEMO"),
@@ -86,8 +88,13 @@ def server(input, output, session):
         print(str(input.document_input_file()))
         pdfFileObj = open(input.document_input_file()[0]['datapath'], 'rb')
         pdfReader = PyPDF2.PdfReader(pdfFileObj)
+
         num_pages = str(len(pdfReader.pages))
         return num_pages
+
+        # TODO - add pipeline steps here, and replace them with the num_pages (demo version)
+        # db_items = embedding_loaded_pdf(file_path=input.document_input_file()[0]['datapath'], chunk_size=200, overlap=10)
+        # ......
 
 
 #####################################################################
