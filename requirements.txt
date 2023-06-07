@@ -1,0 +1,4 @@
+shiny
+htmltools
+pandas
+numpy

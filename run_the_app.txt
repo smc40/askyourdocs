@@ -1,0 +1,8 @@
+#########################################################################################
+# run the code below in the python console to start the dashboard.
+# first you need to define the ui and server elements (select all code and run it once)
+#########################################################################################
+
+run_app(host='127.0.0.1', port=8000, autoreload_port=0, reload=False,  # ws_max_size=16777216,
+        log_level=None,
+        factory=False, launch_browser=True)
