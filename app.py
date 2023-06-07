@@ -1,4 +1,7 @@
 from shiny import *
+import PyPDF2
+from pipelines import embedding_loaded_pdf
+#embedding_loaded_pdf(file_path='example.pdf', chunk_size=200, overlap=10)
 
 app_ui = ui.page_fluid(
     ui.panel_title("Ask Your Docs - DEMO"),
@@ -8,24 +11,54 @@ app_ui = ui.page_fluid(
                    "Write the documentation for the application here"
                 )
         ),
-        ui.nav('Ask',
+        ui.nav('Ask Database',
                ui.layout_sidebar(
                    ui.panel_sidebar(
-                       ui.input_text_area('question_input', 'What wisdom do you seek?', rows=4),
-                       ui.input_action_button(id="start_process", label="Do Magic", class_='btn-success'),
+                       ui.input_text_area('question_input_db', 'What wisdom do you seek from the database?', rows=4),
+                       ui.input_action_button(id="run_process_db", label="Do Magic", class_='btn-success'),
                        "\n",
                        width=4
                    ),
                    ui.panel_main(
                        ui.panel_conditional(
-                           """input.start_process > 0 && && input.questioninput != ''""",
-                           ui.output_text('final_answer'),
+                           """input.run_process_db > 0 && input.question_input_db != ''""",
+                           ui.output_text('get_answer_db'),
                         ),
                    width=8,
                    ),
                ),
         ),
-        selected='Ask',
+        ui.nav('Ask File',
+                ui.layout_sidebar(
+                   ui.panel_sidebar(
+                       ui.input_file('document_input_file',
+                                     'Select a PDF file you wish to ask a question about',
+                                     multiple=False, accept='.pdf', button_label='Select',
+                                     placeholder='Your PDF here..'),
+                       ui.input_text_area('question_input_file', 'What wisdom do you seek from this file?', rows=4),
+                       ui.input_action_button(id="run_process_file", label="Do Magic", class_='btn-success'),
+                       "\n",
+                       width=4
+                   ),
+                    ################################### doesnt work yet ###################################
+                   # ui.panel_conditional(
+                   #      #"""input.document_input_file != None""",  # 'not None'
+                   #     """output.contents === True""",
+                   #     ui.input_text_area('question_input_file', 'What wisdom do you seek from this file?', rows=4),
+                   #     ui.input_action_button(id="run_process_file", label="Do Magic", class_='btn-success'),
+                   #     "\n",
+                   # ),
+                   ui.panel_main(
+                       ui.panel_conditional(
+                           """input.run_process_file > 0 && input.question_input_file != ''""",  # && input.document_input_file != null
+                           ui.output_text('get_answer_file'),
+                           #ui.output_text('test'),
+                        ),
+                   width=8,
+                   ),
+               ),
+        ),
+        selected='Ask Database',
     ),
     title='Ask Your Docs',
 )
@@ -35,13 +68,33 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
+
     @output()
     @render.text
-    @reactive.event(input.start_process)
-    async def final_answer():
+    @reactive.event(input.run_process_db)
+    async def get_answer_db():
         placeholder_answer = 'Bleep bloop, I do not compute (yet)....'
         return placeholder_answer
 
+
+    @output()
+    @render.text
+    @reactive.event(input.run_process_file)
+    async def get_answer_file():
+        """ Currently returns the length of the PDF, not any other document info...
+        """
+        # placeholder_answer = 'Bleep bloop, I do not compute (yet)....'
+        # return placeholder_answer
+        print(str(input.document_input_file()))
+        pdfFileObj = open(input.document_input_file()[0]['datapath'], 'rb')
+        pdfReader = PyPDF2.PdfReader(pdfFileObj)
+
+        num_pages = str(len(pdfReader.pages))
+        return num_pages
+
+        # TODO - add pipeline steps here, and replace them with the num_pages (demo version)
+        # db_items = embedding_loaded_pdf(file_path=input.document_input_file()[0]['datapath'], chunk_size=200, overlap=10)
+        # ......
 
 
 #####################################################################
