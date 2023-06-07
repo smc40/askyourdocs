@@ -3,3 +3,6 @@ htmltools
 PyPDF2
 pandas
 numpy
+langchain
+sentence-transformers
+chromadb

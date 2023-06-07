@@ -1,7 +1,6 @@
 from shiny import *
 import PyPDF2
 
-
 app_ui = ui.page_fluid(
     ui.panel_title("Ask Your Docs - DEMO"),
     ui.navset_tab_card(
