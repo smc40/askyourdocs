@@ -1,3 +1,4 @@
+import os
 import PyPDF2
 from nltk import word_tokenize
 
@@ -29,12 +30,30 @@ def pdf_get_text_chunks(file_path, chunk_size, overlap):
 
     return chunks
 
-# Example usage
-file_path = "docs/20211203_SwissPAR-Spikevax.pdf"
+
+# calls pdf_get_text_chunks for entire folder returning filename and chunks
+def pdf_folder_to_chunks(folder_path, chunk_size, overlap):
+    folder = []
+
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.pdf'):
+            file_path = os.path.join(folder_path, filename)
+            chunks = pdf_get_text_chunks(file_path, chunk_size, overlap)
+            folder.append((filename, chunks))
+
+    return folder
+
+
+
+# Example usage 1 document and entire folder
+folder_path = "docs"
+file_path = f"{folder_path}/20211203_SwissPAR-Spikevax.pdf"
+
 chunk_size = 200
 overlap = 50
 
 text_chunks = pdf_get_text_chunks(file_path, chunk_size, overlap)
+all_pdfs = pdf_folder_to_chunks(folder_path, chunk_size, overlap)
 
 
 # would like:
