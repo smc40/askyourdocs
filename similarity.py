@@ -1,6 +1,5 @@
 from scipy.spatial.distance import cosine
 
-
 def calculate_cosine_similarity(vector1, vector2):
     return 1 - cosine(vector1, vector2)
 
