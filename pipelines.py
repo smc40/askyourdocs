@@ -17,7 +17,7 @@ def embedding_loaded_pdf(file_path, chunk_size, overlap):
     return db_items
 
 
-def pipeline_return_question_and_answer(query, db_items)
+def pipeline_return_question_and_answer(query, db_items):
 
     # WE TRANSFORM THE QUERY TEXT INTO AN EMBEDDING
     query_emb = get_embedding_sentence_transformer(query)
