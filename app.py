@@ -88,7 +88,7 @@ def server(input, output, session):
     @reactive.event(input.run_process_file)
     async def get_answer_file():
         db_items = embedding_loaded_pdf(file_path=input.document_input_file()[0]['datapath'], chunk_size=200, overlap=10)
-        answer = pipeline_return_question_and_answer(query=input.question_input_db(),
+        answer = pipeline_return_question_and_answer(query=input.question_input_file(),
                                                      db_items=db_items,
                                                      n_chunks=input.n_chunks_file())
         answer = re.sub('^<pad>\s*', '', answer)
