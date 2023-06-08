@@ -1,7 +1,8 @@
 from shiny import *
 import PyPDF2
-from pipelines import embedding_loaded_pdf
-#embedding_loaded_pdf(file_path='example.pdf', chunk_size=200, overlap=10)
+import re
+from pipelines import embedding_loaded_pdf, pipeline_return_question_and_answer
+db_items = embedding_loaded_pdf(file_path='docs/20211203_SwissPAR_Spikevax_single_page_text.pdf', chunk_size=200, overlap=10)
 
 app_ui = ui.page_fluid(
     ui.panel_title("Ask Your Docs - DEMO"),
@@ -42,19 +43,10 @@ app_ui = ui.page_fluid(
                        "\n",
                        width=4
                    ),
-                    ################################### doesnt work yet ###################################
-                   # ui.panel_conditional(
-                   #      #"""input.document_input_file != None""",  # 'not None'
-                   #     """output.contents === True""",
-                   #     ui.input_text_area('question_input_file', 'What wisdom do you seek from this file?', rows=4),
-                   #     ui.input_action_button(id="run_process_file", label="Do Magic", class_='btn-success'),
-                   #     "\n",
-                   # ),
                    ui.panel_main(
                        ui.panel_conditional(
                            """input.run_process_file > 0 && input.question_input_file != ''""",  # && input.document_input_file != null
                            ui.output_text('get_answer_file'),
-                           #ui.output_text('test'),
                         ),
                    width=8,
                    ),
@@ -66,10 +58,8 @@ app_ui = ui.page_fluid(
 )
 
 
-
-
-
 def server(input, output, session):
+
     val = reactive.Value(3)
     @reactive.Effect
     @reactive.event(input.n_chunks_db)
@@ -86,35 +76,33 @@ def server(input, output, session):
     @render.text
     @reactive.event(input.run_process_db)
     async def get_answer_db():
-        placeholder_answer = 'Bleep bloop, I do not compute (yet)....'
-        n_chunks = input.n_chunks_db()
-        return placeholder_answer
-
+        answer = pipeline_return_question_and_answer(query=input.question_input_db(),
+                                                     db_items=db_items,
+                                                     n_chunks=input.n_chunks_file())
+        answer = re.sub('^<pad>\s+', '', answer)
+        answer = re.sub('\s+</s>$', '', answer)
+        return answer
 
     @output()
     @render.text
     @reactive.event(input.run_process_file)
     async def get_answer_file():
-        """ Currently returns the length of the PDF, not any other document info...
-        """
-        # placeholder_answer = 'Bleep bloop, I do not compute (yet)....'
-        # return placeholder_answer
-        print(str(input.document_input_file()))
-        pdfFileObj = open(input.document_input_file()[0]['datapath'], 'rb')
-        pdfReader = PyPDF2.PdfReader(pdfFileObj)
-
-        num_pages = str(len(pdfReader.pages) * input.n_chunks_file())
-        return num_pages
-
-        # TODO - add pipeline steps here, and replace them with the num_pages (demo version)
-        # db_items = embedding_loaded_pdf(file_path=input.document_input_file()[0]['datapath'], n_chunks=input.n_chunks_file(), chunk_size=200, overlap=10)
-        # ......
+        db_items = embedding_loaded_pdf(file_path=input.document_input_file()[0]['datapath'], chunk_size=200, overlap=10)
+        answer = pipeline_return_question_and_answer(query=input.question_input_db(),
+                                                     db_items=db_items,
+                                                     n_chunks=input.n_chunks_file())
+        answer = re.sub('^<pad>\s+', '', answer)
+        answer = re.sub('\s+</s>$', '', answer)
+        return answer
 
 
 #####################################################################
 # App
 #####################################################################
 app = App(app_ui, server, debug=True)
+
+
+
 
 #########################################################################################
 # run the code below in the python console to start the dashboard.
