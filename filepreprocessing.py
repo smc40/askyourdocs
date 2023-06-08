@@ -28,10 +28,10 @@ def pdf_get_text_chunks(file_path, chunk_size, overlap):
         while i < num_words:
             chunk_end = min(i + chunk_size, num_words)
             chunk = ' '.join(words[i:chunk_end])
-            chunks.append(chunk)
+            chunks.append((filename, chunk))
             i += chunk_size - overlap
 
-    return (filename, chunks)
+    return chunks
 
 
 # calls pdf_get_text_chunks for entire folder returning filename and chunks
