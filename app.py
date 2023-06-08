@@ -79,8 +79,8 @@ def server(input, output, session):
         answer = pipeline_return_question_and_answer(query=input.question_input_db(),
                                                      db_items=db_items,
                                                      n_chunks=input.n_chunks_file())
-        answer = re.sub('^<pad>\s+', '', answer)
-        answer = re.sub('\s+</s>$', '', answer)
+        answer = re.sub('^<pad>\s*', '', answer)
+        answer = re.sub('\s*</s>$', '', answer)
         return answer
 
     @output()
@@ -91,8 +91,8 @@ def server(input, output, session):
         answer = pipeline_return_question_and_answer(query=input.question_input_db(),
                                                      db_items=db_items,
                                                      n_chunks=input.n_chunks_file())
-        answer = re.sub('^<pad>\s+', '', answer)
-        answer = re.sub('\s+</s>$', '', answer)
+        answer = re.sub('^<pad>\s*', '', answer)
+        answer = re.sub('\s*</s>$', '', answer)
         return answer
 
 
