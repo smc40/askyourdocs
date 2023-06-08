@@ -1,9 +1,9 @@
 from filepreprocessing import pdf_get_text_chunks
-import tqdm
+from tqdm import tqdm
 from embedding import get_embedding_sentence_transformer
 from similarity import model_qa, cosine_similarity
 
-def embedding_loaded_pdf(file_path, chunk_size, overlap):
+def embedding_loaded_pdf(file_path, n_chunks, chunk_size, overlap):
 
     # FIRST WE LOAD PDF
     text_chunks = pdf_get_text_chunks(file_path, chunk_size, overlap)
