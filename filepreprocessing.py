@@ -48,15 +48,15 @@ def pdf_folder_to_chunks(folder_path, chunk_size, overlap):
 
 
 
-# Example usage 1 document and entire folder
-folder_path = "docs"
-file_path = f"{folder_path}/20211203_SwissPAR-Spikevax.pdf"
+# # Example usage 1 document and entire folder
+# folder_path = "docs"
+# file_path = f"{folder_path}/20211203_SwissPAR-Spikevax.pdf"
 
-chunk_size = 200
-overlap = 50
+# chunk_size = 200
+# overlap = 50
 
-text_chunks = pdf_get_text_chunks(file_path, chunk_size, overlap)
-all_pdfs = pdf_folder_to_chunks(folder_path, chunk_size, overlap)
+# text_chunks = pdf_get_text_chunks(file_path, chunk_size, overlap)
+# all_pdfs = pdf_folder_to_chunks(folder_path, chunk_size, overlap)
 
 
 # would like:
