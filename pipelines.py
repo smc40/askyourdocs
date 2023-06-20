@@ -39,8 +39,8 @@ def pipeline_return_question_and_answer(query, db_items, n_chunks):
 
     print(f"{top_items}")
     # PROVIDE QUESTION, TOP MATCHES ON THE EMBEDDED LIST OF ITEMS
-    answer = model_qa(query, top_items, qa_model, model_card='google/flan-t5-small')
-
+    # answer = model_qa(query, top_items, qa_model, qa_tokenizer, model_card='google/flan-t5-small')
+    answer = model_qa(query, top_items, model_card='google/flan-t5-small')
     return answer
 
 #############
