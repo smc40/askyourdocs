@@ -78,7 +78,7 @@ def server(input, output, session):
     async def get_answer_db():
         answer = pipeline_return_question_and_answer(query=input.question_input_db(),
                                                      db_items=db_items,
-                                                     n_chunks=input.n_chunks_file())
+                                                     n_chunks=input.n_chunks_db())
         answer = re.sub('^<pad>\s*', '', answer)
         answer = re.sub('\s*</s>$', '', answer)
         return answer
