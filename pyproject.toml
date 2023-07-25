@@ -9,7 +9,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.9"
 shiny = "^0.4.0"
-htmltools = "^0.2.1"
 pypdf2 = "^3.0.1"
 pandas = "^2.0.3"
 numpy = "^1.25.1"
