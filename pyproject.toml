@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "askyourdocs"
+version = "0.1.0"
+description = "Locally hosted chatbot answering questions to your documents"
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+shiny = "^0.4.0"
+pypdf2 = "^3.0.1"
+pandas = "^2.0.3"
+numpy = "^1.25.1"
+langchain = "^0.0.240"
+sentence-transformers = "^2.2.2"
+nltk = "^3.8.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

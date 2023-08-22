@@ -25,3 +25,14 @@ input_ids = tokenizer(prompt, return_tensors="pt").input_ids
 outputs = model.generate(input_ids, max_length = 512)
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 ```
+
+## Requirements
+
+- python 3.9+
+
+## Usage
+
+```sh
+uvicorn askyourdocs.app:app --host 0.0.0.0 --port 8006 --reload
+```
+

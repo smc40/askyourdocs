@@ -1,8 +1,11 @@
 from shiny import *
 import PyPDF2
 import re
-from pipelines import embedding_loaded_pdf, pipeline_return_question_and_answer
-db_items = embedding_loaded_pdf(file_path='docs/20211203_SwissPAR_Spikevax_single_page_text.pdf', chunk_size=200, overlap=10)
+from .pipelines import embedding_loaded_pdf, pipeline_return_question_and_answer
+from .settings import Settings
+
+settings = Settings()
+db_items = embedding_loaded_pdf(file_path=settings.default_doc, chunk_size=200, overlap=10)
 
 app_ui = ui.page_fluid(
     ui.panel_title("Ask Your Docs - DEMO"),
@@ -99,7 +102,7 @@ def server(input, output, session):
 #####################################################################
 # App
 #####################################################################
-app = App(app_ui, server, debug=True)
+app = App(app_ui, server, debug=settings.debug_mode)
 
 
 
