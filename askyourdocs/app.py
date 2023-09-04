@@ -5,7 +5,7 @@ from askyourdocs.pipelines import embedding_loaded_pdf, pipeline_return_question
 from askyourdocs.settings import SETTINGS
 
 # settings = Settings()
-file_path = SETTINGS['path']['root'] / SETTINGS['data']['default_document']
+file_path = SETTINGS['paths']['root'] / SETTINGS['data']['default_document']
 chunk_size = SETTINGS['modeling']['chunk_size']
 overlap = SETTINGS['modeling']['overlap']
 db_items = embedding_loaded_pdf(file_path=file_path, chunk_size=chunk_size, overlap=overlap)
