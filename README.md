@@ -8,7 +8,7 @@
 - PrivateGPT: https://artificialcorner.com/privategpt-a-free-chatgpt-alternative-to-interact-with-your-documents-offline-ea1c98f98062
 
 
-## Generic Setup
+## Requirements
 Use `python 3.10 virtual environment`
 ```shell
 python3.10 -m venv venv
@@ -51,13 +51,78 @@ outputs = model.generate(input_ids, max_length = 512)
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 ```
 
-## Requirements
+## Type checking
+```shell
+mypy --ignore-missing-imports askyourdocs
+```
 
-- python 3.9+
+## Tests
+```shell
+pytest -s --cov=askyourdocs tests
+```
 
-## Usage
 
+## Frontend
 ```sh
 uvicorn askyourdocs.app:app --host 0.0.0.0 --port 8006 --reload
 ```
 
+## Cli
+
+For the following commands we assume to have an alias
+```shell
+alias ayd='python -m askyourdocs'
+```
+and running docker services from `docker-compose.yml`
+```shell
+docker compose -p ayd up -d  
+```
+
+### Extract Text
+```shell
+ayd storage extract --filename <filename> 
+# ayd storage extraction --filename "https://www.accessdata.fda.gov/drugsatfda_docs/label/2011/020895s036lbl.pdf"
+```
+`<filename>` is either the local path or the url of a file.
+
+### Migrate Collection
+(creating a collection or updating configuration)
+```shell
+ayd storage migration -c <collection>
+# ayd storage migration -c "ayd_search"
+# ayd storage migration -c "ayd_vector"
+```
+
+### Add a Text Document
+```shell
+ayd storage add -c <collection> --filename <filename>
+# ayd storage add -c "ayd_search" --filename "https://www.accessdata.fda.gov/drugsatfda_docs/label/2011/020895s036lbl.pdf" --commit
+# ayd storage add -c "ayd_search" --filename "data/documents/swissmedic/Swissmedic_Annual_Report_2022_ENG.pdf" --commit
+```
+
+
+### Searching a Collection
+```shell
+ayd storage search -c <collection> -q <query>
+# ayd storage search -c "ayd_search" -q "annual report"
+```
+
+### Compute Embedding of a given Text
+```shell
+ayd modelling embedding -t <text>
+# ayd modelling embedding -t "foo bar is far"
+```
+
+### Tokenize Text into text entities
+```shell
+ayd modelling tokenization -t <text>
+# ayd modelling tokenization -t "Foo bar is far. My cat is fat"
+```
+
+### Adding vector embeddings to solr
+```shell
+ayd pipeline add_text -c <collection> --text <text>
+ayd pipeline add_doc -c <collection> --filename <filename>
+# ayd pipeline add_text -c "ayd_vector" -t "Foo bar is far. My cat is fat" --commit
+# ayd pipeline add_doc -c "ayd_vector" --filename "data/documents/swissmedic/Swissmedic_Annual_Report_2022_ENG.pdf" --commit
+```

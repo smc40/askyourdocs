@@ -1,11 +1,14 @@
 from shiny import *
 import PyPDF2
 import re
-from .pipelines import embedding_loaded_pdf, pipeline_return_question_and_answer
-from .settings import Settings
+from askyourdocs.pipelines import embedding_loaded_pdf, pipeline_return_question_and_answer
+from askyourdocs.settings import SETTINGS
 
-settings = Settings()
-db_items = embedding_loaded_pdf(file_path=settings.default_doc, chunk_size=200, overlap=10)
+# settings = Settings()
+file_path = SETTINGS['path']['root'] / SETTINGS['data']['default_document']
+chunk_size = SETTINGS['modeling']['chunk_size']
+overlap = SETTINGS['modeling']['overlap']
+db_items = embedding_loaded_pdf(file_path=file_path, chunk_size=chunk_size, overlap=overlap)
 
 app_ui = ui.page_fluid(
     ui.panel_title("Ask Your Docs - DEMO"),
@@ -142,7 +145,8 @@ def server(input, output, session):
 #####################################################################
 # App
 #####################################################################
-app = App(app_ui, server, debug=settings.debug_mode)
+debug = SETTINGS['shiny_app']['debug_mode']
+app = App(app_ui, server, debug=debug)
 
 
 
