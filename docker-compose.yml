@@ -1,5 +1,13 @@
 version: '3.7'
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - AYD_DEBUG_MODE=False
   tika:
     image: apache/tika:latest
     ports:

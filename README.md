@@ -28,7 +28,7 @@ Note that you should have a `.env` file of the structure
 export LOG_LEVEL="INFO"
 
 # TIKA
-export TIKA_URL=<changeme>        # fFor local host use "http://172.17.0.1:9998"
+export TIKA_URL=<changeme>        # For local host use "http://172.17.0.1:9998"
 
 # Solr
 export SOLR_URL=<changeme>        # For local host use "http://172.17.0.1:8983"  
