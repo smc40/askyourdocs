@@ -96,8 +96,8 @@ class SearchDocument(Document):
 @dataclass(eq=False)
 class TextEntity(Document):
 
-    doc_id: str
     text: str
+    doc_id: str | None = None
 
     @property
     def _id_prefix(self) -> str:
@@ -108,7 +108,7 @@ class TextEntity(Document):
 class EmbeddingEntity(Document):
 
     vector: List[float]
-    txt_ent_id: str | None = None
+    text_ent_id: str | None = None
 
     @property
     def _id_prefix(self) -> str:

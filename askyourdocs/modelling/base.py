@@ -1,7 +1,7 @@
 import logging
 
 from askyourdocs import Environment, Service, EmbeddingEntity
-from askyourdocs.modelling.llm import TextEmbedding, TextTokenizer
+from askyourdocs.modelling.llm import TextEmbedder, TextTokenizer
 
 
 class Modelling(Service):
@@ -13,10 +13,11 @@ class Modelling(Service):
         super().__init__(environment=environment, settings=settings)
 
         model_name = settings['modeling']['model_name']
-        self._model = TextEmbedding(environment=environment, settings=settings, model_name=model_name)
+        cache_folder = settings['paths']['models']
+        self._model = TextEmbedder(model_name=model_name, cache_folder=cache_folder)
 
         package = settings['modeling']['tokenizer_package']
-        self._tokenizer = TextTokenizer(environment=environment, settings=settings, package=package)
+        self._tokenizer = TextTokenizer(package=package)
 
     def apply(self):
         modelling = self._environment.modelling
@@ -32,5 +33,5 @@ class Modelling(Service):
             case 'tokenization':
                 logging.info(f'start text tokenization')
                 text = self._environment.text
-                text_entities = self._tokenizer.apply(text=text)
+                text_entities = self._tokenizer.get_text_entities(text=text)
                 logging.info(f'tokenized into {len(text_entities)} text entities')

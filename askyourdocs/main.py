@@ -9,13 +9,10 @@ import askyourdocs.storage.cli as srge_cli
 from askyourdocs.storage.base import Storage
 import askyourdocs.modelling.cli as mdl_cli
 from askyourdocs.modelling.base import Modelling
-import askyourdocs.pipeline.cli as ppln_cli
-from askyourdocs.pipeline.base import Pipeline
 
 SERVICES = {
     'storage': {'name': 'storage', 'help': 'Storage services', 'cli': srge_cli, 'service': Storage},
     'modelling': {'name': 'modelling', 'help': 'Modelling services', 'cli': mdl_cli, 'service': Modelling},
-    'pipeline': {'name': 'pipeline', 'help': 'Pipeline services', 'cli': ppln_cli, 'service': Pipeline},
 }
 
 

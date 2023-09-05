@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import List
@@ -26,3 +27,4 @@ def load_environment() -> Environment:
         'zk_urls': os.getenv('ZK_URLS'),
     }
     return Environment(**kwargs)
+

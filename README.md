@@ -118,11 +118,3 @@ ayd modelling embedding -t <text>
 ayd modelling tokenization -t <text>
 # ayd modelling tokenization -t "Foo bar is far. My cat is fat"
 ```
-
-### Adding vector embeddings to solr
-```shell
-ayd pipeline add_text -c <collection> --text <text>
-ayd pipeline add_doc -c <collection> --filename <filename>
-# ayd pipeline add_text -c "ayd_vector" -t "Foo bar is far. My cat is fat" --commit
-# ayd pipeline add_doc -c "ayd_vector" --filename "data/documents/swissmedic/Swissmedic_Annual_Report_2022_ENG.pdf" --commit
-```

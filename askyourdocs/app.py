@@ -1,14 +1,18 @@
 from shiny import *
-import PyPDF2
+
 import re
-from askyourdocs.pipelines import embedding_loaded_pdf, pipeline_return_question_and_answer
+# from askyourdocs.pipelines import embedding_loaded_pdf, pipeline_return_question_and_answer
 from askyourdocs.settings import SETTINGS
+from askyourdocs.pipeline import text_from_file, text_entity_embeddings_from_document
 
 # settings = Settings()
-file_path = SETTINGS['paths']['root'] / SETTINGS['data']['default_document']
-chunk_size = SETTINGS['modeling']['chunk_size']
-overlap = SETTINGS['modeling']['overlap']
-db_items = embedding_loaded_pdf(file_path=file_path, chunk_size=chunk_size, overlap=overlap)
+# chunk_size = SETTINGS['modeling']['chunk_size']
+# overlap = SETTINGS['modeling']['overlap']
+# db_items = embedding_loaded_pdf(file_path=file_path, chunk_size=chunk_size, overlap=overlap)
+filename = SETTINGS['paths']['root'] / SETTINGS['data']['default_document']
+document = text_from_file(filename=filename)
+text_entity_embeddings = text_entity_embeddings_from_document(document=document)
+
 
 app_ui = ui.page_fluid(
     ui.panel_title("Ask Your Docs - DEMO"),
