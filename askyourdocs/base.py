@@ -108,6 +108,7 @@ class TextEntity(Document):
 class EmbeddingEntity(Document):
 
     vector: List[float]
+    doc_id: str | None = None
     text_ent_id: str | None = None
 
     @property

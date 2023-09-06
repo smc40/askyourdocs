@@ -24,28 +24,33 @@ package = settings['modeling']['tokenizer_package']
 _TEXT_TOKENIZER = TextTokenizer(package=package)
 
 
-def text_from_file(filename: str) -> SearchDocument:
+def get_document_from_file(filename: str) -> SearchDocument:
+    """Extract the text from a given file."""
     logging.info(f'extract text from file "{filename}"')
     document = _TIKA_EXTRACTOR.apply(filename=filename)
     return document
 
 
-def text_entity_embeddings_from_document(document: SearchDocument) -> List[Tuple[TextEntity, EmbeddingEntity]]:
-    # Split text into (overlapping) text chunks
+def get_text_entities_from_document(document: SearchDocument) -> List[TextEntity]:
+    """Generate and return a list of (overlapping) text entities from a given document text."""
     logging.info('split text into overlapping text entities')
     text = document.text
     chunk_size = settings['modeling']['chunk_size']
     overlap = settings['modeling']['overlap']
     text_entities = _TEXT_TOKENIZER.get_overlapping_text_entities(text=text, chunk_size=chunk_size, overlap=overlap)
 
-    # Generate text embeddings from the text entities
-    embedding_entities = []
-    for entity in tqdm(text_entities):
-        embeddings = _TEXT_EMBEDDER.apply(text=entity)
-        te = TextEntity(id=entity, text=text, doc_id=document.id)
-        ee = EmbeddingEntity(id=entity, vector=embeddings, text_ent_id=te.id)
-        embedding_entities.append((te, ee))
+    return [TextEntity(id=te, text=te, doc_id=document.id) for te in text_entities]
 
+
+def get_embedding_entities_from_text_entities(text_entities: List[TextEntity]) -> List[EmbeddingEntity]:
+    """Generate and return embeddings for a set of text entities."""
+    logging.info(f'generate text embeddings for {len(text_entities)} text entities')
+    embedding_entities = []
+    for te in tqdm(text_entities):
+        text = te.text
+        vector = _TEXT_EMBEDDER.apply(text=te.text)
+        ee = EmbeddingEntity(id=text, vector=vector, doc_id=te.doc_id, text_ent_id=te.id)
+        embedding_entities.append(ee)
     return embedding_entities
 
 

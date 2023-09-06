@@ -3,15 +3,18 @@ from shiny import *
 import re
 # from askyourdocs.pipelines import embedding_loaded_pdf, pipeline_return_question_and_answer
 from askyourdocs.settings import SETTINGS
-from askyourdocs.pipeline import text_from_file, text_entity_embeddings_from_document
+from askyourdocs.pipeline import get_document_from_file, get_text_entities_from_document, get_embedding_entities_from_text_entities
 
 # settings = Settings()
 # chunk_size = SETTINGS['modeling']['chunk_size']
 # overlap = SETTINGS['modeling']['overlap']
 # db_items = embedding_loaded_pdf(file_path=file_path, chunk_size=chunk_size, overlap=overlap)
-filename = SETTINGS['paths']['root'] / SETTINGS['data']['default_document']
-document = text_from_file(filename=filename)
-text_entity_embeddings = text_entity_embeddings_from_document(document=document)
+
+# TODO continue from here
+
+# filename = SETTINGS['paths']['root'] / SETTINGS['data']['default_document']
+# document = document_from_file(filename=filename)
+# text_entity_embeddings = text_entity_embeddings_from_document(document=document)
 
 
 app_ui = ui.page_fluid(
