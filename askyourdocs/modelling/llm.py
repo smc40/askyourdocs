@@ -1,6 +1,7 @@
 import logging
 from typing import List
 
+import torch.cuda
 import nltk.data
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -13,10 +14,14 @@ class TextEmbedder:
         self._cache_folder = cache_folder
         self._model = SentenceTransformer(model_name, cache_folder=cache_folder, device='cuda')
 
-    def apply(self, text: str, normalized: bool = True) -> np.array:
-        embeddings = self._model.encode(text)
-        if normalized:
-            embeddings = embeddings / np.linalg.norm(embeddings)
+    def apply(self, texts: str | List[str], show_progress_bar: bool = None, normalize_embeddings: bool = True) -> np.ndarray:
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        embeddings = self._model.encode(
+            sentences=texts,
+            show_progress_bar=show_progress_bar,
+            device=device,
+            normalize_embeddings=normalize_embeddings,
+        )
         return embeddings
 
 

@@ -52,6 +52,18 @@ SETTINGS = {
                         'indexed': 'true',
                         'stored': 'true',
                     },
+                    {
+                        'name': 'doc_id',
+                        'type': 'string',
+                        'indexed': 'false',
+                        'stored': 'true',
+                    },
+                    {
+                        'name': 'text_ent_id',
+                        'type': 'string',
+                        'indexed': 'false',
+                        'stored': 'true',
+                    },
                 ],
                 'field_types': [
                     {
