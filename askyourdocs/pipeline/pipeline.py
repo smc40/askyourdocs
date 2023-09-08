@@ -1,33 +1,47 @@
+import json
 from abc import ABC, abstractmethod
 import logging
 from typing import Any, List
 
+import nltk
+import numpy as np
+
 from askyourdocs import Environment, SearchDocument, TextEntity, EmbeddingEntity
 from askyourdocs.storage.scraping import TikaExtractor
-from askyourdocs.storage.management import SolrClient
+from askyourdocs.storage.client import SolrClient
 from askyourdocs.modelling.llm import TextEmbedder, TextTokenizer
 
 
 class Pipeline(ABC):
 
     def __init__(self, environment: Environment, settings: dict):
-        # Document text extraction service
-        self._tika_extractor = TikaExtractor(environment=environment, settings=settings)
+        self._environment = environment
+        self._settings = settings
 
         # Text embedding service
         model_name = settings['modeling']['model_name']
         cache_folder = settings['paths']['models']
         self._text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder)
 
-        # Text tokenizer service
-        package = settings['modeling']['tokenizer_package']
-        self._text_tokenizer = TextTokenizer(package=package)
-        self._chunk_size = settings['modeling']['chunk_size']
-        self._overlap = settings['modeling']['overlap']
-
     @abstractmethod
     def apply(self, **kwargs) -> Any:
         pass
+
+
+class IngestionPipeline(Pipeline):
+
+    def __init__(self, environment: Environment, settings: dict):
+        super().__init__(environment=environment, settings=settings)
+
+        # Solr database interaction client
+        self._solr_client = SolrClient(environment=environment, settings=settings)
+
+        # Document text extraction service
+        self._tika_extractor = TikaExtractor(environment=environment, settings=settings)
+
+        # Text tokenizer service
+        package = settings['modeling']['tokenizer_package']
+        self._text_tokenizer = TextTokenizer(package=package)
 
     def _get_document_from_file(self, filename: str) -> SearchDocument:
         """Extract the text from a given file."""
@@ -37,9 +51,10 @@ class Pipeline(ABC):
     def _get_text_entities_from_document(self, document: SearchDocument) -> List[TextEntity]:
         """Generate and return a list of (overlapping) text entities from a given document text."""
         text = document.text
-        chunk_size = self._chunk_size
-        overlap = self._overlap
-        text_entities = self._text_tokenizer.get_overlapping_text_entities(text=text, chunk_size=chunk_size, overlap=overlap)
+        # chunk_size = self._settings['modeling']['chunk_size']
+        # overlap = self._settings['modeling']['overlap']
+        # text_entities = self._text_tokenizer.get_overlapping_text_entities(text=text, chunk_size=chunk_size, overlap=overlap)
+        text_entities = nltk.sent_tokenize(text=text)
 
         return [TextEntity(id=te, text=te, doc_id=document.id) for te in text_entities]
 
@@ -56,13 +71,6 @@ class Pipeline(ABC):
                               for te, v in zip(text_entities, vectors)]
         return embedding_entities
 
-
-class IngestionPipeline(Pipeline):
-
-    def __init__(self, environment: Environment, settings: dict):
-        super().__init__(environment=environment, settings=settings)
-        self._solr_client = SolrClient(environment=environment, settings=settings)
-
     def apply(self, filename: str, commit: bool = False):
         logging.info(f'extract text from file "{filename}"')
         document = self._get_document_from_file(filename=filename)
@@ -74,13 +82,42 @@ class IngestionPipeline(Pipeline):
         embedding_entities = self._get_embedding_entities_from_text_entities(text_entities=text_entities, show_progress_bar=True)
 
         logging.info(f'store document and embeddings to solr')
-        self._solr_client.add_document(document=document, collection='ayd_search', commit=commit)
-        self._solr_client.add_documents(embedding_entities, collection='ayd_vector', commit=commit)
-
+        srch_col = self._settings['solr']['collections']['map']['search']
+        self._solr_client.add_document(document=document, collection=srch_col, commit=commit)
+        vec_col = self._settings['solr']['collections']['map']['vector']
+        self._solr_client.add_documents(embedding_entities, collection=vec_col, commit=commit)
 
 
 class QueryPipeline(Pipeline):
-    pass
+
+    def __init__(self, environment: Environment, settings: dict):
+        super().__init__(environment=environment, settings=settings)
+        self._solr_client = SolrClient(environment=environment, settings=settings)
+
+    def apply(self, text: str) -> str:
+        logging.info(f'generate text embeddings for text "{text}"')
+        vector = self._text_embedder.apply(texts=text)
+
+        logging.info(f'search k-nearest-neighbors for embeddings')
+        top_k = self._settings['solr']['top_k']
+        vec_str = '[' + ', '.join(str(v) for v in vector) + ']'
+        query = f'{{!knn f=vector topK={top_k}}}{vec_str}'
+
+        vec_col = self._settings['solr']['collections']['map']['vector']
+        response = self._solr_client.search(query=query, collection=vec_col)
+        knn_docs = response['docs']
+
+        logging.info(f'search documents')
+        doc_ids = list(set(d['doc_id'] for d in knn_docs))
+        query = f'id:({" OR ".join(doc_ids)})'
+        srch_col = self._settings['solr']['collections']['map']['search']
+        response = self._solr_client.search(query=query, collection=srch_col)
+        docs = response['docs']
+
+        logging.info(f'extract context from documents')
+
+        logging.info('generate answer based on context')
+
 
 
 
@@ -126,3 +163,14 @@ class QueryPipeline(Pipeline):
 # print(db_items)
 # answer = pipeline_return_question_and_answer('What did the applicant want?', db_items)
 # print(answer)
+
+if __name__ == '__main__':
+    import askyourdocs.utils as utl
+    from askyourdocs.settings import SETTINGS as settings
+
+    environment = utl.load_environment()
+    query_pipeline = QueryPipeline(environment=environment, settings=settings)
+
+    response = query_pipeline.apply(text='how to avoid coronavirus')
+    print(response)
+

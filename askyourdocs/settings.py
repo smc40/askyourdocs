@@ -5,6 +5,9 @@ _root_path = Path(__file__).parents[1]
 MODEL_NAME = "google/flan-t5-small"
 MODEL_EMBEDDING_DIMENSION = 512
 
+SEARCH_COLLECTION = 'ayd_search'
+VECTOR_COLLECTION = 'ayd_vector'
+
 SETTINGS = {
     # Generic Settings
     'paths': {
@@ -16,8 +19,13 @@ SETTINGS = {
     "solr": {
         'nshards': 1,
         'datetime_format': "%Y-%m-%dT%H:%M:%S.%fZ",
+        'top_k': 5,
         'collections': {
-            'ayd_search': {
+            'map': {
+                'search': SEARCH_COLLECTION,
+                'vector': VECTOR_COLLECTION,
+            },
+            SEARCH_COLLECTION: {
                 'config_files': 'resources/solr/conf',
                 'fields': [
                     {
@@ -43,7 +51,7 @@ SETTINGS = {
                     },
                 ]
             },
-            'ayd_vector': {
+            VECTOR_COLLECTION: {
                 'config_files': 'resources/solr/conf',
                 'fields': [
                     {

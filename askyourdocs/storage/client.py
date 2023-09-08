@@ -251,3 +251,17 @@ class SolrClient:
                 self._post(url=url, data={'replace-field-type': data})
             else:
                 self._post(url=url, data={'add-field-type': data})
+
+    def search(self, query: str, collection: str, params: dict | None = None) -> dict:
+        """Main search interface"""
+        url = f'{self._url}/solr/{collection}/query'
+
+        if params is None:
+            params = dict()
+
+        data = {
+            'query': query,
+            **params
+        }
+        response = self._post(url=url, data=data)
+        return response['response']

@@ -1,7 +1,7 @@
 import logging
 
 from askyourdocs import Environment, Service
-from askyourdocs.storage.management import SolrClient
+from askyourdocs.storage.client import SolrClient
 from askyourdocs.storage.scraping import TikaExtractor
 
 

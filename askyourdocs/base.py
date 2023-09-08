@@ -113,7 +113,7 @@ class EmbeddingEntity(Document):
 
     @property
     def _id_prefix(self) -> str:
-        return 'vec_'
+        return 'emb_ent_'
 
     def __post_init__(self):
         super().__post_init__()
