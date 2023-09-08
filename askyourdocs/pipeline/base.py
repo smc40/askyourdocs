@@ -26,5 +26,6 @@ class PipelineService(Service):
 
             case 'query':
                 logging.info('start query pipeline')
-                logging.error(f'query pipeline is not implemented yet')
-                # query_pipeline = QueryPipeline(environment=self._environment, settings=self._settings)
+                query_pipeline = QueryPipeline(environment=self._environment, settings=self._settings)
+                text = self._environment.text
+                query_pipeline.apply(text=text)

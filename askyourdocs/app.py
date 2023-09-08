@@ -1,21 +1,13 @@
 from shiny import *
 
 import re
-# from askyourdocs.pipelines import embedding_loaded_pdf, pipeline_return_question_and_answer
-from askyourdocs.settings import SETTINGS
-from askyourdocs.pipeline import get_document_from_file, get_text_entities_from_document, get_embedding_entities_from_text_entities
 
-# settings = Settings()
-# chunk_size = SETTINGS['modeling']['chunk_size']
-# overlap = SETTINGS['modeling']['overlap']
-# db_items = embedding_loaded_pdf(file_path=file_path, chunk_size=chunk_size, overlap=overlap)
+import askyourdocs.utils as utl
+from askyourdocs.settings import SETTINGS as settings
+from askyourdocs.pipeline.pipeline import QueryPipeline
 
-# TODO continue from here
-
-# filename = SETTINGS['paths']['root'] / SETTINGS['data']['default_document']
-# document = document_from_file(filename=filename)
-# text_entity_embeddings = text_entity_embeddings_from_document(document=document)
-
+environment = utl.load_environment()
+_QUERY_PIPELINE = QueryPipeline(environment=environment, settings=settings)
 
 app_ui = ui.page_fluid(
     ui.panel_title("Ask Your Docs - DEMO"),
@@ -129,9 +121,8 @@ def server(input, output, session):
     @render.text
     @reactive.event(input.run_process_db)
     async def get_answer_db():
-        answer = pipeline_return_question_and_answer(query=input.question_input_db(),
-                                                     db_items=db_items,
-                                                     n_chunks=input.n_chunks_file())
+        text = input.question_input_db()
+        answer = _QUERY_PIPELINE.apply(text=text)
         answer = re.sub('^<pad>\s*', '', answer)
         answer = re.sub('\s*</s>$', '', answer)
         return answer
@@ -140,10 +131,8 @@ def server(input, output, session):
     @render.text
     @reactive.event(input.run_process_file)
     async def get_answer_file():
-        db_items = embedding_loaded_pdf(file_path=input.document_input_file()[0]['datapath'], chunk_size=200, overlap=10)
-        answer = pipeline_return_question_and_answer(query=input.question_input_file(),
-                                                     db_items=db_items,
-                                                     n_chunks=input.n_chunks_file())
+        text = input.question_input_db()
+        answer = _QUERY_PIPELINE.apply(text=text)
         answer = re.sub('^<pad>\s*', '', answer)
         answer = re.sub('\s*</s>$', '', answer)
         return answer
@@ -152,11 +141,8 @@ def server(input, output, session):
 #####################################################################
 # App
 #####################################################################
-debug = SETTINGS['shiny_app']['debug_mode']
+debug = settings['shiny_app']['debug_mode']
 app = App(app_ui, server, debug=debug)
-
-
-
 
 #########################################################################################
 # run the code below in the python console to start the dashboard.
@@ -166,5 +152,3 @@ app = App(app_ui, server, debug=debug)
 # run_app(host='127.0.0.1', port=8000, autoreload_port=0, reload=False,  # ws_max_size=16777216,
 #         log_level=None,
 #         factory=False, launch_browser=True)
-
-

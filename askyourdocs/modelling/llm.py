@@ -5,6 +5,7 @@ import torch.cuda
 import nltk.data
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from transformers import AutoTokenizer, T5ForConditionalGeneration
 
 
 class TextEmbedder:
@@ -12,14 +13,14 @@ class TextEmbedder:
     def __init__(self, model_name: str, cache_folder: str):
         self._model_name = model_name
         self._cache_folder = cache_folder
-        self._model = SentenceTransformer(model_name, cache_folder=cache_folder, device='cuda')
+        self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self._model = SentenceTransformer(model_name, cache_folder=cache_folder, device=self._device)
 
     def apply(self, texts: str | List[str], show_progress_bar: bool = None, normalize_embeddings: bool = True) -> np.ndarray:
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
         embeddings = self._model.encode(
             sentences=texts,
             show_progress_bar=show_progress_bar,
-            device=device,
+            device=self._device,
             normalize_embeddings=normalize_embeddings,
         )
         return embeddings
@@ -64,3 +65,21 @@ class TextTokenizer:
 
             case _:
                 logging.error(f'unknown token entity {entity}')
+
+
+class Summarizer:
+
+    def __init__(self, model_name: str, cache_folder: str):
+        self._model_name = model_name
+        self._cache_folder = cache_folder
+
+        self._tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self._model = T5ForConditionalGeneration.from_pretrained(model_name, cache_dir=cache_folder)
+
+    def get_answer(self, query: str, context: str) -> str:
+        prompt = f'context: {context} question: {query}'
+        inputs = self._tokenizer.encode(prompt, return_tensors='pt')
+
+        outputs = self._model.generate(inputs)
+        answer = self._tokenizer.decode(outputs[0])
+        return answer

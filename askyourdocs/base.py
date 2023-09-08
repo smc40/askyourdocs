@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from hashlib import sha256
 import json
@@ -73,6 +73,35 @@ class Document(ABC):
 
 
 @dataclass(eq=False)
+class TextEntity(Document):
+
+    text: str
+    index: int | None = None
+    doc_id: str | None = None
+
+    @property
+    def _id_prefix(self) -> str:
+        return 'txt_ent_'
+
+
+@dataclass(eq=False)
+class EmbeddingEntity(Document):
+
+    vector: List[float]
+    doc_id: str | None = None
+    txt_ent_id: str | None = None
+
+    @property
+    def _id_prefix(self) -> str:
+        return 'emb_ent_'
+
+    def __post_init__(self):
+        super().__post_init__()
+        vector = np.array(self.vector)
+        self.vector = list(vector / np.linalg.norm(vector))
+
+
+@dataclass(eq=False)
 class SearchDocument(Document):
 
     name: str
@@ -91,34 +120,6 @@ class SearchDocument(Document):
     @property
     def _id_prefix(self):
         return 'doc_'
-
-
-@dataclass(eq=False)
-class TextEntity(Document):
-
-    text: str
-    doc_id: str | None = None
-
-    @property
-    def _id_prefix(self) -> str:
-        return 'txt_ent_'
-
-
-@dataclass(eq=False)
-class EmbeddingEntity(Document):
-
-    vector: List[float]
-    doc_id: str | None = None
-    text_ent_id: str | None = None
-
-    @property
-    def _id_prefix(self) -> str:
-        return 'emb_ent_'
-
-    def __post_init__(self):
-        super().__post_init__()
-        vector = np.array(self.vector)
-        self.vector = list(vector / np.linalg.norm(vector))
 
 
 class DocumentListEncoder(json.JSONEncoder):

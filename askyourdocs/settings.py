@@ -5,8 +5,9 @@ _root_path = Path(__file__).parents[1]
 MODEL_NAME = "google/flan-t5-small"
 MODEL_EMBEDDING_DIMENSION = 512
 
-SEARCH_COLLECTION = 'ayd_search'
-VECTOR_COLLECTION = 'ayd_vector'
+DOCS_COLLECTION = 'ayd_docs'
+TEXTS_COLLECTION = 'ayd_texts'
+VECS_COLLECTION = 'ayd_vecs'
 
 SETTINGS = {
     # Generic Settings
@@ -22,10 +23,11 @@ SETTINGS = {
         'top_k': 5,
         'collections': {
             'map': {
-                'search': SEARCH_COLLECTION,
-                'vector': VECTOR_COLLECTION,
+                'docs': DOCS_COLLECTION,
+                'texts': TEXTS_COLLECTION,
+                'vecs': VECS_COLLECTION,
             },
-            SEARCH_COLLECTION: {
+            DOCS_COLLECTION: {
                 'config_files': 'resources/solr/conf',
                 'fields': [
                     {
@@ -45,13 +47,39 @@ SETTINGS = {
                     {
                         'name': 'text',
                         'type': 'text_general',
-                        'indexed': 'true',
-                        'stored': 'false',
+                        'indexed': 'false',
+                        'stored': 'true',
                         'multiValued': 'false'
                     },
                 ]
             },
-            VECTOR_COLLECTION: {
+            TEXTS_COLLECTION: {
+                'config_files': 'resources/solr/conf',
+                'fields': [
+                    {
+                        'name': 'text',
+                        'type': 'text_general',
+                        'indexed': 'true',
+                        'stored': 'true',
+                        'multiValued': 'false'
+                    },
+                    {
+                        'name': 'index',
+                        'type': 'pint',
+                        'indexed': 'false',
+                        'stored': 'true',
+                        'multiValued': 'false'
+                    },
+                    {
+                        'name': 'doc_id',
+                        'type': 'string',
+                        'indexed': 'false',
+                        'stored': 'true',
+                        'multiValued': 'false'
+                    },
+                ],
+            },
+            VECS_COLLECTION: {
                 'config_files': 'resources/solr/conf',
                 'fields': [
                     {
@@ -67,7 +95,7 @@ SETTINGS = {
                         'stored': 'true',
                     },
                     {
-                        'name': 'text_ent_id',
+                        'name': 'txt_ent_id',
                         'type': 'string',
                         'indexed': 'false',
                         'stored': 'true',

@@ -89,22 +89,23 @@ ayd storage extract --filename <filename>
 (creating a collection or updating configuration)
 ```shell
 ayd storage migration -c <collection>
-# ayd storage migration -c "ayd_search"
-# ayd storage migration -c "ayd_vector"
+# ayd storage migration -c "ayd_docs"
+# ayd storage migration -c "ayd_texts"
+# ayd storage migration -c "ayd_vecs"
 ```
 
 ### Add a Text Document
 ```shell
 ayd storage add -c <collection> --filename <filename>
-# ayd storage add -c "ayd_search" --filename "https://www.accessdata.fda.gov/drugsatfda_docs/label/2011/020895s036lbl.pdf" --commit
-# ayd storage add -c "ayd_search" --filename "data/documents/swissmedic/Swissmedic_Annual_Report_2022_ENG.pdf" --commit
+# ayd storage add -c "ayd_docs" --filename "https://www.accessdata.fda.gov/drugsatfda_docs/label/2011/020895s036lbl.pdf" --commit
+# ayd storage add -c "ayd_docs" --filename "data/documents/swissmedic/Swissmedic_Annual_Report_2022_ENG.pdf" --commit
 ```
 
 
 ### Searching a Collection
 ```shell
 ayd storage search -c <collection> -q <query>
-# ayd storage search -c "ayd_search" -q "annual report"
+# ayd storage search -c "ayd_docs" -q "annual report"
 ```
 
 ### Compute Embedding of a given Text
@@ -124,4 +125,7 @@ ayd modelling tokenization -t <text>
 ```shell
 ayd pipeline ingest --filename <filename>
 # ayd pipeline ingest --filename "docs/20211203_SwissPAR_Spikevax_single_page_text.pdf"
+# ayd pipeline ingest --filename "docs/20210430_SwissPAR_Comirnaty.pdf" --commit
+# ayd pipeline ingest --filename "docs/20211203_SwissPAR-Spikevax.pdf" --commit
+# ayd pipeline ingest --filename "docs/SwissPAR COVID-19 Vaccine Janssen .pdf" --commit
 ```

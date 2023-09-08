@@ -29,20 +29,7 @@ class StorageService(Service):
                 collection = self._environment.collection
                 self._solr_client.migrate_collection(name=collection)
 
-            case 'search':
-                logging.info(f'start collection search')
-                collection = self._environment.collection
-                query = self._environment.query
-                logging.error(f'search not implemented yet')
-
             case 'extraction':
                 logging.info(f'start text extraction')
                 filename = self._environment.filename
                 self._tika_extractor.apply(filename=filename)
-
-            case 'add':
-                logging.info(f'start adding a document')
-                filename = self._environment.filename
-                collection = self._environment.collection
-                document = self._tika_extractor.apply(filename=filename)
-                self._solr_client.add_document(document=document, collection=collection, commit=self._commit)
