@@ -118,3 +118,10 @@ ayd modelling embedding -t <text>
 ayd modelling tokenization -t <text>
 # ayd modelling tokenization -t "Foo bar is far. My cat is fat"
 ```
+
+
+### Ingest Document
+```shell
+ayd pipeline ingest --filename <filename>
+# ayd pipeline ingest --filename "docs/20211203_SwissPAR_Spikevax_single_page_text.pdf"
+```

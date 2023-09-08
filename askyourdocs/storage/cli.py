@@ -16,7 +16,7 @@ def strge_solr_parser():
     parser = argparse.ArgumentParser(add_help=False)
 
     group = parser.add_argument_group('Solr data management options')
-    group.add_argument('--collection', '-c', dest='collection', help='Collection name', required=True)
+    group.add_argument('--collection', '-c', dest='collection', help='Collection name')
     group.add_argument('--commit', dest='commit', action='store_true', help='Commit changes to solr')
     return parser
 

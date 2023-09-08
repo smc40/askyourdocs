@@ -6,13 +6,16 @@ import sys
 from askyourdocs import Environment, Service
 from askyourdocs.settings import SETTINGS
 import askyourdocs.storage.cli as srge_cli
-from askyourdocs.storage.base import Storage
+from askyourdocs.storage.base import StorageService
 import askyourdocs.modelling.cli as mdl_cli
-from askyourdocs.modelling.base import Modelling
+from askyourdocs.modelling.base import ModellingService
+import askyourdocs.pipeline.cli as ppln_cli
+from askyourdocs.pipeline.base import PipelineService
 
 SERVICES = {
-    'storage': {'name': 'storage', 'help': 'Storage services', 'cli': srge_cli, 'service': Storage},
-    'modelling': {'name': 'modelling', 'help': 'Modelling services', 'cli': mdl_cli, 'service': Modelling},
+    'storage': {'name': 'storage', 'help': 'Storage services', 'cli': srge_cli, 'service': StorageService},
+    'modelling': {'name': 'modelling', 'help': 'Modelling services', 'cli': mdl_cli, 'service': ModellingService},
+    'pipeline': {'name': 'pipeline', 'help': 'Pipeline services', 'cli': ppln_cli, 'service': PipelineService},
 }
 
 

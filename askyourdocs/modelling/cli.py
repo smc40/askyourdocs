@@ -12,4 +12,3 @@ def add_parser(parser: argparse.ArgumentParser):
 
     mdl_subprs.add_parser('embedding', help='Text embedding by llm', parents=[mdl_txt_parser()])
     mdl_subprs.add_parser('tokenization', help='Text tokenization', parents=[mdl_txt_parser()])
-    mdl_subprs.add_parser('add', help='Migration of text', parents=[mdl_txt_parser()])

@@ -80,11 +80,6 @@ SETTINGS = {
         }
     },
 
-    # Data
-    'data': {
-        'default_document': 'docs/20211203_SwissPAR_Spikevax_single_page_text.pdf'
-    },
-
 
     # Modeling
     'modeling': {

@@ -5,7 +5,7 @@ from askyourdocs.storage.management import SolrClient
 from askyourdocs.storage.scraping import TikaExtractor
 
 
-class Storage(Service):
+class StorageService(Service):
     """Storage service."""
     _entity_name = __qualname__  # type: ignore
 
