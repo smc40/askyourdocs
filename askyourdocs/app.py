@@ -12,7 +12,47 @@ app_ui = ui.page_fluid(
     ui.navset_tab_card(
         ui.nav('Instructions',
                ui.panel_main(
-                   "Write the documentation for the application here"
+                   ui.markdown(
+                       """
+                       Welcome to **Ask Your Documents**, an open source project by the Interagency LLM Taskforce.
+
+                       The goal is to make the power of *Large Language Models* (LLMs) available  to
+                       governmental institutions and  
+                       other privacy aware agencies by allowing them to host their own instance of this open source
+                       application.  
+                       Many LLMs are readily available online for *free* but come with the 
+                       hidden cost of storing your data. This is  
+                       no option for any institution that is concerned
+                       with privacy. Instead, *Ask your Documents* uses a locally hosted   
+                       database and
+                       publicly available LLMs to ensure that no data is sent to or stored by a third party.
+
+                       The demo of this app is divided into two sections:
+
+                        * **Ask Database**:  
+                            You can ask questions to all documents already in your database.  
+                             - post your question in the text input field, for example:  
+                             - '*Which vaccines can be found in the database?* ' and press the *Do Magic* button  
+                             - after the calculations are finished the answer will appear on the right side  
+                            <br>
+
+                            *Number of chunks* : increase the number of chunks to improve the results, decrease to speed up the process
+
+                        * **Ask File**:  
+                            Allows you to upload one or multiple PDF documents and start asking questions about your documents.  
+                             - post your question in the text input field, for example:  
+                             - '*Which vaccines can be found in the document?* ' and press the *Do Magic* button  
+                             - after the calculations are finished the answer will appear on the right side  
+                            <br>
+
+                            If you upload more than one document your questions will be sent to all documents
+                            selected.
+
+                            *Number of chunks* : increase the number of chunks to improve the results, decrease to speed up the process
+
+                        For questions and feedback, please reach out to: *llm@taskforce.com*
+                       """
+                   )
                 )
         ),
         ui.nav('Ask Database',
