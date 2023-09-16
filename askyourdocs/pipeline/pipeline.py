@@ -99,7 +99,6 @@ class QueryPipeline(Pipeline):
         cache_folder = settings['paths']['models']
         self._summarizer = Summarizer(model_name=model_name, cache_folder=cache_folder)
 
-
     def _get_knn_vecs_from_text(self, text: str) -> List[dict]:
         vector = self._text_embedder.apply(texts=text)
         top_k = self._settings['solr']['top_k']
@@ -117,14 +116,15 @@ class QueryPipeline(Pipeline):
         response = self._solr_client.search(query=query, collection=collection)
         return response['docs']
 
-    def _get_context_from_text_entities(self, text_entities: List[dict]) -> str:
-        te_by_doc = defaultdict(list)
+    @staticmethod
+    def _get_context_from_text_entities(text_entities: List[dict]) -> str:
+        te_by_doc_id = defaultdict(list)
         for te in text_entities:
-            te_by_doc[te['doc_id']].append(te['text'])
+            te_by_doc_id[te['doc_id']].append(te['text'])
 
         # TODO jaegglic extend text before creating context (use the index of the text entity which makes reference to
         #  the location where it is found within the document
-        text = '\n\n'.join(' '.join([tt for tt in te_by_doc[d_id]]) for d_id in te_by_doc.keys())
+        text = '\n\n'.join(' '.join([tt for tt in te_by_doc_id[doc_id]]) for doc_id in te_by_doc_id.keys())
         return text
 
     def apply(self, text: str) -> str:
