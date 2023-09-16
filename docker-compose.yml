@@ -8,8 +8,12 @@ services:
       - "8000:8000"
     environment:
       - AYD_DEBUG_MODE=False
-    env_file:
-      - .env
+      - LOG_LEVEL=INFO
+      - TIKA_URL=http://ayd-tika-1:9998
+      - SOLR_URL=http://ayd-solr-1:8983
+      - ZK_URLS=http://ayd-zoo1-1:2181
+    depends_on:
+      - solr
   tika:
     image: apache/tika:latest
     ports:
