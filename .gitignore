@@ -165,5 +165,8 @@ cython_debug/
 # Vim
 *.swp
 
+# Data and Models
 /models
+
+# todo file
 todo.md
