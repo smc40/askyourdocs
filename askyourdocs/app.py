@@ -1,12 +1,16 @@
-from shiny import *
+from shiny import App
+from shiny import ui
+from shiny import render
+from shiny import reactive
 
 import re
 
 import askyourdocs.utils as utl
 from askyourdocs.settings import SETTINGS as settings
-from askyourdocs.pipeline.pipeline import QueryPipeline
+from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline
 
 environment = utl.load_environment()
+_INGESTION_PIPELINE = IngestionPipeline(environment=environment, settings=settings)
 _QUERY_PIPELINE = QueryPipeline(environment=environment, settings=settings)
 
 app_ui = ui.page_fluid(
@@ -73,10 +77,10 @@ app_ui = ui.page_fluid(
                         ),
                    width=8,
                    ),
-               ),
+                ),
         ),
         ui.nav('Ask File',
-                ui.layout_sidebar(
+               ui.layout_sidebar(
                    ui.panel_sidebar(
                        ui.input_file('document_input_file',
                                      'Select a PDF file you wish to ask a question about',

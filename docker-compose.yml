@@ -8,6 +8,8 @@ services:
       - "8000:8000"
     environment:
       - AYD_DEBUG_MODE=False
+    env_file:
+      - .env
   tika:
     image: apache/tika:latest
     ports:

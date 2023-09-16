@@ -2,8 +2,8 @@ from pathlib import Path
 
 _root_path = Path(__file__).parents[1]
 
-MODEL_NAME = "google/flan-t5-small"
-MODEL_EMBEDDING_DIMENSION = 512
+MODEL_NAME = "google/flan-t5-base"
+MODEL_EMBEDDING_DIMENSION = 768
 
 DOCS_COLLECTION = 'ayd_docs'
 TEXTS_COLLECTION = 'ayd_texts'
