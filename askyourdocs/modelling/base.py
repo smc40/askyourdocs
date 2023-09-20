@@ -18,7 +18,7 @@ class ModellingService(Service):
 
             case 'embedding':
                 logging.info(f'start text embedding')
-                model_name = self._settings['modeling']['model_name']
+                model_name = self._settings['modelling']['model_name']
                 cache_folder = self._settings['paths']['models']
                 model = TextEmbedder(model_name=model_name, cache_folder=cache_folder)
 
@@ -29,7 +29,7 @@ class ModellingService(Service):
 
             case 'tokenization':
                 logging.info(f'start text tokenization')
-                package = self._settings['modeling']['tokenizer_package']
+                package = self._settings['modelling']['tokenizer_package']
                 tokenizer = TextTokenizer(package=package)
 
                 text = self._environment.text

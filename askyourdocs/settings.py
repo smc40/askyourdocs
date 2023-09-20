@@ -118,11 +118,12 @@ SETTINGS = {
     },
 
     # Modeling
-    'modeling': {
+    'modelling': {
         'model_name': MODEL_NAME,
         'embedding_dimension': MODEL_EMBEDDING_DIMENSION,
         'tokenizer_package': 'punkt',
         'ntok_max': MODEL_NTOKENS,
+        'ntok_context_fraction': 0.8,
     },
 
     # Frontend

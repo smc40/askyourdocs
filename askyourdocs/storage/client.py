@@ -156,6 +156,7 @@ class SolrClient:
     def _reindex_collection(self, name: str, batch_size: int = 1000):
         """Reindex all documents of a given collection"""
         logging.error(f'function "reindex_collection" not implemented yet')
+        # TODO do reindexing
         #
         #
         #
@@ -260,8 +261,10 @@ class SolrClient:
             params = dict()
 
         data = {
-            'query': query,
-            **params
+            "params": {
+                "q": query,
+                **params
+            }
         }
         response = self._post(url=url, data=data)
         return response['response']
