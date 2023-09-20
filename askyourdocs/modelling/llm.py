@@ -35,24 +35,6 @@ class TextTokenizer:
         except LookupError:
             nltk.download(f'{package}')
 
-    def get_overlapping_text_entities(self, text: str, chunk_size: int, overlap: int) -> List[str]:
-        if chunk_size < overlap:
-            overlap = chunk_size
-            logging.warning(f'overlap has been reduced to chunk_size (={chunk_size})')
-
-        words = self.get_text_entities(text=text, entity='word')
-        nwords = len(words)
-
-        index, chunk_end = 0, 0
-        entities = []
-        while index < nwords and chunk_end < nwords:
-            chunk_end = min(index + chunk_size, nwords)
-            chunk = ' '.join(words[index:chunk_end])
-            entities.append(chunk)
-            index += chunk_size - overlap
-
-        return entities
-
     @staticmethod
     def get_text_entities(text: str, entity: str = 'sentence') -> List[str]:
         match entity:

@@ -4,6 +4,7 @@ _root_path = Path(__file__).parents[1]
 
 MODEL_NAME = "google/flan-t5-base"
 MODEL_EMBEDDING_DIMENSION = 768
+MODEL_NTOKENS = 512
 
 DOCS_COLLECTION = 'ayd_docs'
 TEXTS_COLLECTION = 'ayd_texts'
@@ -116,13 +117,12 @@ SETTINGS = {
         }
     },
 
-
     # Modeling
     'modeling': {
         'model_name': MODEL_NAME,
+        'embedding_dimension': MODEL_EMBEDDING_DIMENSION,
         'tokenizer_package': 'punkt',
-        'chunk_size': 200,
-        'overlap': 10,
+        'ntok_max': MODEL_NTOKENS,
     },
 
     # Frontend
