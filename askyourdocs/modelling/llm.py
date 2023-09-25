@@ -65,12 +65,13 @@ class Summarizer:
         # TODO do not use T5ForConditionalGeneration but rather a generic model
         self._model = T5ForConditionalGeneration.from_pretrained(model_name, cache_dir=cache_folder)
         self._ntok_max = settings['modelling']['ntok_max']
+        self._no_repeat_ngram_size = settings['modelling']['no_repeat_ngram_size']
 
     def get_answer(self, query: str, context: str) -> str:
         prompt = (f'{self._task} Context: {context}\n\n. Briefly summarize the above context with respect to the'
                   f'following question: {query}')
         inputs = self._tokenizer.encode(prompt, return_tensors='pt')
 
-        outputs = self._model.generate(inputs, max_length=self._ntok_max)
+        outputs = self._model.generate(inputs, max_length=self._ntok_max, no_repeat_ngram_size=self._no_repeat_ngram_size)
         answer = self._tokenizer.decode(outputs[0], skip_special_tokens=True)
         return answer
