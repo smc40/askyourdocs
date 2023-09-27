@@ -1,11 +1,17 @@
-from shiny import *
-import PyPDF2
-import re
-from .pipelines import embedding_loaded_pdf, pipeline_return_question_and_answer
-from .settings import Settings
+from shiny import App
+from shiny import ui
+from shiny import render
+from shiny import reactive
 
-settings = Settings()
-db_items = embedding_loaded_pdf(file_path=settings.default_doc, chunk_size=200, overlap=10)
+import re
+
+import askyourdocs.utils as utl
+from askyourdocs.settings import SETTINGS as settings
+from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline
+
+environment = utl.load_environment()
+_INGESTION_PIPELINE = IngestionPipeline(environment=environment, settings=settings)
+_QUERY_PIPELINE = QueryPipeline(environment=environment, settings=settings)
 
 app_ui = ui.page_fluid(
     ui.panel_title("Ask Your Docs - DEMO"),
@@ -71,10 +77,10 @@ app_ui = ui.page_fluid(
                         ),
                    width=8,
                    ),
-               ),
+                ),
         ),
         ui.nav('Ask File',
-                ui.layout_sidebar(
+               ui.layout_sidebar(
                    ui.panel_sidebar(
                        ui.input_file('document_input_file',
                                      'Select a PDF file you wish to ask a question about',
@@ -119,9 +125,8 @@ def server(input, output, session):
     @render.text
     @reactive.event(input.run_process_db)
     async def get_answer_db():
-        answer = pipeline_return_question_and_answer(query=input.question_input_db(),
-                                                     db_items=db_items,
-                                                     n_chunks=input.n_chunks_file())
+        text = input.question_input_db()
+        answer = _QUERY_PIPELINE.apply(text=text)
         answer = re.sub('^<pad>\s*', '', answer)
         answer = re.sub('\s*</s>$', '', answer)
         return answer
@@ -130,10 +135,8 @@ def server(input, output, session):
     @render.text
     @reactive.event(input.run_process_file)
     async def get_answer_file():
-        db_items = embedding_loaded_pdf(file_path=input.document_input_file()[0]['datapath'], chunk_size=200, overlap=10)
-        answer = pipeline_return_question_and_answer(query=input.question_input_file(),
-                                                     db_items=db_items,
-                                                     n_chunks=input.n_chunks_file())
+        text = input.question_input_db()
+        answer = _QUERY_PIPELINE.apply(text=text)
         answer = re.sub('^<pad>\s*', '', answer)
         answer = re.sub('\s*</s>$', '', answer)
         return answer
@@ -142,10 +145,8 @@ def server(input, output, session):
 #####################################################################
 # App
 #####################################################################
-app = App(app_ui, server, debug=settings.debug_mode)
-
-
-
+debug = settings['shiny_app']['debug_mode']
+app = App(app_ui, server, debug=debug)
 
 #########################################################################################
 # run the code below in the python console to start the dashboard.
@@ -155,5 +156,3 @@ app = App(app_ui, server, debug=settings.debug_mode)
 # run_app(host='127.0.0.1', port=8000, autoreload_port=0, reload=False,  # ws_max_size=16777216,
 #         log_level=None,
 #         factory=False, launch_browser=True)
-
-

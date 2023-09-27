@@ -1,0 +1,13 @@
+shiny
+pypdf2
+pandas
+numpy
+langchain
+sentence-transformers
+nltk
+mypy
+tika
+requests
+validators
+pytest
+kazoo
