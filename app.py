@@ -30,7 +30,7 @@ def root():
     return {'text': 'Ask your docs api service is ready!!!'}
 
 
-@app.get('/query', response_model=Text)
+@app.post('/query', response_model=Text)
 def query(data: Text):
     answer = _QUERY_PIPELINE.apply(text=data.text)
     return {'text': answer}
