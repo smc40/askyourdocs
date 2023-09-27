@@ -25,6 +25,11 @@ class Text(BaseModel):
     text: str
 
 
+class Ingest(BaseModel):
+    filename: str
+    commit: bool = False
+
+
 @app.get('/', response_model=Text)
 def root():
     return {'text': 'Ask your docs api service is ready!!!'}
@@ -32,6 +37,13 @@ def root():
 
 @app.post('/query', response_model=Text)
 def query(data: Text):
+    # return data
     answer = _QUERY_PIPELINE.apply(text=data.text)
     return {'text': answer}
+
+
+@app.post('/ingest')
+def ingest(data: Ingest):
+    _INGESTION_PIPELINE.apply(filename=data.filename, commit=data.commit)
+
 
