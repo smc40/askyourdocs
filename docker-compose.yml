@@ -7,7 +7,6 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - AYD_DEBUG_MODE=False
       - LOG_LEVEL=INFO
       - TIKA_URL=http://ayd-tika-1:9998
       - SOLR_URL=http://ayd-solr-1:8983

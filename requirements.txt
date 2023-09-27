@@ -1,9 +1,7 @@
-shiny
-pypdf2
 pandas
 numpy
-langchain
 sentence-transformers
+torch
 nltk
 mypy
 tika
@@ -11,3 +9,5 @@ requests
 validators
 pytest
 kazoo
+fastapi
+uvicorn[standard]

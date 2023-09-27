@@ -33,22 +33,24 @@ export TIKA_URL=<changeme>        # For local host use "http://172.17.0.1:9998"
 # Solr
 export SOLR_URL=<changeme>        # For local host use "http://172.17.0.1:8983"  
 export ZK_URLS=<changeme>         # For local host use "172.17.0.1:2181"
+
+# Frontend
+export FRONTEND_URL=<changeme>    # For local host use "http://172.17.0.1:3000"
 ```
 
-
-## Huggingface Models
-Download and use a model
-```python
-from transformers import T5Tokenizer, T5ForConditionalGeneration
-
-tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-small")
-model = T5ForConditionalGeneration.from_pretrained("google/flan-t5-small")
-
-prompt = "In the following sentence, what is the drugname: Ibuprofen is well known to cause diarrhia."
-input_ids = tokenizer(prompt, return_tensors="pt").input_ids
-
-outputs = model.generate(input_ids, max_length = 512)
-print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+## Setup FastAPI backend
+Make `ayd` alias
+```shell
+alias ayd='python -m askyourdocs'
+```
+run docker containers
+```shell
+docker compose -p ayd up -d
+```
+migrate database
+```shell
+chmod 777 db_migration.sh
+./db_migration.sh
 ```
 
 ## Type checking
