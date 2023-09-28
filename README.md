@@ -65,9 +65,7 @@ pytest -s --cov=askyourdocs tests
 
 
 ## Frontend
-```sh
-uvicorn askyourdocs.app:app --host 0.0.0.0 --port 8006 --reload
-```
+Look at [README in app dir](./app/README.md)
 
 ## Cli
 
