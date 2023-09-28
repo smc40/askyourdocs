@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  app:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,13 +10,28 @@ services:
       - LOG_LEVEL=INFO
       - TIKA_URL=http://ayd-tika-1:9998
       - SOLR_URL=http://ayd-solr-1:8983
-      - ZK_URLS=http://ayd-zoo1-1:2181
+      - ZK_URLS=ayd-zoo1-1:2181
+      - FRONTEND_URL=http://localhost:3000
     depends_on:
       - solr
+    networks:
+      - network
+  frontend:
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - solr
+    networks:
+      - network
   tika:
     image: apache/tika:latest
     ports:
       - "9998:9998"
+    networks:
+      - network
   zoo1:
     image: zookeeper
     hostname: zoo1
@@ -26,6 +41,8 @@ services:
       ZOO_MY_ID: 1
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181
       ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
+    networks:
+      - network
   solr:
     image: solr:9.3
     ports:
@@ -34,3 +51,9 @@ services:
       - ZK_HOST=zoo1:2181
     depends_on:
       - zoo1
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge
