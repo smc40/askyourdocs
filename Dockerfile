@@ -11,7 +11,7 @@ COPY req_freeze.txt req_freeze.txt
 RUN pip install -r req_freeze.txt
 
 # Install Java needed for TIKA
-RUN apt-get update && apt-get install -y default-jre
+RUN apt-get update && apt-get install -y default-jre && rm -rf /var/lib/apt/lists/*
 
 # Copy the backend source code into the container at /app/backend
 COPY app/backend app/backend/

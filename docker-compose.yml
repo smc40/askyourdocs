@@ -15,7 +15,7 @@ services:
     depends_on:
       - solr
     networks:
-      - ayd_network
+      - network
   frontend:
     build:
       context: ./app/frontend
@@ -25,13 +25,13 @@ services:
     depends_on:
       - solr
     networks:
-      - ayd_network
+      - network
   tika:
     image: apache/tika:latest
     ports:
       - "9998:9998"
     networks:
-      - ayd_network
+      - network
   zoo1:
     image: zookeeper
     hostname: zoo1
@@ -42,7 +42,7 @@ services:
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181
       ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
     networks:
-      - ayd_network
+      - network
   solr:
     image: solr:9.3
     ports:
@@ -52,8 +52,8 @@ services:
     depends_on:
       - zoo1
     networks:
-      - ayd_network
+      - network
 
 networks:
-  ayd_network:
+  network:
     driver: bridge

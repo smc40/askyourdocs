@@ -65,14 +65,14 @@ pytest -s --cov=askyourdocs tests
 
 
 ## App
+Make sure you have in app/backend/.env the following variables (for local deployment)
 ```sh
-   docker build -t ayd-backend .
-   docker run -d -p 8050:8050 --name ayd-backend --env-file app/backend/.env ayd-backend
-
-   cd app/frontend
-   docker build -t ayd-frontend .
-   docker run -p 3000:3000 --name ayd-frontend ayd-frontend
-
+LOG_LEVEL=INFO
+TIKA_URL=http://172.17.0.1:9998
+SOLR_URL=http://172.17.0.1:8983  
+solr_url=http://172.17.0.1:8983
+ZK_URLS=172.17.0.1:2181
+FRONTEND_URL=http://172.17.0.1:3000
 ```
 
 
