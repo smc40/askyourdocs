@@ -64,9 +64,19 @@ pytest -s --cov=askyourdocs tests
 ```
 
 
-## Run app locally (development purposes)
+## App
+```sh
+   docker build -t ayd-backend .
+   docker run -d -p 8050:8050 --name ayd-backend --env-file app/backend/.env ayd-backend
 
-### Run Fastiapi Backend Locally
+   cd app/frontend
+   docker build -t ayd-frontend .
+   docker run -p 3000:3000 --name ayd-frontend ayd-frontend
+
+```
+
+
+### Run Fastapi backend locally
 
 
 - Install dependencies and Run the app
@@ -81,7 +91,7 @@ Then
 sh
 ```
 source ..env
-uvicorn app.backend.app:app --host 0.0.0.0 --port 8050 --reload
+uvicorn app.backend.app:app --host 0.0.0.0 --port 8686 --reload
 ```
 
 

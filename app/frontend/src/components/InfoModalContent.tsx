@@ -11,7 +11,7 @@ const InfoModalContent: React.FC<InfoModalContentProps> = ({ onClose }) => {
     return (
         <div className="modal-content">
             <span
-                className="close absolute top-2 right-2 text-xl cursor-pointer"
+                className="close absolute top-6 right-6 text-xl cursor-pointer"
                 onClick={onClose}
             >
                 <img src={closeIcon} className="w-8" />

@@ -41,7 +41,7 @@ class DataList(BaseModel):
 
 @app.get('/', response_model=Text)
 def root():
-    return {'text': 'Ask your docs api service is ready!!!'}
+    return {'data': 'Ask your docs api service is ready!!!'}
 
 @app.post("/query", response_model=Text)
 async def get_answer(question_input: Text):

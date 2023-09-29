@@ -9,4 +9,4 @@ load_dotenv(dotenv_path=os.path.join(BASE_DIR, ".env"))
 
 APP_VERSION = os.environ.get('AYD_APP_VERSION', None)
 
-CORS_ORIGINS = ['http://localhost:3000']
+CORS_ORIGINS = ['http://localhost:3000', 'http://ayd-frontend-1:3000']
