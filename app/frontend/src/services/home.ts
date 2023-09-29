@@ -10,8 +10,8 @@ export const getAnswer = ({ question }: { question: string }) => {
     });
 };
 
-export const deleteDocument = (name: string) => {
-    return client.delete(`/delete_document?name=${name}`);
+export const deleteDocument = (id: string) => {
+    return client.delete(`/delete_document?id=${id}`);
 };
 
 export const uploadFile = (file: File) => {

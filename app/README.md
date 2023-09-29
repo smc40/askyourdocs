@@ -39,3 +39,8 @@ cd backend # move to the backend directory
 python -m pytest tests -s --cov=api --cov-report term-missing
 ```
 
+
+## Easteregg
+change the variables in frontend/src/config.js and the gif in frontend/src/img/easerEgg.gif to customize your easter egg.
+Default: easterEggTrigger: 'magic schnauz' --> this is the text typed to trigger the easter egg
+Default: easterEggTriggerMsg: 'magic schnauz 〰️' --> this is the transformed text of the user

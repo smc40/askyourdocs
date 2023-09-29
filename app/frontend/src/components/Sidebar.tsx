@@ -21,6 +21,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
     const [list, setList] = useState<Document[]>([]);
     const [showLoader, setShowLoader] = useState(false);
     const [showError, setShowError] = useState(false);
+    const [noDocuments, setNoDocuments] = useState(false);
 
     useEffect(() => {
         homeService
@@ -34,21 +35,26 @@ const Sidebar: React.FC<SidebarProps> = () => {
                     })
                 );
                 setList(documents);
+                if (documents.length == 0) {
+                    setNoDocuments(true);
+                }
             })
             .catch((error) => console.error('Error fetching data:', error));
     }, []);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target?.files?.[0];
+        setNoDocuments(false);
         setShowLoader(true);
         if (file) {
             try {
-                await homeService.uploadFile(file);
-                setShowLoader(false);
-                setList((prevList) => [
-                    ...prevList,
-                    { id: 'tmp', name: file.name },
-                ]);
+                await homeService.uploadFile(file).then((response) => {
+                    setShowLoader(false);
+                    setList((prevList) => [
+                        ...prevList,
+                        { id: response.data, name: file.name },
+                    ]);
+                });
             } catch (error) {
                 setShowLoader(false);
                 setShowError(true);
@@ -60,10 +66,17 @@ const Sidebar: React.FC<SidebarProps> = () => {
         }
     };
     const handleRemoveItem = (index: number) => {
-        console.log('TBD --> delete in SOLR');
         const itemID = list[index].id;
         homeService.deleteDocument(itemID).then(() => {
-            setList((prevList) => prevList.filter((_, i) => i !== index));
+            setList((prevList) => {
+                const updatedList = prevList.filter((_, i) => i !== index);
+
+                if (updatedList.length === 0) {
+                    setNoDocuments(true);
+                }
+
+                return updatedList;
+            });
         });
     };
 
@@ -83,8 +96,18 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 </label>
             </div>
 
+            {noDocuments && (
+                <ErrorMsg
+                    message="You have no documents yet. Start by uploading a first one by clicking on plus icon above."
+                    type="info"
+                />
+            )}
+
             {showError && (
-                <ErrorMsg message="Filetype not supported, try another file (PDF, no OCR)." />
+                <ErrorMsg
+                    message="Filetype not supported, try another file (PDF, no OCR)."
+                    type="danger"
+                />
             )}
 
             {showLoader && (

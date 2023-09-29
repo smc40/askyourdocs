@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import botIcon from '../img/robot.png';
 import userImage from '../img/avatar.png';
 import planeIcon from '../img/plane.png';
-import easterEggIcon from '../img/easterEgg.gif';
 import typingIcon from '../img/dots.gif';
 import * as homeService from '../services/home';
+import config from '../config.js';
+import easterEggIcon from '../img/easterEgg.gif';
 
 interface Message {
     type: 'user' | 'bot';
@@ -29,7 +30,7 @@ const Main: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (inputValue === 'magic schnauz') {
+        if (inputValue === config.easterEggTrigger) {
             setIsBotTyping(true);
             setInputValue('');
             setTimeout(() => {
@@ -37,7 +38,7 @@ const Main: React.FC = () => {
                 setEasterEgg(true);
                 setChatMessages((prevMessages) => [
                     ...prevMessages,
-                    { type: 'user', text: 'magic schnauz 〰️' },
+                    { type: 'user', text: config.easterEggTriggerMsg },
                     { type: 'bot', text: 'a lil fun is always allowed 😉' },
                 ]);
             }, 3000);

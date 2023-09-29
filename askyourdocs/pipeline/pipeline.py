@@ -81,11 +81,12 @@ class IngestionPipeline(Pipeline):
 
         logging.info(f'store document, texts, and embeddings to solr')
         collection = self._settings['solr']['collections']['map']['docs']
-        self._solr_client.add_document(document=document, collection=collection, commit=commit)
+        doc_id = self._solr_client.add_document(document=document, collection=collection, commit=commit)
         collection = self._settings['solr']['collections']['map']['texts']
         self._solr_client.add_documents(documents=text_entities, collection=collection, commit=commit)
         collection = self._settings['solr']['collections']['map']['vecs']
         self._solr_client.add_documents(documents=embedding_entities, collection=collection, commit=commit)
+        return doc_id
 
 
 class QueryPipeline(Pipeline):
@@ -176,3 +177,28 @@ class QueryPipeline(Pipeline):
         logging.info(f'generate answer to "{text}" based on context "{context[:200]}..."')
         answer = self._summarizer.get_answer(query=text, context=context)
         return answer
+
+class RemovalPipeline(Pipeline):
+
+    def __init__(self, environment: Environment, settings: dict):
+        super().__init__(environment=environment, settings=settings)
+        self._solr_client = SolrClient(environment=environment, settings=settings)
+
+    def apply(self, id_: str, commit: bool = False):
+        collection = self._settings['solr']['collections']['map']['docs']
+        self._solr_client.delete_document(by=f"id:{id_}", collection=collection, commit=commit)
+        collection = self._settings['solr']['collections']['map']['texts']
+        self._solr_client.delete_document(by=f"doc_id:{id_}", collection=collection, commit=commit)
+        collection = self._settings['solr']['collections']['map']['vecs']
+        self._solr_client.delete_document(by=f"doc_id:{id_}", collection=collection, commit=commit)
+
+
+class SearchPipeline(Pipeline):
+
+    def __init__(self, environment: Environment, settings: dict):
+        super().__init__(environment=environment, settings=settings)
+        self._solr_client = SolrClient(environment=environment, settings=settings)
+
+    def apply(self, query: str, collection: str, params: dict):
+        response = self._solr_client.search(query=query, collection=collection, params=params)
+        return response['docs']
