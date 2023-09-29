@@ -20,13 +20,15 @@ interface Document {
 const Sidebar: React.FC<SidebarProps> = () => {
     const [list, setList] = useState<Document[]>([]);
     const [showLoader, setShowLoader] = useState(false);
-    const [showError, setShowError] = useState(false);
     const [noDocuments, setNoDocuments] = useState(false);
+    const [serverDown, setServerDown] = useState(false);
+    const [wrongFiletype, setWrongFiletype] = useState(false);
 
     useEffect(() => {
         homeService
             .getDocuments()
             .then((response) => {
+                setWrongFiletype(false);
                 const data = response.data;
                 const documents: Document[] = data.map(
                     (item: { id: string; name: string }) => ({
@@ -39,7 +41,10 @@ const Sidebar: React.FC<SidebarProps> = () => {
                     setNoDocuments(true);
                 }
             })
-            .catch((error) => console.error('Error fetching data:', error));
+            .catch((error) => {
+                console.error('Error fetching data:', error);
+                setServerDown(true);
+            });
     }, []);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,9 +62,9 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 });
             } catch (error) {
                 setShowLoader(false);
-                setShowError(true);
+                setWrongFiletype(true);
                 setTimeout(() => {
-                    setShowError(false);
+                    setWrongFiletype(false);
                 }, 5000);
                 console.error('Error uploading file:', error);
             }
@@ -103,9 +108,15 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 />
             )}
 
-            {showError && (
+            {wrongFiletype && (
                 <ErrorMsg
                     message="Filetype not supported, try another file (PDF, no OCR)."
+                    type="danger"
+                />
+            )}
+            {serverDown && (
+                <ErrorMsg
+                    message="Server is currently unavailable. Please try again later."
                     type="danger"
                 />
             )}

@@ -64,8 +64,66 @@ pytest -s --cov=askyourdocs tests
 ```
 
 
-## Frontend
-Look at [README in app dir](./app/README.md)
+## Run app locally (development purposes)
+
+### Run Fastiapi Backend Locally
+
+
+- Install dependencies and Run the app
+
+```sh
+  python -m venv <env_name>
+  source ./<env_name>/bin/activate
+  pip install -r requirements
+```
+
+Then
+sh
+```
+source ..env
+uvicorn app.backend.app:app --host 0.0.0.0 --port 8050 --reload
+```
+
+
+### Run Frontend Locally
+
+```sh
+cd app/frontend # move to the frontend directory
+npm install # install the dependencies
+```
+```sh
+npm run start # start the app
+```
+
+
+### App related Tests
+
+```sh
+cd backend # move to the backend directory
+python -m pytest tests -s --cov=api --cov-report term-missing
+```
+
+
+### Easteregg
+change the variables in frontend/src/config.js and the gif in frontend/src/img/easerEgg.gif to customize your easter egg.
+Default: easterEggTrigger: 'magic schnauz' --> this is the text typed to trigger the easter egg
+Default: easterEggTriggerMsg: 'magic schnauz 〰️' --> this is the transformed text of the user
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Cli
 

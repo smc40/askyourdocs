@@ -18,7 +18,7 @@ export const uploadFile = (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    return client.post('/upload_file', formData, {
+    return client.post('/ingest', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },

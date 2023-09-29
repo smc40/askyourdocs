@@ -1,8 +1,5 @@
-import sys
-sys.path.append('../../')
-
 from pydantic import BaseModel
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware import Middleware
 from fastapi import File, UploadFile
@@ -11,10 +8,8 @@ from fastapi import File, UploadFile
 import askyourdocs.utils as utl
 from askyourdocs.settings import SETTINGS as settings
 from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline, RemovalPipeline, SearchPipeline
-from askyourdocs import Environment
 
-
-import settings as app_settings
+import app.backend.settings as app_settings
 import logging
 
 #logging.basicConfig(level=logging.INFO)
@@ -74,11 +69,11 @@ async def delete_document(id: str):
         "data": "successfully deleted."
     }
 
-@app.post("/upload_file", response_model=Text)
+@app.post("/ingest", response_model=Text)
 async def upload_file(file: UploadFile = File(...)):
     if file and file.filename:
         logging.info(f'uploading file  {file.filename}')
-        filepath = f"./uploads/{file.filename}"
+        filepath = f"./app/backend/uploads/{file.filename}"
         with open(filepath, "wb") as f:
             f.write(file.file.read())
         doc = _INGESTION_PIPELINE.apply(filename=filepath, commit=True)
