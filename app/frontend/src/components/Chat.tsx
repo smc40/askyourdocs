@@ -33,12 +33,15 @@ const Main: React.FC = () => {
         if (inputValue === config.easterEggTrigger) {
             setIsBotTyping(true);
             setInputValue('');
+            setChatMessages((prevMessages) => [
+                ...prevMessages,
+                { type: 'user', text: config.easterEggTriggerMsg },
+            ]);
             setTimeout(() => {
                 setIsBotTyping(false);
                 setEasterEgg(true);
                 setChatMessages((prevMessages) => [
                     ...prevMessages,
-                    { type: 'user', text: config.easterEggTriggerMsg },
                     { type: 'bot', text: 'a lil fun is always allowed 😉' },
                 ]);
             }, 3000);
