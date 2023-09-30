@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y default-jre && rm -rf /var/lib/apt/list
 # Copy the backend source code into the container at /app/backend
 COPY app/backend app/backend/
 COPY askyourdocs askyourdocs/
+RUN mkdir -p app/backend/uploads
 
 # Expose the port the app runs on
 EXPOSE 8000
