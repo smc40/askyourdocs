@@ -10,12 +10,11 @@ services:
       - LOG_LEVEL=INFO
       - TIKA_URL=http://ayd-tika-1:9998
       - SOLR_URL=http://ayd-solr-1:8983
-      - ZK_URLS=ayd-zoo1-1:2181
+      - ZK_URLS=http://ayd-zoo1-1:2181
+      - BACKEND_URL=http://ayd-backend-1:8000
       - FRONTEND_URL=http://localhost:3000
     depends_on:
       - solr
-    networks:
-      - network
   frontend:
     build:
       context: ./app/frontend
@@ -24,14 +23,10 @@ services:
       - "3000:3000"
     depends_on:
       - solr
-    networks:
-      - network
   tika:
     image: apache/tika:latest
     ports:
       - "9998:9998"
-    networks:
-      - network
   zoo1:
     image: zookeeper
     hostname: zoo1
@@ -41,8 +36,6 @@ services:
       ZOO_MY_ID: 1
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181
       ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
-    networks:
-      - network
   solr:
     image: solr:9.3
     ports:
@@ -51,9 +44,3 @@ services:
       - ZK_HOST=zoo1:2181
     depends_on:
       - zoo1
-    networks:
-      - network
-
-networks:
-  network:
-    driver: bridge
