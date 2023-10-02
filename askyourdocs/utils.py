@@ -25,6 +25,7 @@ def load_environment() -> Environment:
         'tika_url': os.getenv('TIKA_URL'),
         'solr_url': os.getenv('SOLR_URL'),
         'zk_urls': os.getenv('ZK_URLS'),
+        'frontend_url': os.getenv('FRONTEND_URL'),
     }
     return Environment(**kwargs)
 

@@ -1,17 +1,26 @@
 version: '3.7'
 services:
-  app:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
-      - AYD_DEBUG_MODE=False
       - LOG_LEVEL=INFO
       - TIKA_URL=http://ayd-tika-1:9998
       - SOLR_URL=http://ayd-solr-1:8983
       - ZK_URLS=http://ayd-zoo1-1:2181
+      - BACKEND_URL=http://ayd-backend-1:8000
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - solr
+  frontend:
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
     depends_on:
       - solr
   tika:

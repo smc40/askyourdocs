@@ -34,6 +34,9 @@ class Environment:
         # LLM arguments
         self.text: str | None = kwargs.get('text')
 
+        # Frontend URL
+        self.frontend_url: str | None = kwargs.get('frontend_url')
+
 
 class Service(ABC):
     """Parent class for all services."""
