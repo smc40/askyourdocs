@@ -38,7 +38,7 @@ export ZK_URLS=<changeme>         # For local host use "172.17.0.1:2181"
 export FRONTEND_URL=<changeme>    # For local host use "http://172.17.0.1:3000"
 ```
 
-## Setup FastAPI backend
+## Setup AskYourDocuments
 Make `ayd` alias
 ```shell
 alias ayd='python -m askyourdocs'
@@ -62,7 +62,7 @@ mypy --ignore-missing-imports askyourdocs
 ```shell
 pytest -s --cov=askyourdocs tests
 ```
-
+then checkout `localhost:3000` and see the magic happening ;-D
 
 ## App
 Running the docker compose will create the app for you (be patient, the backend need to download the models first so it might take up to 10 minutes to be ready, check docker logs ayd-backend-1 -f to see the following message: INFO:     Application startup complete.) Not working? make sure you run the migrations after docker compose.
