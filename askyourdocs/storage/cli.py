@@ -25,7 +25,8 @@ def strge_scrp_parser():
     parser = argparse.ArgumentParser(add_help=False)
 
     group = parser.add_argument_group('Text extraction options')
-    group.add_argument('--filename', '-f', dest='filename', help='Filename', required=True)
+    group.add_argument('--filename', '-f', dest='filename', help='Filename')
+    group.add_argument('--source', '-s', dest='source', help='Source')
     return parser
 
 
