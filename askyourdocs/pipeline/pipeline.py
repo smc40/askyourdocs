@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import logging
+from pathlib import Path
 from typing import Any, List
 
 import nltk
@@ -69,7 +70,7 @@ class IngestionPipeline(Pipeline):
                               for te, v in zip(text_entities, vectors)]
         return embedding_entities
 
-    def apply(self, filename: str, commit: bool = False):
+    def _add_document(self, filename: str, commit: bool = False):
         logging.info(f'extract text from file "{filename}"')
         document = self._get_document_from_file(filename=filename)
 
@@ -87,6 +88,20 @@ class IngestionPipeline(Pipeline):
         collection = self._settings['solr']['collections']['map']['vecs']
         self._solr_client.add_documents(documents=embedding_entities, collection=collection, commit=commit)
         return doc_id
+
+    def apply(self, source: str, commit: bool = False):
+        path = Path(source)
+        if path.is_dir():
+            files = [str(f) for f in path.iterdir() if f.is_file()]
+            logging.info(f'adding {len(files)} files from directory {source}')
+        elif path.is_file():
+            files = [str(source)]
+        else:
+            files = []
+            logging.error(f'{path} os not a file or a directory')
+
+        for f in files:
+            self._add_document(filename=f, commit=commit)
 
 
 class QueryPipeline(Pipeline):

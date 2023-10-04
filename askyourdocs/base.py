@@ -23,6 +23,7 @@ class Environment:
         # Tika (Service(s): 'storage')
         self.tika_url: str | None = kwargs.get('tika_url')
         self.filename: str | None = kwargs.get('filename')
+        self.source: str | None = kwargs.get('source')
 
         # Solr arguments (Service(s): 'storage')
         self.solr_url: str | None = kwargs.get('solr_url')

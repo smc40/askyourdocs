@@ -20,9 +20,9 @@ class PipelineService(Service):
                 logging.info('start document ingestion pipeline')
                 ingestion_pipeline = IngestionPipeline(environment=self._environment, settings=self._settings)
 
-                filename = self._environment.filename
+                source = self._environment.source
                 commit = self._environment.commit
-                ingestion_pipeline.apply(filename=filename, commit=commit)
+                ingestion_pipeline.apply(source=source, commit=commit)
 
             case 'query':
                 logging.info('start query pipeline')

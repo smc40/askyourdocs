@@ -76,7 +76,7 @@ async def upload_file(file: UploadFile = File(...)):
         filepath = f"./app/backend/uploads/{file.filename}"
         with open(filepath, "wb") as f:
             f.write(file.file.read())
-        doc = _INGESTION_PIPELINE.apply(filename=filepath, commit=True)
+        doc = _INGESTION_PIPELINE.apply(source=filepath, commit=True)
         return {"data": doc}
     else:
         return {"data": "No file provided"}
