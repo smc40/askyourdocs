@@ -47,7 +47,7 @@ run docker containers
 ```shell
 docker compose -p ayd up -d
 ```
-migrate database
+migrate database (only needed for local development, with docker compose this is done inside the container)
 ```shell
 chmod 777 db_migration.sh
 ./db_migration.sh

@@ -7,7 +7,7 @@ import nltk
 import pandas as pd
 from transformers import AutoTokenizer
 
-from askyourdocs import Environment, SearchDocument, TextEntity, EmbeddingEntity
+from askyourdocs import Environment, SearchDocument, TextEntity, EmbeddingEntity, FeedbackDocument
 from askyourdocs.storage.scraping import TikaExtractor
 from askyourdocs.storage.client import SolrClient
 from askyourdocs.modelling.llm import TextEmbedder, TextTokenizer, Summarizer
@@ -53,6 +53,9 @@ class IngestionPipeline(Pipeline):
     def _get_text_entities_from_document(document: SearchDocument) -> List[TextEntity]:
         """Generate and return a list of (overlapping) text entities from a given document text."""
         text = document.text
+        if text == None:
+            logging.error("OCR not yet implemented, empty PDF...")
+            text = ""
         text_entities = nltk.sent_tokenize(text=text)
         return [TextEntity(id=f'{document.id}{i}{te}', text=te, doc_id=document.id, index=i)
                 for i, te in enumerate(text_entities)]
@@ -87,6 +90,9 @@ class IngestionPipeline(Pipeline):
         self._solr_client.add_documents(documents=text_entities, collection=collection, commit=commit)
         collection = self._settings['solr']['collections']['map']['vecs']
         self._solr_client.add_documents(documents=embedding_entities, collection=collection, commit=commit)
+
+        logging.info("from pipeline")
+        logging.info(doc_id)
         return doc_id
 
     def apply(self, source: str, commit: bool = False):
@@ -100,8 +106,10 @@ class IngestionPipeline(Pipeline):
             files = []
             logging.error(f'{path} os not a file or a directory')
 
+        doc_ids = []
         for f in files:
-            self._add_document(filename=f, commit=commit)
+            doc_ids.append(self._add_document(filename=f, commit=commit))
+        return doc_ids
 
 
 class QueryPipeline(Pipeline):
@@ -217,3 +225,18 @@ class SearchPipeline(Pipeline):
     def apply(self, query: str, collection: str, params: dict):
         response = self._solr_client.search(query=query, collection=collection, params=params)
         return response['docs']
+
+
+class FeedbackPipeline(Pipeline):
+
+    def __init__(self, environment: Environment, settings: dict):
+        super().__init__(environment=environment, settings=settings)
+        self._solr_client = SolrClient(environment=environment, settings=settings)
+
+    def apply(self, feedback_type:str, feedback_text:str , commit: bool, feedback_to: str):
+        collection = self._settings['solr']['collections']['map']['feedback']
+        feedback = FeedbackDocument(id=feedback_type+feedback_text, feedback_type=feedback_type, text=feedback_text, feedback_to = feedback_to)
+        logging.info(feedback)
+        response = self._solr_client.add_document(document=feedback, collection=collection, commit=commit)
+
+        return response

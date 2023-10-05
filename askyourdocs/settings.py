@@ -9,6 +9,7 @@ MODEL_NTOKENS = 512
 DOCS_COLLECTION = 'ayd_docs'
 TEXTS_COLLECTION = 'ayd_texts'
 VECS_COLLECTION = 'ayd_vecs'
+FEEDBACK_COLLECTION = 'ayd_feedback'
 
 SETTINGS = {
     # Generic Settings
@@ -16,6 +17,7 @@ SETTINGS = {
         'root': _root_path,
         'models': _root_path / 'models',
     },
+    'cors_origins': ['http://localhost:3000', 'http://ayd-frontend-1:3000'],
 
     # Solr Settings
     "solr": {
@@ -27,6 +29,7 @@ SETTINGS = {
                 'docs': DOCS_COLLECTION,
                 'texts': TEXTS_COLLECTION,
                 'vecs': VECS_COLLECTION,
+                'feedback': FEEDBACK_COLLECTION,
             },
             DOCS_COLLECTION: {
                 'config_files': 'resources/solr/conf',
@@ -110,6 +113,32 @@ SETTINGS = {
                         'similarityFunction': 'dot_product'
                     },
                 ],
+            },
+            FEEDBACK_COLLECTION: {
+                'config_files': 'resources/solr/conf',
+                'fields': [
+                    {
+                        'name': 'feedback_type',
+                        'type': 'string',
+                        'indexed': 'false',
+                        'stored': 'false',
+                        'multiValued': 'false'
+                    },
+                    {
+                        'name': 'text',
+                        'type': 'string',
+                        'indexed': 'false',
+                        'stored': 'false',
+                        'multiValued': 'false'
+                    },
+                    {
+                        'name': 'feedback_to',
+                        'type': 'string',
+                        'indexed': 'false',
+                        'stored': 'false',
+                        'multiValued': 'false'
+                    },
+                ]
             },
             'test_origin': {
                 'config_files': 'tests/data/storage/config/test_origin'

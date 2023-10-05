@@ -2,15 +2,18 @@ import React, { useRef } from 'react';
 import closeIcon from '../img/close.svg';
 import thumsUpIcon from '../img/thumsUpIcon.png';
 import thumsDownIcon from '../img/thumsDownIcon.png';
+import * as homeService from '../services/home';
 
 interface InfoModalContentProps {
     onClose: () => void;
     feedbackType: string;
+    answerProvided: string;
 }
 
 const InfoModalContent: React.FC<InfoModalContentProps> = ({
     onClose,
     feedbackType,
+    answerProvided,
 }) => {
     const feedbackRef = useRef<HTMLTextAreaElement>(null);
 
@@ -21,6 +24,11 @@ const InfoModalContent: React.FC<InfoModalContentProps> = ({
         if (feedback) {
             console.log('Feedback Type:', feedbackType);
             console.log('Feedback:', feedback.value);
+            homeService
+                .uploadFeedback(feedbackType, feedback.value, answerProvided)
+                .then((response) => {
+                    console.log(response);
+                });
         }
         onClose();
     };

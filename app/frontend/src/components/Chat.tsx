@@ -21,10 +21,7 @@ const Main: React.FC = () => {
     const [easterEgg, setEasterEgg] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [feedback, setFeedback] = useState('');
-
-    const openModal = () => {
-        setIsOpen(true);
-    };
+    const [feedbackOnSentence, setFeedbackOnSentence] = useState('');
 
     const closeModal = () => {
         setIsOpen(false);
@@ -38,9 +35,15 @@ const Main: React.FC = () => {
     ]);
     const [isBotTyping, setIsBotTyping] = useState(false);
 
-    const sendFeedback = (feedback: string) => {
+    const sendFeedback = (feedback: string, index: number) => {
         setFeedback(feedback);
         setIsOpen(true);
+        setFeedbackOnSentence(
+            'QUESTION: ' +
+                chatMessages[index - 1].text +
+                '\nANSWER:' +
+                chatMessages[index].text
+        );
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -153,7 +156,10 @@ const Main: React.FC = () => {
                                                             [index]: 'positive',
                                                         })
                                                     );
-                                                    sendFeedback('positive');
+                                                    sendFeedback(
+                                                        'positive',
+                                                        index
+                                                    );
                                                 }}
                                             />
                                         </div>
@@ -175,7 +181,10 @@ const Main: React.FC = () => {
                                                             [index]: 'negative',
                                                         })
                                                     );
-                                                    sendFeedback('negative');
+                                                    sendFeedback(
+                                                        'negative',
+                                                        index
+                                                    );
                                                 }}
                                             />
                                         </div>
@@ -216,12 +225,13 @@ const Main: React.FC = () => {
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
                         placeholder="Type a question for your documents..."
-                        className="w-full p-2 border border-gray-300 rounded-md mr-2 mt-4 focus:ring-red-500"
+                        className="w-full p-2 border border-gray-300 rounded-lg mr-2 mt-4 focus:ring-red-500 shadow-lg"
+                        style={{ resize: 'none' }}
                     />
 
                     <button
                         type="submit"
-                        className="absolute right-6 px-4 py-2"
+                        className="absolute right-0 px-4"
                         style={{ top: '50%', transform: 'translateY(-50%)' }}
                         disabled={inputValue.length <= 3}
                     >
@@ -254,6 +264,7 @@ const Main: React.FC = () => {
                 <FeedbackModalContent
                     onClose={closeModal}
                     feedbackType={feedback}
+                    answerProvided={feedbackOnSentence}
                 />
             </Modal>
         </main>

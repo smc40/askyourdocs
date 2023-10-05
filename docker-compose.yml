@@ -10,11 +10,12 @@ services:
       - LOG_LEVEL=INFO
       - TIKA_URL=http://ayd-tika-1:9998
       - SOLR_URL=http://ayd-solr-1:8983
-      - ZK_URLS=http://ayd-zoo1-1:2181
+      - ZK_URLS=ayd-zoo1-1:2181
       - BACKEND_URL=http://ayd-backend-1:8000
       - FRONTEND_URL=http://localhost:3000
     depends_on:
-      - solr
+      solr:
+        condition: service_healthy
   frontend:
     build:
       context: ./app/frontend
@@ -44,3 +45,8 @@ services:
       - ZK_HOST=zoo1:2181
     depends_on:
       - zoo1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8983/solr/"]
+      interval: 30s
+      timeout: 10s
+      retries: 30
