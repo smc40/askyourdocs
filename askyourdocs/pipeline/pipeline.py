@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, List
 
 import nltk
+import numpy as np
 import pandas as pd
 from transformers import AutoTokenizer
 
@@ -129,6 +130,12 @@ class QueryPipeline(Pipeline):
         self._ntok_context_fraction = settings['modelling']['ntok_context_fraction']
         self._ntok_context = int(self._ntok_max * self._ntok_context_fraction)
 
+
+    def _add_similarity_values(self, vector: np.ndarray, knn_embedding_entities: List[dict]):
+        for ent in knn_embedding_entities:
+            ent['score'] = np.dot(vector, ent['vector'])
+        return knn_embedding_entities
+
     def _get_knn_vecs_from_text(self, text: str) -> List[dict]:
         vector = self._text_embedder.apply(texts=text)
         top_k = self._settings['solr']['top_k']
@@ -137,7 +144,8 @@ class QueryPipeline(Pipeline):
 
         collection = self._settings['solr']['collections']['map']['vecs']
         response = self._solr_client.search(query=query, collection=collection)
-        return response['docs']
+        knn_embedding_entities = self._add_similarity_values(vector=vector, knn_embedding_entities=response['docs'])
+        return knn_embedding_entities
 
     def _get_text_entities_from_knn_vecs(self, knn_vecs: List[dict]) -> List[dict]:
         te_ids = list(set(v['txt_ent_id'] for v in knn_vecs))
@@ -199,7 +207,10 @@ class QueryPipeline(Pipeline):
 
         logging.info(f'generate answer to "{text}" based on context "{context[:200]}..."')
         answer = self._summarizer.get_answer(query=text, context=context)
+
+        logging.info(f'answer: {answer}')
         return answer
+
 
 class RemovalPipeline(Pipeline):
 

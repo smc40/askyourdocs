@@ -153,7 +153,7 @@ SETTINGS = {
         'tokenizer_package': 'punkt',
         'ntok_max': MODEL_NTOKENS,
         'no_repeat_ngram_size': 4,
-        'ntok_context_fraction': 0.8,
+        'ntok_context_fraction': 0.5,
     },
 
     # Frontend
