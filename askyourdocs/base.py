@@ -106,7 +106,7 @@ class EmbeddingEntity(Document):
 
 
 @dataclass(eq=False)
-class SearchDocument(Document):
+class TextDocument(Document):
 
     name: str
     source: str
@@ -124,6 +124,27 @@ class SearchDocument(Document):
     @property
     def _id_prefix(self):
         return 'doc_'
+
+
+@dataclass(eq=False)
+class FeedbackDocument(Document):
+
+    feedback_type: str
+    text: str
+    feedback_to: str
+
+    def __repr__(self):
+        cls_name = self.__class__.__name__
+        rlib = reprlib.Repr()
+        id_repr = rlib.repr(self.id)
+        feedback_type_repr = rlib.repr(self.feedback_type)
+        feedback_to_repr = rlib.repr(self.feedback_to)
+        text_repr = rlib.repr(self.text)
+        return f'{cls_name}(id={id_repr}, feedback_type={feedback_type_repr}, text={text_repr}, feedback_to_repr={feedback_to_repr})'
+
+    @property
+    def _id_prefix(self):
+        return 'fb_'
 
 
 class DocumentListEncoder(json.JSONEncoder):

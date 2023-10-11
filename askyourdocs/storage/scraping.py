@@ -7,7 +7,7 @@ import requests
 from tika import parser
 import validators
 
-from askyourdocs import Environment, Service, SearchDocument
+from askyourdocs import Environment, Service, TextDocument
 
 
 class Extractor(Service):
@@ -17,7 +17,7 @@ class Extractor(Service):
         super().__init__(environment=environment, settings=settings)
 
     @abstractmethod
-    def apply(self, url: str) -> SearchDocument:
+    def apply(self, url: str) -> TextDocument:
         pass
 
 
@@ -36,7 +36,7 @@ class TikaExtractor(Extractor):
         text = re.sub('\s{2,}', ' ', text)[:self._nchar_log_text]
         return text
 
-    def apply(self, filename: str) -> SearchDocument:
+    def apply(self, filename: str) -> TextDocument:
         """Extracting the text from pdfs."""
 
         if Path(filename).is_file():
@@ -64,4 +64,4 @@ class TikaExtractor(Extractor):
             # Clean newline characters
             logging.info(f'text (len={len(text)}): "{self._get_log_text(text=text)}..."')
         filename = Path(filename)
-        return SearchDocument(id=str(filename), name=filename.name, source=str(filename.parent), text=text)
+        return TextDocument(id=str(filename), name=filename.name, source=str(filename.parent), text=text)

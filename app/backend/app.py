@@ -7,9 +7,8 @@ from fastapi import File, UploadFile
 
 import askyourdocs.utils as utl
 from askyourdocs.settings import SETTINGS as settings
-from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline, RemovalPipeline, SearchPipeline
+from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline, RemovalPipeline, SearchPipeline, FeedbackPipeline
 
-import app.backend.settings as app_settings
 import logging
 
 #logging.basicConfig(level=logging.INFO)
@@ -19,11 +18,12 @@ _INGESTION_PIPELINE = IngestionPipeline(environment=environment, settings=settin
 _QUERY_PIPELINE = QueryPipeline(environment=environment, settings=settings)
 _REMOVAL_PIPELINE = RemovalPipeline(environment=environment, settings=settings)
 _SEARCH_PIPELINE = SearchPipeline(environment=environment, settings=settings)
+_FEEDBACK_PIPELINE = FeedbackPipeline(environment=environment, settings=settings)
 
 def middleware():
     return [
         Middleware(CORSMiddleware,
-                   allow_origins=[str(origin) for origin in app_settings.CORS_ORIGINS],
+                   allow_origins=[str(origin) for origin in settings.get('cors_origins', ['http://localhost:3000'])],
                    allow_credentials=True,
                    allow_methods=["*"],
                    allow_headers=["*"])
@@ -34,6 +34,15 @@ app = FastAPI(title="AYD", middleware=middleware())
 
 class Text(BaseModel):
     data: str
+
+class ListText(BaseModel):
+    data: list
+
+
+class Feedback(BaseModel):
+    feedbackType: str
+    feedbackText: str
+    feedbackTo: str
 
 class DataList(BaseModel):
     data: list[dict] = []
@@ -69,7 +78,7 @@ async def delete_document(id: str):
         "data": "successfully deleted."
     }
 
-@app.post("/ingest", response_model=Text)
+@app.post("/ingest", response_model=ListText)
 async def upload_file(file: UploadFile = File(...)):
     if file and file.filename:
         logging.info(f'uploading file  {file.filename}')
@@ -77,7 +86,13 @@ async def upload_file(file: UploadFile = File(...)):
         with open(filepath, "wb") as f:
             f.write(file.file.read())
         doc = _INGESTION_PIPELINE.apply(source=filepath, commit=True)
+        logging.info(doc)
         return {"data": doc}
     else:
         return {"data": "No file provided"}
 
+
+@app.post("/ingest_feedback", response_model=Text)
+async def upload_feedback(feedback: Feedback):
+    doc = _FEEDBACK_PIPELINE.apply(feedback_type = feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, commit=True)
+    return {"data": doc}

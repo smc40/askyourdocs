@@ -209,13 +209,16 @@ class SolrClient:
         logging.info("migration terminated")
 
     def add_document(self, document: Document, collection: str, commit: bool = False) -> str:
-        logging.info(f'add document "{document.id}" to collection "{collection}"')
+        logging.info(f'add {document.id} to collection "{collection}"')
         url = f'{self._url_api_collections}/{collection}/update'
         if commit:
             url += '?commit=true'
+
         response = requests.post(url, headers=self._headers, data=json.dumps(document.to_dict()))
         response.raise_for_status()
+
         return document.id
+
 
     def add_documents(self, documents: DocumentList, collection: str, commit: bool = False):
         logging.info(f'add {len(documents)} documents to collection "{collection}"')

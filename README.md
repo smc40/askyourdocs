@@ -47,10 +47,13 @@ run docker containers
 ```shell
 docker compose -p ayd up -d
 ```
-migrate database
+migrate database (only needed for local development, with docker compose this is done inside the container)
 ```shell
-chmod 777 db_migration.sh
-./db_migration.sh
+python -m askyourdocs storage migration -c "ayd_docs"
+python -m askyourdocs storage migration -c "ayd_texts"
+python -m askyourdocs storage migration -c "ayd_vecs"
+python -m askyourdocs storage migration -c "ayd_feedback"
+python -m askyourdocs pipeline ingest --source "docs" --commit
 ```
 
 ## Type checking
