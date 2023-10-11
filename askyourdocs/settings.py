@@ -121,21 +121,21 @@ SETTINGS = {
                         'name': 'feedback_type',
                         'type': 'string',
                         'indexed': 'false',
-                        'stored': 'false',
+                        'stored': 'true',
                         'multiValued': 'false'
                     },
                     {
                         'name': 'text',
                         'type': 'string',
                         'indexed': 'false',
-                        'stored': 'false',
+                        'stored': 'true',
                         'multiValued': 'false'
                     },
                     {
                         'name': 'feedback_to',
                         'type': 'string',
                         'indexed': 'false',
-                        'stored': 'false',
+                        'stored': 'true',
                         'multiValued': 'false'
                     },
                 ]
