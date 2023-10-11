@@ -167,6 +167,7 @@ cython_debug/
 
 # Data and Models
 /models
+/data
 
 # todo file
 todo.md

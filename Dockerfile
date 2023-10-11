@@ -22,9 +22,7 @@ COPY resources resources/
 RUN mkdir -p app/backend/uploads
 
 # Run migrations
-COPY db_migration.sh db_migration.sh
 COPY entrypoint.sh entrypoint.sh
-RUN chmod 777 db_migration.sh
 RUN chmod 777 entrypoint.sh
 
 # Expose the port the app runs on
