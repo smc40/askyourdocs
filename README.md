@@ -39,20 +39,12 @@ export FRONTEND_URL=<changeme>    # For local host use "http://172.17.0.1:3000"
 ```
 
 ## Setup AskYourDocuments
-Make `ayd` alias
-```shell
-alias ayd='python -m askyourdocs'
-```
-run docker containers
+Run docker containers
 ```shell
 docker compose -p ayd up -d
 ```
-migrate database (only needed for local development, with docker compose this is done inside the container)
+migrate sample files into database
 ```shell
-python -m askyourdocs storage migration -c "ayd_docs"
-python -m askyourdocs storage migration -c "ayd_texts"
-python -m askyourdocs storage migration -c "ayd_vecs"
-python -m askyourdocs storage migration -c "ayd_feedback"
 python -m askyourdocs pipeline ingest --source "docs" --commit
 ```
 
@@ -68,12 +60,12 @@ pytest -s --cov=askyourdocs tests
 then checkout `localhost:3000` and see the magic happening ;-D
 
 ## App
-Running the docker compose will create the app for you (be patient, the backend need to download the models first so it might take up to 10 minutes to be ready, check docker logs ayd-backend-1 -f to see the following message: INFO:     Application startup complete.) Not working? make sure you run the migrations after docker compose.
+Running the docker compose will create the app for you (be patient, the backend need to download the models first so 
+it might take up to 10 minutes to be ready, check `docker logs ayd-backend-1 -f` to see the following message:
+`INFO:     Application startup complete.`) Not working? make sure you run the migrations after docker compose.
 
 
 ### Run Fastapi backend locally
-
-
 - Install dependencies and Run the app
 
 ```sh
@@ -113,21 +105,6 @@ python -m pytest tests -s --cov=api --cov-report term-missing
 change the variables in frontend/src/config.js and the gif in frontend/src/img/easerEgg.gif to customize your easter egg.
 Default: easterEggTrigger: 'magic schnauz' --> this is the text typed to trigger the easter egg
 Default: easterEggTriggerMsg: 'magic schnauz 〰️' --> this is the transformed text of the user
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ## Cli
