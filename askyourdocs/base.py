@@ -106,7 +106,7 @@ class EmbeddingEntity(Document):
 
 
 @dataclass(eq=False)
-class SearchDocument(Document):
+class TextDocument(Document):
 
     name: str
     source: str
@@ -124,12 +124,6 @@ class SearchDocument(Document):
     @property
     def _id_prefix(self):
         return 'doc_'
-
-    def __iter__(self):
-        yield self.id
-        yield self.name
-        yield self.source
-        yield self.text
 
 
 @dataclass(eq=False)
@@ -151,12 +145,7 @@ class FeedbackDocument(Document):
     @property
     def _id_prefix(self):
         return 'fb_'
-    
-    def __iter__(self):
-        yield self.id
-        yield self.feedback_type
-        yield self.text
-        yield self.feedback_to
+
 
 class DocumentListEncoder(json.JSONEncoder):
     def default(self, obj):

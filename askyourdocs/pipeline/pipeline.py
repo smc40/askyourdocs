@@ -7,7 +7,7 @@ import nltk
 import pandas as pd
 from transformers import AutoTokenizer
 
-from askyourdocs import Environment, SearchDocument, TextEntity, EmbeddingEntity, FeedbackDocument
+from askyourdocs import Environment, TextDocument, TextEntity, EmbeddingEntity, FeedbackDocument
 from askyourdocs.storage.scraping import TikaExtractor
 from askyourdocs.storage.client import SolrClient
 from askyourdocs.modelling.llm import TextEmbedder, TextTokenizer, Summarizer
@@ -44,16 +44,16 @@ class IngestionPipeline(Pipeline):
         package = settings['modelling']['tokenizer_package']
         self._text_tokenizer = TextTokenizer(package=package)
 
-    def _get_document_from_file(self, filename: str) -> SearchDocument:
+    def _get_document_from_file(self, filename: str) -> TextDocument:
         """Extract the text from a given file."""
         document = self._tika_extractor.apply(filename=filename)
         return document
 
     @staticmethod
-    def _get_text_entities_from_document(document: SearchDocument) -> List[TextEntity]:
+    def _get_text_entities_from_document(document: TextDocument) -> List[TextEntity]:
         """Generate and return a list of (overlapping) text entities from a given document text."""
         text = document.text
-        if text == None:
+        if text is None:
             logging.error("OCR not yet implemented, empty PDF...")
             text = ""
         text_entities = nltk.sent_tokenize(text=text)
