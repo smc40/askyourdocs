@@ -29,4 +29,5 @@ RUN chmod 777 entrypoint.sh
 EXPOSE 8000
 
 # Run uvicorn when the container launches
-CMD ./entrypoint.sh
+#CMD ./entrypoint.sh
+CMD ["uvicorn", "app.backend.app:app", "--host", "0.0.0.0", "--port", "8000"]

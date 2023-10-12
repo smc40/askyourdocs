@@ -31,6 +31,9 @@ def middleware():
 
 
 app = FastAPI(title="AYD", middleware=middleware())
+solr_client = _SEARCH_PIPELINE._solr_client
+for collection in ["ayd_docs", "ayd_texts", "ayd_vecs", "ayd_feedback"]:
+    solr_client.migrate_collection(collection)
 
 class Text(BaseModel):
     data: str
