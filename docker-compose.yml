@@ -50,7 +50,7 @@ services:
       - /opt/solr:/bitnami
     environment:
       ZK_HOST: zoo1:2181
-      SOLR_JAVA_MEM: "-Xms20g -Xmx20g"
+      SOLR_JAVA_MEM: "-Xms1g -Xmx1g"
     depends_on:
       - zoo1
     healthcheck:
