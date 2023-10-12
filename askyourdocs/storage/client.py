@@ -49,7 +49,10 @@ class SolrClient:
 
     def _post(self, url: str, data: dict) -> dict:
         res = requests.post(url, headers=self._headers, data=json.dumps(data))
-        res.raise_for_status()
+        try:
+            res.raise_for_status()
+        except Exception as e:
+            logging.error(e)
         return res.json()
 
     @staticmethod
@@ -218,7 +221,6 @@ class SolrClient:
         response.raise_for_status()
 
         return document.id
-
 
     def add_documents(self, documents: DocumentList, collection: str, commit: bool = False):
         logging.info(f'add {len(documents)} documents to collection "{collection}"')
