@@ -35,12 +35,14 @@ class SolrClient:
 
     @staticmethod
     def _delete(url: str, commit: bool = True):
+        logging.debug(f'requests.DELETE with url={url}')
         if commit:
             url += '?commit=true'
         response = requests.delete(url)
         response.raise_for_status()
 
     def _get(self, url: str, params: dict | None = None) -> dict:
+        logging.debug(f'requests.GET with url={url} and params={params}')
         if params is None:
             params = dict()
         res = requests.get(url, headers=self._headers, params=params)
@@ -48,11 +50,9 @@ class SolrClient:
         return res.json()
 
     def _post(self, url: str, data: dict) -> dict:
+        logging.debug(f'requests.POST with url={url}, headers={self._headers} and data={data}')
         res = requests.post(url, headers=self._headers, data=json.dumps(data))
-        try:
-            res.raise_for_status()
-        except Exception as e:
-            logging.error(e)
+        res.raise_for_status()
         return res.json()
 
     @staticmethod
