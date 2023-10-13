@@ -31,12 +31,14 @@ def middleware():
 
 
 app = FastAPI(title="AYD", middleware=middleware())
-solr_client = _SEARCH_PIPELINE._solr_client
-for collection in ["ayd_docs", "ayd_texts", "ayd_vecs", "ayd_feedback"]:
-    solr_client.migrate_collection(collection)
+solr_client = _SEARCH_PIPELINE.solr_client
+for name in utl.get_solr_collection_names():
+    solr_client.create_collection(name=name)
+
 
 class Text(BaseModel):
     data: str
+
 
 class ListText(BaseModel):
     data: list

@@ -231,10 +231,10 @@ class SearchPipeline(Pipeline):
 
     def __init__(self, environment: Environment, settings: dict):
         super().__init__(environment=environment, settings=settings)
-        self._solr_client = SolrClient(environment=environment, settings=settings)
+        self.solr_client = SolrClient(environment=environment, settings=settings)
 
     def apply(self, query: str, collection: str, params: dict):
-        response = self._solr_client.search(query=query, collection=collection, params=params)
+        response = self.solr_client.search(query=query, collection=collection, params=params)
         return response['docs']
 
 

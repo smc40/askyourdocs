@@ -62,7 +62,7 @@ then checkout `localhost:3000` and see the magic happening ;-D
 ## App
 Running the docker compose will create the app for you (be patient, the backend need to download the models first so 
 it might take up to 10 minutes to be ready, check `docker logs ayd-backend-1 -f` to see the following message:
-`INFO:     Application startup complete.`) Not working? make sure you run the migrations after docker compose.
+`INFO:     Application startup complete.`)
 
 
 ### Run Fastapi backend locally
@@ -128,10 +128,10 @@ ayd storage extract --filename <filename>
 ### Migrate Collection
 (creating a collection or updating configuration)
 ```shell
-ayd storage migration -c <collection>
-# ayd storage migration -c "ayd_docs"
-# ayd storage migration -c "ayd_texts"
-# ayd storage migration -c "ayd_vecs"
+ayd storage creation -c <collection>
+# ayd storage creation -c "ayd_docs"
+# ayd storage creation -c "ayd_texts"
+# ayd storage creation -c "ayd_vecs"
 ```
 
 ### Add a Text Document
