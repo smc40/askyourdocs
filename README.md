@@ -43,10 +43,13 @@ Run docker containers
 ```shell
 docker compose -p ayd up -d
 ```
-migrate sample files into database
+As we mount the host volume `/opt/solr` into the `bitnami/solr` container make sure the the 
+default user `1001` has the appropriate rights by
 ```shell
-python -m askyourdocs pipeline ingest --source "docs" --commit
+sudo chown 1001 /opt/solr
 ```
+!!! ATTENTION !!!
+make sure this folder is empty when you initially start the backend container.
 
 ## Type checking
 ```shell
@@ -116,6 +119,10 @@ alias ayd='python -m askyourdocs'
 and running docker services from `docker-compose.yml`
 ```shell
 docker compose -p ayd up -d  
+```
+migrate sample files into database
+```shell
+python -m askyourdocs pipeline ingest --source "docs" --commit
 ```
 
 ### Extract Text
