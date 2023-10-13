@@ -21,13 +21,8 @@ COPY askyourdocs askyourdocs/
 COPY resources resources/
 RUN mkdir -p app/backend/uploads
 
-# Run migrations
-COPY entrypoint.sh entrypoint.sh
-RUN chmod 777 entrypoint.sh
-
 # Expose the port the app runs on
 EXPOSE 8000
 
 # Run uvicorn when the container launches
-#CMD ./entrypoint.sh
 CMD ["uvicorn", "app.backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
