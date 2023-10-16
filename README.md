@@ -1,28 +1,52 @@
-# askyourdocs
+# Ask Your Documents
 **Goal:** Locally hosted chatbot answering questions to your documents
 
-**User Story:** As a *public relations employee* I would like to *ask questions to documents,* so *I can answer to requests faster*
+## Overview of Pipelines
+### Ingestion
+At the ingestion stage, one or several documents are stored into the database with the corresponding semantic 
+embeddings. The `IngestionPipeline` object defined in `askyourdocs.pipeline.pipeline` enchains the following steps: 
 
-## Links
-- Q&A over Docs (LangChain): https://python.langchain.com/en/latest/use_cases/question_answering.html
-- PrivateGPT: https://artificialcorner.com/privategpt-a-free-chatgpt-alternative-to-interact-with-your-documents-offline-ea1c98f98062
+|   | Stage           | Remark                                         | Related Object(s)                                 |        
+|---|-----------------|------------------------------------------------|---------------------------------------------------|
+| 1 | Extraction      | Extracts the text from the retrieved documents | `askyourdocs.storage.scraping` -> `TikaExtractor` |        
+| 2 | Text Entities   | Split text into text chunks                    | `askyourdocs.modelling.llm` -> `TextTokenizer`    |        
+| 3 | Text Embeddings | Compute vector embeddings of the text chunks   | `askyourdocs.modelling.llm` -> `TextEmbedder`     |        
+| 4 | Storage in Solr | Add documents and embeddings to Solr           | `askyourdocs.storage.client` -> `SolrClient`      |
+
+### Query
+At the query stage, a given user input is transformed into a semantic vector, from which semantically related document
+parts are retrieved and used for formulating an answer. The `QueryPipeline` object defined in 
+`askyourdocs.pipeline.pipeline` enchains the following steps: 
+
+|   | Stage               | Remark                                        | Related Object(s)                             |        
+|---|---------------------|-----------------------------------------------|-----------------------------------------------|
+| 1 | Text Embeddings     | Compute vector embeddings of query            | `askyourdocs.modelling.llm` -> `TextEmbedder` |       
+| 2 | k-nearest-neighbors | Search the semantically closest text entities | `askyourdocs.storage.client` -> `SolrClient`  |        
+| 3 | Create context      | Create text context from relevant documents   | -                                             |        
+| 4 | Answer              | Use context to form an answer to the query    | `askyourdocs.modelling.llm` -> `Summarizer`   |
 
 
-## Requirements
-Use `python 3.10 virtual environment`
+## Automatic Setup
+For hosting the documents we mount the volume `/opt/solr` into the `bitnami/solr` container. Make sure that the default
+user in the bitnami containers (1001) has the appropriate rights by
 ```shell
-python3.10 -m venv venv
+sudo chown 1001 /opt/solr
 ```
-install requirements from `req_freeze.txt`
+!!! ATTENTION !!!
+You also want to make sure that this folder is empty when you initially start the backend container.
+Run the docker containers
 ```shell
-source venv/bin/activate
-pip install -r req_freeze.txt
+docker compose -p ayd up -d
 ```
-define environment variables
-```shell
-source .env
-```
-Note that you should have a `.env` file of the structure
+then checkout `localhost:3000` and see the magic happening ;-D.
+
+Running the docker compose will create the app for you (be patient, the backend need to download the models first so 
+it might take up to 10 minutes to be ready, check `docker logs ayd-backend-1 -f` to see the following message:
+`INFO:     Application startup complete.`)
+
+## Manual Setup
+Start by setting up the three services `Apache/Tika`, `Solr`, and `ZooKeeper` (you might want to get inspired by
+the `docker-compose.yml` file). Then define the environment variables:
 ```shell
 # Logging
 export LOG_LEVEL="INFO"
@@ -38,91 +62,24 @@ export ZK_URLS=<changeme>         # For local host use "172.17.0.1:2181"
 export FRONTEND_URL=<changeme>    # For local host use "http://172.17.0.1:3000"
 ```
 
-## Setup AskYourDocuments
-Run docker containers
+With a `venv` as and an alias `ayd` defined as
 ```shell
-docker compose -p ayd up -d
-```
-As we mount the host volume `/opt/solr` into the `bitnami/solr` container make sure the the 
-default user `1001` has the appropriate rights by
-```shell
-sudo chown 1001 /opt/solr
-```
-!!! ATTENTION !!!
-make sure this folder is empty when you initially start the backend container.
-
-## Type checking
-```shell
-mypy --ignore-missing-imports askyourdocs
-```
-
-## Tests
-```shell
-pytest -s --cov=askyourdocs tests
-```
-then checkout `localhost:3000` and see the magic happening ;-D
-
-## App
-Running the docker compose will create the app for you (be patient, the backend need to download the models first so 
-it might take up to 10 minutes to be ready, check `docker logs ayd-backend-1 -f` to see the following message:
-`INFO:     Application startup complete.`)
-
-
-### Run Fastapi backend locally
-- Install dependencies and Run the app
-
-```sh
-  python -m venv <env_name>
-  source ./<env_name>/bin/activate
-  pip install -r requirements
-```
-
-Then from base directory run
-sh
-```
-source .env
-uvicorn app.backend.app:app --host 0.0.0.0 --port 8686 --reload
-```
-
-
-### Run Frontend Locally
-
-```sh
-cd app/frontend # move to the frontend directory
-npm install # install the dependencies
-```
-```sh
-npm run start # start the app
-```
-
-
-### App related Tests
-
-```sh
-cd backend # move to the backend directory
-python -m pytest tests -s --cov=api --cov-report term-missing
-```
-
-
-### Easteregg
-change the variables in frontend/src/config.js and the gif in frontend/src/img/easerEgg.gif to customize your easter egg.
-Default: easterEggTrigger: 'magic schnauz' --> this is the text typed to trigger the easter egg
-Default: easterEggTriggerMsg: 'magic schnauz 〰️' --> this is the transformed text of the user
-
-
-## Cli
-
-For the following commands we assume to have an alias
-```shell
+python -m venv venv
+source venv/bin/activate
+pip install -r req_freeze.txt
 alias ayd='python -m askyourdocs'
 ```
-and running docker services from `docker-compose.yml`
+and the necessary Solr collections `ayd_docs`, `ayd_texts`, and `ayd_vecs` setup through
 ```shell
-docker compose -p ayd up -d  
+ayd storage creation -c "ayd_docs"
+ayd storage creation -c "ayd_texts"
+ayd storage creation -c "ayd_vecs"
 ```
-migrate sample files into database
+you can start to play with ask-your-documents through the CLI.
+
+### Add Sample Documents
 ```shell
-python -m askyourdocs pipeline ingest --source "docs" --commit
+ayd pipeline ingest --source "docs" --commit
 ```
 
 ### Extract Text
@@ -131,23 +88,6 @@ ayd storage extract --filename <filename>
 # ayd storage extraction --filename "https://www.accessdata.fda.gov/drugsatfda_docs/label/2011/020895s036lbl.pdf"
 ```
 `<filename>` is either the local path or the url of a file.
-
-### Migrate Collection
-(creating a collection or updating configuration)
-```shell
-ayd storage creation -c <collection>
-# ayd storage creation -c "ayd_docs"
-# ayd storage creation -c "ayd_texts"
-# ayd storage creation -c "ayd_vecs"
-```
-
-### Add a Text Document
-```shell
-ayd storage add -c <collection> --filename <filename>
-# ayd storage add -c "ayd_docs" --filename "https://www.accessdata.fda.gov/drugsatfda_docs/label/2011/020895s036lbl.pdf" --commit
-# ayd storage add -c "ayd_docs" --filename "data/documents/swissmedic/Swissmedic_Annual_Report_2022_ENG.pdf" --commit
-```
-
 
 ### Searching a Collection
 ```shell
@@ -167,18 +107,41 @@ ayd modelling tokenization -t <text>
 # ayd modelling tokenization -t "Foo bar is far. My cat is fat"
 ```
 
-
-### Ingest Document
-```shell
-ayd pipeline ingest --filename <filename>
-# ayd pipeline ingest --filename "docs/20211203_SwissPAR_Spikevax_single_page_text.pdf" --commit
-# ayd pipeline ingest --filename "docs/20210430_SwissPAR_Comirnaty.pdf" --commit
-# ayd pipeline ingest --filename "docs/20211203_SwissPAR-Spikevax.pdf" --commit
-# ayd pipeline ingest --filename "docs/SwissPAR COVID-19 Vaccine Janssen .pdf" --commit
-```
-
 ### Ask Question
 ```shell
 ayd pipeline query --text <your-text>
 # ayd pipeline query --text "How to avoid covid" 
 ```
+
+You can also choose to run the FastAPI backend and/or the React frontend locally.
+
+### Run Fastapi Backend locally
+From the base directory run
+```shell
+uvicorn app.backend.app:app --host 0.0.0.0 --port 8686 --reload
+```
+
+
+### Run React Frontend Locally
+
+```sh
+cd app/frontend # move to the frontend directory
+npm install # install the dependencies
+```
+```sh
+npm run start # start the app
+```
+
+## Tests (WIP)
+Run type checking
+```shell
+mypy --ignore-missing-imports askyourdocs
+```
+and unit-tests
+```shell
+pytest -s --cov=askyourdocs tests
+```
+
+
+## One Last Thing
+Enter `magic schnauz` in the user input field of the frontend :-D
