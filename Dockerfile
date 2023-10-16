@@ -16,8 +16,6 @@ RUN apt-get update && apt-get install -y default-jre && rm -rf /var/lib/apt/list
 # Copy the backend source code into the container at /app/backend
 COPY app/backend app/backend/
 COPY askyourdocs askyourdocs/
-#COPY docs docs/
-#COPY models models/
 COPY resources resources/
 RUN mkdir -p app/backend/uploads
 
