@@ -1,6 +1,13 @@
 # Ask Your Documents
 **Goal:** Locally hosted chatbot answering questions to your documents
 
+## Requirements
+
+- 15 GB free space
+- At least 4 GB of free memory
+- Python 3.10
+- docker-compose
+
 ## Overview of Pipelines
 ### Ingestion
 At the ingestion stage, one or several documents are stored into the database with the corresponding semantic 
