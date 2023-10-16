@@ -143,5 +143,5 @@ pytest -s --cov=askyourdocs tests
 ```
 
 
-## One Last Thing
+## One More Thing
 Enter `magic schnauz` in the user input field of the frontend :-D
