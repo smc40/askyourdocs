@@ -46,7 +46,13 @@ it might take up to 10 minutes to be ready, check `docker logs ayd-backend-1 -f`
 
 ## Manual Setup
 Start by setting up the three services `Apache/Tika`, `Solr`, and `ZooKeeper` (you might want to get inspired by
-the `docker-compose.yml` file). Then define the environment variables:
+the `docker-compose.yml` file).
+```shell
+docker run -d --name tika -p 9998:9998 apache/tika:latest
+docker run -d --name zoo1 -p 2181:2181 -e ZOO_MY_ID=1 -e ZOO_SERVERS=server.1=zoo1:2888:3888;2181 -e ZOO_4LW_COMMANDS_WHITELIST=mntr,conf,ruok zookeeper
+docker run -d --name solr -p 8983:8983 -v /opt/solr:/bitnami -e ZK_HOST=zoo1:2181 -e SOLR_JAVA_MEM="-Xms1g -Xmx1g"
+```
+Then define the environment variables:
 ```shell
 # Logging
 export LOG_LEVEL="INFO"
