@@ -38,7 +38,7 @@ def add_parser(parser: argparse.ArgumentParser):
     strge_subprs.add_parser('add', help='Adding a document', parents=[strg_url_parser(), strge_scrp_parser(), strge_solr_parser()])
 
     # Solr service
-    strge_subprs.add_parser('migration', help='Migration of collection', parents=[strg_url_parser(), strge_solr_parser()])
+    strge_subprs.add_parser('creation', help='Creation of collection', parents=[strg_url_parser(), strge_solr_parser()])
     strge_srch_subprs = strge_subprs.add_parser('search', help='Search inside collection', parents=[strg_url_parser(), strge_solr_parser()])
     strge_srch_subprs.add_argument('--query', '-q', dest='query', help='Search query', required=True)
 

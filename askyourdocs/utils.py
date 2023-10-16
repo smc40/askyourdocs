@@ -19,6 +19,10 @@ def get_solr_field_types_settings(name: str) -> List[dict] | None:
     return SETTINGS['solr']['collections'].get(name).get('field_types')
 
 
+def get_solr_collection_names() -> List[str]:
+    return [name for name in SETTINGS['solr']['collections']['map'].values()]
+
+
 def load_environment() -> Environment:
     kwargs = {
         'log_level': os.getenv('LOG_LEVEL'),

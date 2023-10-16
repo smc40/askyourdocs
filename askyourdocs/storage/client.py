@@ -35,12 +35,14 @@ class SolrClient:
 
     @staticmethod
     def _delete(url: str, commit: bool = True):
+        logging.debug(f'requests.DELETE with url={url}')
         if commit:
             url += '?commit=true'
         response = requests.delete(url)
         response.raise_for_status()
 
     def _get(self, url: str, params: dict | None = None) -> dict:
+        logging.debug(f'requests.GET with url={url} and params={params}')
         if params is None:
             params = dict()
         res = requests.get(url, headers=self._headers, params=params)
@@ -48,12 +50,13 @@ class SolrClient:
         return res.json()
 
     def _post(self, url: str, data: dict) -> dict:
+        logging.debug(f'requests.POST with url={url}, headers={self._headers} and data={data}')
         res = requests.post(url, headers=self._headers, data=json.dumps(data))
         res.raise_for_status()
         return res.json()
 
     @staticmethod
-    def _get_dest_dir(name: str):
+    def _get_dest_dir(name: str) -> str:
         return f'/configs/{name}'
 
     @property
@@ -95,15 +98,6 @@ class SolrClient:
         if not self.zk_client.exists(dest_dir):
             self.zk_client.create(dest_dir)
         self._upload_directory(directory=config_files, dest_dir=dest_dir)
-
-    def _create_collection(self, name: str) -> dict:
-        """Creates a configured collection."""
-        data = {
-            "name": name,
-            "config": name,
-            "numShards": self._nshards
-        }
-        return self._post(url=self._url_api_collections, data=data)
 
     def _get_collections(self) -> list:
         """Returns all existing collections."""
@@ -153,60 +147,47 @@ class SolrClient:
             return False
         return self._content_changed(config_files=config_files, dest_dir=dest_dir)
 
-    def _reindex_collection(self, name: str, batch_size: int = 1000):
-        """Reindex all documents of a given collection"""
-        logging.error(f'function "reindex_collection" not implemented yet')
-        # TODO do reindexing
-        #
-        #
-        #
-        # results = self.get_client(Collections.SEARCH).delete(q="*:*")
-        #
-        # logging.info("Reinserting everything ...")
-        # params = {"sort": "id asc", "cursorMark": "*"}
-        # results = self.get_client(Collections.RAW).search("*:*", **params)
-        # count = 0
-        # for batch in chunks(results, batch_size):
-        #     data = DocumentList()
-        #     data.load_json([json.loads(x["data"]) for x in batch])
-        #     count += len(data)
-        #     self.add_docs(data, update=False)
-        # return count
-
-    def migrate_collection(self, name: str):
-        """Migration of a collection"""
-        logging.info(f'migrating collection "{name}"')
+    def _create_collection(self, name: str) -> dict:
+        logging.info(f'upload configuration files for collection "{name}"')
         config_files = utl.get_solr_config_dir_settings(name=name)
         dest_dir = self._get_dest_dir(name=name)
+        self._upload_config(config_files=config_files, dest_dir=dest_dir)
 
-        reindex_docs = False
+        logging.info(f'create collection "{name}"')
+        data = {
+            "name": name,
+            "config": name,
+            "numShards": self._nshards
+        }
+        return self._post(url=self._url_api_collections, data=data)
+
+    def create_collection(self, name: str, replace: bool = False):
+        """Create a Solr collection"""
+        logging.info(f'creating collection "{name}"')
+
+        define_fields = True
         if not self.exists_collection(name=name):
-            logging.info(f'upload configuration files for collection "{name}"')
-            dest_dir = self._get_dest_dir(name=name)
-            self._upload_config(config_files=config_files, dest_dir=dest_dir)
-
-            logging.info(f'create collection "{name}"')
             self._create_collection(name=name)
 
-        elif self._config_changed(config_files=config_files, dest_dir=dest_dir):
-            logging.info(f'upload configuration files for collection "{name}"')
-            self._upload_config(config_files=config_files, dest_dir=dest_dir)
-            reindex_docs = True
+        elif replace:
+            logging.info(f'collection "{name}" does already exist and is replaced')
+            self.delete_collection(name=name, commit=True)
+            self._create_collection(name=name)
+
         else:
-            logging.warning(f"Nothing to migrate for collection {name}")
+            logging.info(f'collection "{name}" does already exist and is ignored')
+            define_fields = False
 
-        if (field_types := utl.get_solr_field_types_settings(name=name)) is not None:
-            logging.info(f'migrate collection field types')
-            self.migrate_collection_field_types(name=name, field_types=field_types)
+        if define_fields:
+            if (field_types := utl.get_solr_field_types_settings(name=name)) is not None:
+                logging.info(f'define collection field types')
+                self.define_collection_field_types(name=name, field_types=field_types)
 
-        if (fields := utl.get_solr_fields_settings(name=name)) is not None:
-            logging.info(f'migrate collection fields')
-            self.migrate_collection_fields(name=name, fields=fields)
+            if (fields := utl.get_solr_fields_settings(name=name)) is not None:
+                logging.info(f'define collection fields')
+                self.define_collection_fields(name=name, fields=fields)
 
-        if reindex_docs:
-            logging.warning(f'starting reindexing of collection "{name}" this might take a while...')
-            self._reindex_collection(name=name)
-        logging.info("migration terminated")
+        logging.info(f"creation of collection {name} terminated")
 
     def add_document(self, document: Document, collection: str, commit: bool = False) -> str:
         logging.info(f'add {document.id} to collection "{collection}"')
@@ -218,7 +199,6 @@ class SolrClient:
         response.raise_for_status()
 
         return document.id
-
 
     def add_documents(self, documents: DocumentList, collection: str, commit: bool = False):
         logging.info(f'add {len(documents)} documents to collection "{collection}"')
@@ -233,7 +213,7 @@ class SolrClient:
         url = f'{self._url_api_collections}/{name}/schema/fields'
         return self._get(url=url)['fields']
 
-    def migrate_collection_fields(self, name: str, fields: List[dict]):
+    def define_collection_fields(self, name: str, fields: List[dict]):
         url = f'{self._url_api_collections}/{name}/schema'
         field_names = [f['name'] for f in self._get_collection_fields(name=name)]
 
@@ -247,7 +227,7 @@ class SolrClient:
         url = f'{self._url_api_collections}/{name}/schema/fieldtypes'
         return self._get(url=url)['fieldTypes']
 
-    def migrate_collection_field_types(self, name: str, field_types: List[dict]):
+    def define_collection_field_types(self, name: str, field_types: List[dict]):
         url = f'{self._url_api_collections}/{name}/schema'
         field_type_names = [ft['name'] for ft in self._get_collection_field_types(name=name)]
 

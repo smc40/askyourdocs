@@ -16,17 +16,11 @@ RUN apt-get update && apt-get install -y default-jre && rm -rf /var/lib/apt/list
 # Copy the backend source code into the container at /app/backend
 COPY app/backend app/backend/
 COPY askyourdocs askyourdocs/
-COPY docs docs/
-COPY models models/
 COPY resources resources/
 RUN mkdir -p app/backend/uploads
-
-# Run migrations
-COPY entrypoint.sh entrypoint.sh
-RUN chmod 777 entrypoint.sh
 
 # Expose the port the app runs on
 EXPOSE 8000
 
 # Run uvicorn when the container launches
-CMD ./entrypoint.sh
+CMD ["uvicorn", "app.backend.app:app", "--host", "0.0.0.0", "--port", "8000"]

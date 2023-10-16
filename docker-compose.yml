@@ -8,14 +8,16 @@ services:
       - "8000:8000"
     environment:
       - LOG_LEVEL=INFO
-      - TIKA_URL=http://ayd-tika-1:9998
-      - SOLR_URL=http://ayd-solr-1:8983
-      - ZK_URLS=ayd-zoo1-1:2181
-      - BACKEND_URL=http://ayd-backend-1:8000
-      - FRONTEND_URL=http://localhost:3000
+      - TIKA_URL=http://tika:9998
+      - SOLR_URL=http://solr:8983
+      - ZK_URLS=zoo1:2181
+      - BACKEND_URL=http://backend:8000
+      - FRONTEND_URL=http://frontend:3000
     depends_on:
       solr:
         condition: service_healthy
+    volumes:
+      - ./models:/app/models
   frontend:
     build:
       context: ./app/frontend
@@ -26,10 +28,12 @@ services:
       - solr
   tika:
     image: apache/tika:latest
+    restart: always
     ports:
       - "9998:9998"
   zoo1:
     image: zookeeper
+    restart: always
     hostname: zoo1
     ports:
       - 2181:2181
@@ -38,11 +42,15 @@ services:
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181
       ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
   solr:
-    image: solr:9.3
+    image: bitnami/solr:9.3.0
+    restart: always
     ports:
       - "8983:8983"
+    volumes:
+      - /opt/solr:/bitnami
     environment:
-      - ZK_HOST=zoo1:2181
+      ZK_HOST: zoo1:2181
+      SOLR_JAVA_MEM: "-Xms1g -Xmx1g"
     depends_on:
       - zoo1
     healthcheck:

@@ -24,10 +24,10 @@ class StorageService(Service):
         storage = self._environment.storage
         match storage:
 
-            case 'migration':
-                logging.info(f'start collection migration')
+            case 'creation':
+                logging.info(f'start collection creation')
                 collection = self._environment.collection
-                self._solr_client.migrate_collection(name=collection)
+                self._solr_client.create_collection(name=collection)
 
             case 'extraction':
                 logging.info(f'start text extraction')
