@@ -45,7 +45,15 @@ Run the docker containers
 ```shell
 docker compose -p ayd up -d
 ```
-then checkout `localhost:3000` and see the magic happening ;-D.
+As we are using keycloak as authentication service, we need to create a testuser with the following command:
+```
+docker exec -i askyourdocs-postgres-1 psql -U <postgres_user> -d <database_name> -a -f /docker-entrypoint-initdb.d/user_entity_data.sql
+```
+
+then checkout `localhost:3000` with "test" as username/password and see the magic happening ;-D.
+
+!!! ATTENTION !!!
+If you plan to use askyourdocuments on real data, remove the testuser from your keycloak admin console.
 
 Running the docker compose will create the app for you (be patient, the backend need to download the models first so 
 it might take up to 10 minutes to be ready, check `docker logs ayd-backend-1 -f` to see the following message:

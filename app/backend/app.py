@@ -17,8 +17,6 @@ from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline, Remo
 
 import logging
 
-logging.basicConfig(level=logging.INFO)
-
 environment = utl.load_environment()
 _INGESTION_PIPELINE = IngestionPipeline(environment=environment, settings=settings)
 _QUERY_PIPELINE = QueryPipeline(environment=environment, settings=settings)

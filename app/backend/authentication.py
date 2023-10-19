@@ -16,7 +16,7 @@ def get_user_info(token):
         authorization_info = keycloak_openid.introspect(token)
     except Exception as e:
         logging.error("Error raised from keycloak: ", e)
-        return None
+        return Nonelogging
 
     if authorization_info.get("active") is not True:
         return None
@@ -26,5 +26,4 @@ def get_user_info(token):
         "name": authorization_info.get("name", None),
         "username": authorization_info['preferred_username'],
         "email": authorization_info['email'],
-        "roles": authorization_info['realm_access']['roles'],
     }
