@@ -47,7 +47,7 @@ docker compose -p ayd up -d
 ```
 As we are using keycloak as authentication service, we need to create a testuser with the following command:
 ```
-docker exec -i askyourdocs-postgres-1 psql -U <postgres_user> -d <database_name> -a -f /docker-entrypoint-initdb.d/user_entity_data.sql
+docker exec -i ayd-postgres-1 psql -U $AYD_PSQL_USER -d $AYD_PSQL_DB -a -f /user_scripts/user_entity_data.sql
 ```
 
 then checkout `localhost:3000` with "test" as username/password and see the magic happening ;-D.
@@ -81,6 +81,11 @@ export ZK_URLS=<changeme>         # For local host use "172.17.0.1:2181"
 
 # Frontend
 export FRONTEND_URL=<changeme>    # For local host use "http://172.17.0.1:3000"
+
+# Postgres
+export AYD_PSQL_USER=<changeme> 
+export AYD_PSQL_PASSWORD=<changeme> 
+export AYD_PSQL_DB=<changeme> 
 ```
 
 With a `venv` as and an alias `ayd` defined as

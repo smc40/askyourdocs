@@ -62,12 +62,18 @@ services:
     image: postgres:15
     volumes:
       - ./app/pg-init-scripts:/docker-entrypoint-initdb.d
+      - ./app/postgres_scripts:/user_scripts
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_USER=${AYD_PSQL_USER:-ayd_dba}
       - POSTGRES_PASSWORD=${AYD_PSQL_PASSWORD:-aydvault}
       - POSTGRES_MULTIPLE_DATABASES=${AYD_PSQL_DB:-ayd},${AYD_KC_PSQL_DB:-keycloak}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $AYD_PSQL_USER"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
   keycloak:
     image: bitnami/keycloak:22.0.4
     links:
@@ -85,3 +91,6 @@ services:
       - KEYCLOAK_DATABASE_PASSWORD=${AYD_PSQL_PASSWORD:-aydvault}
       - KEYCLOAK_DATABASE_HOST=database
       - KEYCLOAK_EXTRA_ARGS="-Dkeycloak.import=/tmp/realm/"
+    depends_on:
+      postgres:
+        condition: service_healthy
