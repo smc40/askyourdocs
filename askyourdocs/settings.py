@@ -168,6 +168,6 @@ SETTINGS = {
         'keycloak_url': 'http://localhost:8080/',
         'keycloak_realm':'ayd',
         'keycloak_client_id':'ayd-backend',
-        'keycloak_client_secret':'riSoYn00YxkHS73YQGXffGsGj2Y7PSUf',
+        'keycloak_client_secret':'YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT',
     },
 }

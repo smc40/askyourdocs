@@ -35,7 +35,7 @@
 <body class="template">
   <div class="root">
     <div class="container">
-      <img src="${url.resourcesPath}/img/dori_logo.svg" />
+      <img src="${url.resourcesPath}/img/ayd.png" />
       <#if displayMessage && message?has_content>
         <#if message.type = 'success'>
           <div class="message-box success-box">
@@ -47,7 +47,7 @@
       </#if>
       <#nested "form">
     </div>
-    <div class="copyright">DORI</div>
+    <div class="copyright">AYD</div>
   </div>
 </body>
 </html>

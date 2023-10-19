@@ -2,6 +2,7 @@
 import React from 'react';
 import closeIcon from '../img/close.svg';
 import logo from '../img/logo.png';
+import Authentication from '../auth';
 
 interface InfoModalContentProps {
     onClose: () => void;
@@ -34,6 +35,11 @@ const InfoModalContent: React.FC<InfoModalContentProps> = ({ onClose }) => {
                     <br />
                     Use only public data
                 </p>
+                <br />
+
+                <button onClick={() => Authentication.doLogout()}>
+                    Logout
+                </button>
             </div>
         </div>
     );
