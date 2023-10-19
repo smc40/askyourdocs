@@ -10,6 +10,7 @@ import thumsUpIcon from '../img/thumsUpIcon.png';
 import thumsDownIcon from '../img/thumsDownIcon.png';
 import Modal from 'react-modal';
 import FeedbackModalContent from './FeedbackModalContent';
+import Authentication from '../auth';
 
 interface Message {
     type: 'user' | 'bot';
@@ -27,12 +28,37 @@ const Main: React.FC = () => {
         setIsOpen(false);
     };
 
-    const [chatMessages, setChatMessages] = useState<Message[]>([
-        {
-            type: 'bot',
-            text: 'Hi, start by either uploading some documents on the left or start by typing your first question below...',
-        },
-    ]);
+    // Load chat messages from localStorage on component mount
+    useEffect(() => {
+        const storedMessages = localStorage.getItem('chatMessages');
+        if (storedMessages) {
+            setChatMessages(JSON.parse(storedMessages));
+        }
+    }, []);
+
+    const [chatMessages, setChatMessages] = useState<Message[]>(() => {
+        const storedMessages = localStorage.getItem('chatMessages');
+        return storedMessages
+            ? JSON.parse(storedMessages)
+            : [
+                  {
+                      type: 'bot',
+                      text:
+                          'Hi ' +
+                          Authentication.getGivenName() +
+                          ', start by either uploading some documents on the left or start by typing your first question below...',
+                  },
+              ];
+    });
+
+    const addMessageToChat = (message: Message) => {
+        setChatMessages((prevMessages) => [...prevMessages, message]);
+    };
+
+    useEffect(() => {
+        localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+    }, [chatMessages]);
+
     const [isBotTyping, setIsBotTyping] = useState(false);
 
     const sendFeedback = (feedback: string, index: number) => {
@@ -69,7 +95,7 @@ const Main: React.FC = () => {
             }, 3000);
         } else {
             const newMessage: Message = { type: 'user', text: inputValue };
-            setChatMessages([...chatMessages, newMessage]);
+            addMessageToChat(newMessage); // Update chatMessages and localStorage
             setInputValue('');
 
             setIsBotTyping(true);
@@ -77,10 +103,11 @@ const Main: React.FC = () => {
                 .getAnswer({ question: inputValue })
                 .then((response) => {
                     setIsBotTyping(false);
-                    setChatMessages((prevMessages) => [
-                        ...prevMessages,
-                        { type: 'bot', text: response.data },
-                    ]);
+                    const botMessage: Message = {
+                        type: 'bot',
+                        text: response.data,
+                    };
+                    addMessageToChat(botMessage); // Update chatMessages and localStorage
                 })
                 .catch((error) => console.error('Error fetching data:', error));
         }
