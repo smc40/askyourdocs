@@ -58,3 +58,17 @@ services:
       interval: 30s
       timeout: 10s
       retries: 30
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.4
+    command: start-dev
+    volumes:
+      - ./app/keycloak/realm-export.json:/tmp/realm-export.json
+      - ./app/keycloak/template:/opt/keycloak/themes/ayd/login
+    ports:
+      - "8080:8080"
+    environment:
+      # - KEYCLOAK_USER=${AYD_KC_USER:-admin}
+      # - KEYCLOAK_PASSWORD=${AYD_KC_PASSWORD:-admin}
+      - KEYCLOAK_IMPORT=/tmp/realm-export.json
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin

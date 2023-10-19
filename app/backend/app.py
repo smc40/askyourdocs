@@ -4,6 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware import Middleware
 from fastapi import File, UploadFile
 
+from fastapi import FastAPI, Request
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from app.backend.authentication import get_user_info
+
 
 import askyourdocs.utils as utl
 from askyourdocs.settings import SETTINGS as settings
@@ -11,7 +17,7 @@ from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline, Remo
 
 import logging
 
-#logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 environment = utl.load_environment()
 _INGESTION_PIPELINE = IngestionPipeline(environment=environment, settings=settings)
@@ -20,17 +26,31 @@ _REMOVAL_PIPELINE = RemovalPipeline(environment=environment, settings=settings)
 _SEARCH_PIPELINE = SearchPipeline(environment=environment, settings=settings)
 _FEEDBACK_PIPELINE = FeedbackPipeline(environment=environment, settings=settings)
 
-def middleware():
-    return [
-        Middleware(CORSMiddleware,
-                   allow_origins=[str(origin) for origin in settings.get('cors_origins', ['http://localhost:3000'])],
-                   allow_credentials=True,
-                   allow_methods=["*"],
-                   allow_headers=["*"])
-    ]
+
+app = FastAPI(title="AYD")
+
+class CustomMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        token = request.headers.get('authorization')
+        userinfo = get_user_info(token)
+        request.state.userinfo = userinfo
+        response = await call_next(request)
+        return response
+
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[str(origin) for origin in settings.get('cors_origins', ['http://localhost:3000'])],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.add_middleware(GZipMiddleware, minimum_size=500)
+app.add_middleware(CustomMiddleware)
 
 
-app = FastAPI(title="AYD", middleware=middleware())
 solr_client = _SEARCH_PIPELINE.solr_client
 for name in utl.get_solr_collection_names():
     solr_client.create_collection(name=name)
@@ -48,6 +68,7 @@ class Feedback(BaseModel):
     feedbackType: str
     feedbackText: str
     feedbackTo: str
+    email: str
 
 class DataList(BaseModel):
     data: list[dict] = []
@@ -99,5 +120,5 @@ async def upload_file(file: UploadFile = File(...)):
 
 @app.post("/ingest_feedback", response_model=Text)
 async def upload_feedback(feedback: Feedback):
-    doc = _FEEDBACK_PIPELINE.apply(feedback_type = feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, commit=True)
+    doc = _FEEDBACK_PIPELINE.apply(feedback_type = feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, email=feedback.email, commit=True)
     return {"data": doc}

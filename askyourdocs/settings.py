@@ -138,6 +138,13 @@ SETTINGS = {
                         'stored': 'true',
                         'multiValued': 'false'
                     },
+                    {
+                        'name': 'email',
+                        'type': 'string',
+                        'indexed': 'false',
+                        'stored': 'true',
+                        'multiValued': 'false'
+                    },
                 ]
             },
             'test_origin': {
@@ -157,7 +164,10 @@ SETTINGS = {
     },
 
     # Frontend
-    'shiny_app': {
-        'debug_mode': True,
+    'app': {
+        'keycloak_url': 'http://localhost:8080/',
+        'keycloak_realm':'ayd',
+        'keycloak_client_id':'ayd-backend',
+        'keycloak_client_secret':'riSoYn00YxkHS73YQGXffGsGj2Y7PSUf',
     },
 }

@@ -10,7 +10,7 @@ const App: React.FC = () => {
     };
 
     return (
-        <div className="mx-auto w-80vw max-w-6xl  shadow-lg">
+        <div className="mx-auto w-80vw max-w-6xl shadow-lg">
             <div className="flex flex-col h-screen">
                 <Header />
                 <div className="flex flex-grow">

@@ -28,11 +28,13 @@ export const uploadFile = (file: File) => {
 export const uploadFeedback = (
     feedbackType: string,
     feedbackText: string,
-    feedbackTo: string
+    feedbackTo: string,
+    email: string
 ) => {
     return client.post('/ingest_feedback', {
         feedbackType,
         feedbackText,
         feedbackTo,
+        email,
     });
 };

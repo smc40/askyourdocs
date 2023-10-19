@@ -3,6 +3,7 @@ import closeIcon from '../img/close.svg';
 import thumsUpIcon from '../img/thumsUpIcon.png';
 import thumsDownIcon from '../img/thumsDownIcon.png';
 import * as homeService from '../services/home';
+import Authentication from '../auth';
 
 interface InfoModalContentProps {
     onClose: () => void;
@@ -25,7 +26,12 @@ const InfoModalContent: React.FC<InfoModalContentProps> = ({
             console.log('Feedback Type:', feedbackType);
             console.log('Feedback:', feedback.value);
             homeService
-                .uploadFeedback(feedbackType, feedback.value, answerProvided)
+                .uploadFeedback(
+                    feedbackType,
+                    feedback.value,
+                    answerProvided,
+                    Authentication.getUserEmail()
+                )
                 .then((response) => {
                     console.log(response);
                 });

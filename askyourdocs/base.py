@@ -132,6 +132,7 @@ class FeedbackDocument(Document):
     feedback_type: str
     text: str
     feedback_to: str
+    email: str
 
     def __repr__(self):
         cls_name = self.__class__.__name__
@@ -140,7 +141,8 @@ class FeedbackDocument(Document):
         feedback_type_repr = rlib.repr(self.feedback_type)
         feedback_to_repr = rlib.repr(self.feedback_to)
         text_repr = rlib.repr(self.text)
-        return f'{cls_name}(id={id_repr}, feedback_type={feedback_type_repr}, text={text_repr}, feedback_to_repr={feedback_to_repr})'
+        email_repr = rlib.repr(self.email)
+        return f'{cls_name}(id={id_repr}, feedback_type={feedback_type_repr}, text={text_repr}, feedback_to_repr={feedback_to_repr}, email_to_repr={email_repr})'
 
     @property
     def _id_prefix(self):

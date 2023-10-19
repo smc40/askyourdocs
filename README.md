@@ -106,6 +106,7 @@ ayd storage extract --filename <filename>
 ```shell
 ayd storage search -c <collection> -q <query>
 # ayd storage search -c "ayd_docs" -q "annual report"
+# ayd storage search -c "ayd_feedback" -q "*:*"
 ```
 
 ### Compute Embedding of a given Text

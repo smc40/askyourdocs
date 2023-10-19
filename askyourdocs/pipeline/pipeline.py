@@ -247,9 +247,9 @@ class FeedbackPipeline(Pipeline):
         super().__init__(environment=environment, settings=settings)
         self._solr_client = SolrClient(environment=environment, settings=settings)
 
-    def apply(self, feedback_type:str, feedback_text:str , commit: bool, feedback_to: str):
+    def apply(self, feedback_type:str, feedback_text:str , email:str, commit: bool, feedback_to: str):
         collection = self._settings['solr']['collections']['map']['feedback']
-        feedback = FeedbackDocument(id=feedback_type+feedback_text, feedback_type=feedback_type, text=feedback_text, feedback_to = feedback_to)
+        feedback = FeedbackDocument(id=feedback_type+feedback_text, feedback_type=feedback_type, text=feedback_text, feedback_to = feedback_to, email=email)
         logging.info(feedback)
         response = self._solr_client.add_document(document=feedback, collection=collection, commit=commit)
 
