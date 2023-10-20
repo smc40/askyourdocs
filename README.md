@@ -34,18 +34,34 @@ parts are retrieved and used for formulating an answer. The `QueryPipeline` obje
 
 
 ## Automatic Setup
-For hosting the documents we mount the volume `/opt/solr` into the `bitnami/solr` container. Make sure that the default
+For easy-of-use we have added the run_ayd.sh script. You only need to make it executable and run it:
+
+```shell
+ chmod +x run_ayd.sh
+ ./run_ayd.sh
+
+```
+
+The script first creates a solr container and then for hosting the documents it mounts the volume `/opt/solr` into the `bitnami/solr` container. Make sure that the default
 user in the bitnami containers (1001) has the appropriate rights by
 ```shell
-sudo chown 1001 /opt/solr
+sudo chown 1001 /opt/solr #done by the script
 ```
 !!! ATTENTION !!!
 You also want to make sure that this folder is empty when you initially start the backend container.
 Run the docker containers
 ```shell
-docker compose -p ayd up -d
+docker compose -p ayd up -d  #done by the script
 ```
-then checkout `localhost:3000` and see the magic happening ;-D.
+As we are using keycloak as authentication service, we need to create a testuser with the following command:
+```
+docker exec -i ayd-postgres-1 psql -U $AYD_PSQL_USER -d $AYD_PSQL_DB -a -f /user_scripts/user_entity_data.sql
+```
+
+then checkout `localhost:3000` with "test" as username/password and see the magic happening ;-D.
+
+!!! ATTENTION !!!
+If you plan to use askyourdocuments on real data, remove the testuser from your keycloak admin console.
 
 Running the docker compose will create the app for you (be patient, the backend need to download the models first so 
 it might take up to 10 minutes to be ready, check `docker logs ayd-backend-1 -f` to see the following message:
@@ -73,6 +89,11 @@ export ZK_URLS=<changeme>         # For local host use "172.17.0.1:2181"
 
 # Frontend
 export FRONTEND_URL=<changeme>    # For local host use "http://172.17.0.1:3000"
+
+# Postgres
+export AYD_PSQL_USER=<changeme> 
+export AYD_PSQL_PASSWORD=<changeme> 
+export AYD_PSQL_DB=<changeme> 
 ```
 
 With a `venv` as and an alias `ayd` defined as
@@ -106,6 +127,7 @@ ayd storage extract --filename <filename>
 ```shell
 ayd storage search -c <collection> -q <query>
 # ayd storage search -c "ayd_docs" -q "annual report"
+# ayd storage search -c "ayd_feedback" -q "*:*"
 ```
 
 ### Compute Embedding of a given Text

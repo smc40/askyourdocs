@@ -1,4 +1,5 @@
 import logging
+import json
 
 from askyourdocs import Environment, Service
 from askyourdocs.storage.client import SolrClient
@@ -33,3 +34,12 @@ class StorageService(Service):
                 logging.info(f'start text extraction')
                 filename = self._environment.filename
                 self._tika_extractor.apply(filename=filename)
+
+            case 'search':
+                collection = self._environment.collection
+                query = self._environment.query
+                if isinstance(collection, str) and isinstance(query, str):
+                    res = self._solr_client.search(collection=collection, query=query)
+                    logging.info(json.dumps(res, indent=4))
+                else:
+                    logging.error(f'Solr can not search collection="{collection}" for query="{query}"')
