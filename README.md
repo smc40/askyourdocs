@@ -34,16 +34,24 @@ parts are retrieved and used for formulating an answer. The `QueryPipeline` obje
 
 
 ## Automatic Setup
-For hosting the documents we mount the volume `/opt/solr` into the `bitnami/solr` container. Make sure that the default
+For easy-of-use we have added the run_ayd.sh script. You only need to make it executable and run it:
+
+```shell
+ chmod +x run_ayd.sh
+ ./run_ayd.sh
+
+```
+
+The script first creates a solr container and then for hosting the documents it mounts the volume `/opt/solr` into the `bitnami/solr` container. Make sure that the default
 user in the bitnami containers (1001) has the appropriate rights by
 ```shell
-sudo chown 1001 /opt/solr
+sudo chown 1001 /opt/solr #done by the script
 ```
 !!! ATTENTION !!!
 You also want to make sure that this folder is empty when you initially start the backend container.
 Run the docker containers
 ```shell
-docker compose -p ayd up -d
+docker compose -p ayd up -d  #done by the script
 ```
 As we are using keycloak as authentication service, we need to create a testuser with the following command:
 ```
