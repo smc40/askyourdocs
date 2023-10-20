@@ -70,7 +70,7 @@ services:
       - POSTGRES_PASSWORD=${AYD_PSQL_PASSWORD:-aydvault}
       - POSTGRES_MULTIPLE_DATABASES=${AYD_PSQL_DB:-ayd},${AYD_KC_PSQL_DB:-keycloak}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $AYD_PSQL_USER"]
+      test: ["CMD-SHELL", "pg_isready -U $AYD_PSQL_USER:-ayd_dba"]
       interval: 5s
       timeout: 3s
       retries: 5
