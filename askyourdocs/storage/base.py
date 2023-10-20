@@ -36,7 +36,10 @@ class StorageService(Service):
                 self._tika_extractor.apply(filename=filename)
 
             case 'search':
-                collection = self._environment.collection or ""
-                query = self._environment.query or ""
-                res = self._solr_client.search(collection=collection, query=query)
-                logging.info(json.dumps(res, indent=4))
+                collection = self._environment.collection
+                query = self._environment.query
+                if isinstance(collection, str) and isinstance(query, str):
+                    res = self._solr_client.search(collection=collection, query=query)
+                    logging.info(json.dumps(res, indent=4))
+                else:
+                    logging.error(f'Solr can not search collection="{collection}" for query="{query}"')
