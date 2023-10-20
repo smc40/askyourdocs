@@ -37,6 +37,7 @@ parts are retrieved and used for formulating an answer. The `QueryPipeline` obje
 For easy-of-use we have added the run_ayd.sh script. You only need to make it executable and run it:
 
 ```shell
+source .env 
  chmod +x run_ayd.sh
  ./run_ayd.sh
 
