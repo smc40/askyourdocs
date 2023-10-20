@@ -113,3 +113,4 @@ uvloop==0.17.0
 watchfiles==0.20.0
 websockets==11.0.3
 python-multipart==0.0.6
+python-keycloak==3.3.0

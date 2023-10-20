@@ -37,12 +37,11 @@ parts are retrieved and used for formulating an answer. The `QueryPipeline` obje
 For easy-of-use we have added the run_ayd.sh script. You only need to make it executable and run it:
 
 ```shell
-source .env 
+source .env  #only needed if you want to overwrite the default envs from docker compose
  chmod +x run_ayd.sh
  ./run_ayd.sh
 
 ```
-
 The script first creates a solr container and then for hosting the documents it mounts the volume `/opt/solr` into the `bitnami/solr` container. Make sure that the default
 user in the bitnami containers (1001) has the appropriate rights by
 ```shell
@@ -55,16 +54,15 @@ Run the docker containers
 docker compose -p ayd up -d  #done by the script
 ```
 As we are using keycloak as authentication service, we need to create a testuser with the following command:
-```
-docker exec -i ayd-postgres-1 psql -U $AYD_PSQL_USER -d $AYD_PSQL_DB -a -f /user_scripts/user_entity_data.sql
+```shell
+docker exec -i ayd-postgres-1 psql -U "${AYD_PSQL_USER:-ayd_dba}" -d $"${AYD_PSQL_DB:-ayd}" -a -f /user_scripts/user_entity_data.sql  #done by the script
 ```
 
 then checkout `localhost:3000` with "test" as username/password and see the magic happening ;-D.
 
 !!! ATTENTION !!!
-If you plan to use askyourdocuments on real data, remove the testuser from your keycloak admin console.
-
-Running the docker compose will create the app for you (be patient, the backend need to download the models first so 
+- If you plan to use askyourdocuments on real data, remove the testuser from your keycloak admin console.
+- Running the docker compose will create the app for you (be patient, the backend need to download the models first so 
 it might take up to 10 minutes to be ready, check `docker logs ayd-backend-1 -f` to see the following message:
 `INFO:     Application startup complete.`)
 
@@ -95,6 +93,9 @@ export FRONTEND_URL=<changeme>    # For local host use "http://172.17.0.1:3000"
 export AYD_PSQL_USER=<changeme> 
 export AYD_PSQL_PASSWORD=<changeme> 
 export AYD_PSQL_DB=<changeme> 
+
+# Keycloak
+export KEYCLOAK_URL=<changeme>     # For local deployment via uvicorn use http://localhost:8080/
 ```
 
 With a `venv` as and an alias `ayd` defined as
