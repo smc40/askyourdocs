@@ -96,6 +96,7 @@ export AYD_PSQL_DB=<changeme>
 
 # Keycloak
 export KEYCLOAK_URL=<changeme>     # For local deployment via uvicorn use http://localhost:8080/
+export BACKEND_KEYCLOAK_SECRET=<changeme>  #For initial value use YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT. If changed, make sure to adjust in app/keycloak/realm-export.json as well.
 ```
 
 With a `venv` as and an alias `ayd` defined as

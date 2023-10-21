@@ -14,6 +14,7 @@ services:
       - BACKEND_URL=http://backend:8000
       - FRONTEND_URL=http://frontend:3000
       - KEYCLOAK_URL=http://keycloak:8080
+      - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT}
     depends_on:
       solr:
         condition: service_healthy

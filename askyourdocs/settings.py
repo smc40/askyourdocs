@@ -166,9 +166,9 @@ SETTINGS = {
 
     # Frontend
     'app': {
-        'keycloak_url': os.environ.get('KEYCLOAK_URL', ""),
+        'keycloak_url': os.environ.get('KEYCLOAK_URL', "http://localhost:8080/"),
         'keycloak_realm':'ayd',
         'keycloak_client_id':'ayd-backend',
-        'keycloak_client_secret':'YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT',
+        'keycloak_client_secret':os.environ.get('BACKEND_KEYCLOAK_SECRET','YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT'),
     },
 }
