@@ -41,7 +41,7 @@ class TikaExtractor(Extractor):
 
         if Path(filename).is_file():
             logging.info(f'parsing local file "{filename}"')
-            parsed = parser.from_file(filename=filename)
+            parsed = parser.from_file(filename, self._tika_url)
             text = parsed['content']
 
         elif validators.url(filename):
