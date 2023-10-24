@@ -1,0 +1,37 @@
+name: AskYourDocuments in Azure Container Apps
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to Azure
+        uses: azure/actions/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }} # NEED TO ADD CREDENTIALS FROM SERVICE PRINCIPAL FOR ASKYOURDOCUMENTS
+
+      - name: Login to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: askyourdocs.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }} # included in github
+          password: ${{ secrets.ACR_PASSWORD }} # included in github
+
+      - name: Build and deploy Container App # NEED TO ADD VALUES
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} # appSourcePath: ${{ github.workspace }}/src
+          acrName: askyourdocs
+          acrUsername: ${{ secrets.ACR_USERNAME }} # Included in github
+          acrPassword: ${{ secrets.ACR_PASSWORD }} # included in github
+          containerAppName: smc-askyourdocs-app
+          containerAppEnvironment: smc-askyourdocs-env
+          imageToBuild: askyourdocs.azurecr.io/askyourdocs:latest
+          dockerfilePath: '/Dockerfile'
+          resourceGroup: smc-askyourdocs-dev
