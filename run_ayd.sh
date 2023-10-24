@@ -1,13 +1,15 @@
 #!/bin/bash
 
+sudo rm -rf /opt/solr
+sudo mkdir /opt/solr
+
 set -e
 set -u
 
-docker compose -p ayd up solr -d
 sudo chown 1001 /opt/solr
 docker compose -p ayd up -d
 
-docker exec -i ayd-postgres-1 psql -U $AYD_PSQL_USER -d $AYD_PSQL_DB -a -f /user_scripts/user_entity_data.sql
+docker exec -i ayd-postgres-1 psql -U "${AYD_PSQL_USER:-ayd_dba}" -d $"${AYD_PSQL_DB:-ayd}" -a -f /user_scripts/user_entity_data.sql
 
 url="http://localhost:3000/"
 
