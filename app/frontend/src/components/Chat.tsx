@@ -12,9 +12,16 @@ import Modal from 'react-modal';
 import FeedbackModalContent from './FeedbackModalContent';
 import Authentication from '../auth';
 
+import { Worker } from '@react-pdf-viewer/core';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import HighlightKeywords from './PdfTextSearch';
+
 interface Message {
     type: 'user' | 'bot';
     text: string;
+    source: string[];
+    texts: string[];
+    filename: string[];
 }
 
 const Main: React.FC = () => {
@@ -23,6 +30,7 @@ const Main: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [feedback, setFeedback] = useState('');
     const [feedbackOnSentence, setFeedbackOnSentence] = useState('');
+    const [showFeedback, setShowFeedback] = useState(false);
 
     const closeModal = () => {
         setIsOpen(false);
@@ -47,6 +55,9 @@ const Main: React.FC = () => {
                           'Hi ' +
                           Authentication.getGivenName() +
                           ', start by either uploading some documents on the left or start by typing your first question below...',
+                      source: [''],
+                      texts: [''],
+                      filename: [''],
                   },
               ];
     });
@@ -83,18 +94,36 @@ const Main: React.FC = () => {
             setInputValue('');
             setChatMessages((prevMessages) => [
                 ...prevMessages,
-                { type: 'user', text: config.easterEggTriggerMsg },
+                {
+                    type: 'user',
+                    text: config.easterEggTriggerMsg,
+                    source: [''],
+                    texts: [''],
+                    filename: [''],
+                },
             ]);
             setTimeout(() => {
                 setIsBotTyping(false);
                 setEasterEgg(true);
                 setChatMessages((prevMessages) => [
                     ...prevMessages,
-                    { type: 'bot', text: 'a lil fun is always allowed 😉' },
+                    {
+                        type: 'bot',
+                        text: 'a lil fun is always allowed 😉',
+                        source: [''],
+                        texts: [''],
+                        filename: [''],
+                    },
                 ]);
             }, 3000);
         } else {
-            const newMessage: Message = { type: 'user', text: inputValue };
+            const newMessage: Message = {
+                type: 'user',
+                text: inputValue,
+                source: [''],
+                texts: [''],
+                filename: [''],
+            };
             addMessageToChat(newMessage); // Update chatMessages and localStorage
             setInputValue('');
 
@@ -102,10 +131,15 @@ const Main: React.FC = () => {
             homeService
                 .getAnswer({ question: inputValue })
                 .then((response) => {
+                    console.log(response);
+
                     setIsBotTyping(false);
                     const botMessage: Message = {
                         type: 'bot',
-                        text: response.data,
+                        text: response.data[0].answer,
+                        source: response.data[0].doc_ids,
+                        texts: response.data[0].texts,
+                        filename: response.data[0].names,
                     };
                     addMessageToChat(botMessage); // Update chatMessages and localStorage
                 })
@@ -133,6 +167,29 @@ const Main: React.FC = () => {
     const [messageFeedback, setMessageFeedback] = useState<{
         [key: number]: string;
     }>({});
+
+    const [fileUrl, setFileUrl] = useState('http://localhost:8000/uploads');
+    const [keyword, setKeyword] = useState(['']);
+
+    const getDocumentUrl = (source: string, texts: string[]) => {
+        console.log(source);
+        console.log(texts);
+        setShowFeedback(false);
+        setIsOpen(true);
+
+        homeService
+            .getDocumentsById(source)
+            .then((response) => {
+                const filename =
+                    'http://localhost:8000/uploads/' + response.data[0].name;
+                console.log(filename);
+                setFileUrl(filename);
+                setKeyword(texts);
+            })
+            .catch((error) => {
+                console.error('Error fetching data:', error);
+            });
+    };
 
     return (
         <main className="bg-white p-4 w-full">
@@ -164,7 +221,77 @@ const Main: React.FC = () => {
                                 {message.text}
 
                                 {message.type === 'bot' && index !== 0 && (
-                                    <div className="flex justify-end gap-3">
+                                    <div className="flex justify-end gap-3 mt-3">
+                                        {Array.isArray(message.filename)
+                                            ? message.filename
+                                                  .map((filename, index) => ({
+                                                      filename,
+                                                      source: message.source[
+                                                          index
+                                                      ],
+                                                  }))
+                                                  .filter(
+                                                      (item, index, array) =>
+                                                          array.findIndex(
+                                                              (otherItem) =>
+                                                                  otherItem.source ===
+                                                                  item.source
+                                                          ) === index
+                                                  )
+                                                  .map(
+                                                      (
+                                                          { filename, source },
+                                                          index
+                                                      ) => {
+                                                          // Truncate filename to a max of 20 characters
+                                                          const truncatedFilename =
+                                                              filename.length >
+                                                              20
+                                                                  ? filename.slice(
+                                                                        0,
+                                                                        12
+                                                                    ) +
+                                                                    '...' +
+                                                                    filename.slice(
+                                                                        -3
+                                                                    )
+                                                                  : filename;
+
+                                                          return (
+                                                              <a
+                                                                  key={index}
+                                                                  onClick={() => {
+                                                                      getDocumentUrl(
+                                                                          source,
+                                                                          message.texts
+                                                                      );
+                                                                  }}
+                                                                  style={{
+                                                                      backgroundColor:
+                                                                          'DodgerBlue',
+                                                                      color: 'white',
+                                                                      paddingLeft:
+                                                                          '12px',
+                                                                      paddingRight:
+                                                                          '12px',
+                                                                      borderRadius:
+                                                                          '8px',
+                                                                      cursor: 'pointer',
+                                                                      display:
+                                                                          'block',
+                                                                      maxWidth:
+                                                                          '320px',
+                                                                  }}
+                                                              >
+                                                                  {
+                                                                      truncatedFilename
+                                                                  }
+                                                              </a>
+                                                          );
+                                                      }
+                                                  )
+                                            : null}
+
                                         <div
                                             className={`${
                                                 messageFeedback[index] ===
@@ -187,6 +314,7 @@ const Main: React.FC = () => {
                                                         'positive',
                                                         index
                                                     );
+                                                    setShowFeedback(true);
                                                 }}
                                             />
                                         </div>
@@ -212,6 +340,7 @@ const Main: React.FC = () => {
                                                         'negative',
                                                         index
                                                     );
+                                                    setShowFeedback(true);
                                                 }}
                                             />
                                         </div>
@@ -275,8 +404,8 @@ const Main: React.FC = () => {
                         backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     },
                     content: {
-                        maxWidth: '800px',
-                        maxHeight: '280px',
+                        height: 'fit-content',
+                        maxHeight: '90vh',
                         margin: 'auto',
                         border: '1px solid #ccc',
                         background: '#fff',
@@ -288,11 +417,22 @@ const Main: React.FC = () => {
                     },
                 }}
             >
-                <FeedbackModalContent
-                    onClose={closeModal}
-                    feedbackType={feedback}
-                    answerProvided={feedbackOnSentence}
-                />
+                {showFeedback && (
+                    <FeedbackModalContent
+                        onClose={closeModal}
+                        feedbackType={feedback}
+                        answerProvided={feedbackOnSentence}
+                    />
+                )}
+
+                {!showFeedback && (
+                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                        <HighlightKeywords
+                            fileUrl={fileUrl}
+                            keyword={keyword}
+                        />
+                    </Worker>
+                )}
             </Modal>
         </main>
     );

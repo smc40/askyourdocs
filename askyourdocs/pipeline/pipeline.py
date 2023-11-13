@@ -196,7 +196,7 @@ class QueryPipeline(Pipeline):
 
         return _concatenate_texts_from_series(context_texts)
 
-    def apply(self, text: str) -> str:
+    def apply(self, text: str, answer_only: bool = True) -> List[dict]:
         logging.info(f'generate text embeddings for text "{text}"')
 
         logging.info(f'search k-nearest-neighbors for text')
@@ -212,7 +212,26 @@ class QueryPipeline(Pipeline):
         answer = self._summarizer.get_answer(query=text, context=context)
 
         logging.info(f'answer: {answer}')
-        return answer
+
+        doc_ids = [doc.get('doc_id') for doc in text_entities]
+        indexes = [doc.get('index') for doc in text_entities]
+        texts = [doc.get('text') for doc in text_entities]
+        
+
+        # Perform a Solr lookup to get the names associated with doc_ids
+        collection = self._settings['solr']['collections']['map']['docs']
+        query = " OR ".join([f'id:{doc_id}' for doc_id in doc_ids])
+        params = {"fl": "id,name"}  # Assuming the name field in your Solr collection is named "name"
+        response = self._solr_client.search(query=query, collection=collection, params=params)
+
+        # Extract the names from the Solr response and create the names list
+        doc_id_to_name = {doc['id']: doc['name'] for doc in response['docs']}
+        names = [doc_id_to_name.get(doc_id, '') for doc_id in doc_ids]
+
+        if answer_only:
+            return [{"answer" : answer}]
+        else:
+            return [{"answer": answer, "doc_ids" : doc_ids, "indexes" : indexes, "texts": texts, "names": names}]
 
 
 class RemovalPipeline(Pipeline):

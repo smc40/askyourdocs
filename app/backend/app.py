@@ -10,12 +10,16 @@ from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.backend.authentication import get_user_info
 
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
 
 import askyourdocs.utils as utl
 from askyourdocs.settings import SETTINGS as settings
 from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline, RemovalPipeline, SearchPipeline, FeedbackPipeline
 
 import logging
+import os
 
 environment = utl.load_environment()
 _INGESTION_PIPELINE = IngestionPipeline(environment=environment, settings=settings)
@@ -76,9 +80,9 @@ class DataList(BaseModel):
 def root():
     return {'data': 'Ask your docs api service is ready!!!'}
 
-@app.post("/query", response_model=Text)
+@app.post("/query", response_model=DataList)
 async def get_answer(question_input: Text):
-    answer = _QUERY_PIPELINE.apply(text=question_input.data)
+    answer = _QUERY_PIPELINE.apply(text=question_input.data, answer_only=False)
     return {
         "data":answer
     }
@@ -93,6 +97,19 @@ async def get_documents():
     return {
         "data":response
     }
+
+@app.get("/get_documents_by_id", response_model=DataList)
+async def get_documents(id: str):
+    query = f'id:{id}'
+    collection = settings['solr']['collections']['map']['docs']
+    params={'fl':'name,id,source'}
+    response = _SEARCH_PIPELINE.apply(query=query, collection=collection, params = params)
+    return {
+        "data":response
+    }
+
+pdfs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+app.mount("/uploads", StaticFiles(directory=pdfs_dir), name="uploads")
 
 @app.delete("/delete_document", response_model=Text)
 async def delete_document(id: str):
