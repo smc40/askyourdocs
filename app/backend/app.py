@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from app.backend.authentication import get_user_info
+from app.backend.authentication import AuthenticationMiddleware
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -28,29 +28,23 @@ _REMOVAL_PIPELINE = RemovalPipeline(environment=environment, settings=settings)
 _SEARCH_PIPELINE = SearchPipeline(environment=environment, settings=settings)
 _FEEDBACK_PIPELINE = FeedbackPipeline(environment=environment, settings=settings)
 
+def middleware():
+    return [
+        Middleware(CORSMiddleware,
+                   allow_origins=[str(origin) for origin in settings.get('cors_origins', ['http://localhost:3000'])],
+                   allow_credentials=True,
+                   allow_methods=["*"],
+                   allow_headers=["*"]),
+        Middleware(AuthenticationMiddleware)
+    ]
 
-app = FastAPI(title="AYD")
 
-class CustomMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        token = request.headers.get('authorization')
-        userinfo = get_user_info(token)
-        request.state.userinfo = userinfo
-        response = await call_next(request)
-        return response
 
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.get('cors_origins'),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI(title="AYD", middleware=middleware())
 
 app.add_middleware(GZipMiddleware, minimum_size=500)
-app.add_middleware(CustomMiddleware)
+
 
 
 solr_client = _SEARCH_PIPELINE.solr_client
