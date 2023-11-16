@@ -168,7 +168,7 @@ const Main: React.FC = () => {
         [key: number]: string;
     }>({});
 
-    const [fileUrl, setFileUrl] = useState('http://localhost:8000/uploads');
+    const [fileUrl, setFileUrl] = useState(config.backendUrl + '/uploads');
     const [keyword, setKeyword] = useState(['']);
 
     const getDocumentUrl = (source: string, texts: string[]) => {
@@ -181,7 +181,7 @@ const Main: React.FC = () => {
             .getDocumentsById(source)
             .then((response) => {
                 const filename =
-                    'http://localhost:8000/uploads/' + response.data[0].name;
+                    config.backendUrl + '/uploads/' + response.data[0].name;
                 console.log(filename);
                 setFileUrl(filename);
                 setKeyword(texts);

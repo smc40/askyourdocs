@@ -31,7 +31,7 @@ _FEEDBACK_PIPELINE = FeedbackPipeline(environment=environment, settings=settings
 def middleware():
     return [
         Middleware(CORSMiddleware,
-                   allow_origins=[str(origin) for origin in settings.get('cors_origins', ['http://localhost:3000'])],
+                   allow_origins=[str(origin) for origin in settings.get('cors_origins', ['http://localhost:3000', 'http://ayd-frontend-1:3000'])],
                    allow_credentials=True,
                    allow_methods=["*"],
                    allow_headers=["*"]),
@@ -39,6 +39,7 @@ def middleware():
     ]
 
 
+logging.error(str(origin) for origin in settings.get('cors_origins', ['http://localhost:3000', 'http://ayd-frontend-1:3000']))
 
 
 app = FastAPI(title="AYD", middleware=middleware())
