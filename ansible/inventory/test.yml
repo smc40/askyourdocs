@@ -1,0 +1,8 @@
+bit:
+  children:
+    app: # Applicative stack group
+      hosts:
+        l721000112246a.adr.admin.ch: # AskYourDocs on premise, Linux SLES15
+  vars:
+    envname: prod
+    base_domain: askyourdocs.swissmedic.admin.ch

@@ -1,0 +1,6 @@
+ayd_backend_url: "http://api.{{ base_domain }}"
+ayd_frontend_url: "http://www.{{ base_domain }}"
+ayd_kc_url: "http://auth.{{ base_domain }}"
+
+# Proxy URL for outgoing HTTP connection in a proxified environment
+proxy_address: null

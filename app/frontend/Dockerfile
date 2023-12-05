@@ -17,4 +17,6 @@ EXPOSE 3000
 
 # Run the frontend application
 RUN npm run build
-CMD ["npm", "run", "start"]
+
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
