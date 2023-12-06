@@ -40,13 +40,13 @@
         owner: "{{ item.owner | default(omit) }}"
       with_items:
         - { path: "/opt/solr", mode: '755', owner: '1001' }
-    - name: "App: Copy files"
-      ansible.builtin.copy:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-        mode: "{{ item.mode }}"
-      with_items:
-        - { src: "../docker-compose.yml", dest: "/opt/askyourdocs/", mode: '755'}
+    #- name: "App: Copy files"
+    #  ansible.builtin.copy:
+    #    src: "{{ item.src }}"
+    #    dest: "{{ item.dest }}"
+    #    mode: "{{ item.mode }}"
+    #  with_items:
+    #    - { src: "../docker-compose.yml", dest: "/opt/askyourdocs/", mode: '755'}
     - name: "App: Templating files"
       ansible.builtin.template:
         src: "{{ item.src }}"
