@@ -2,9 +2,6 @@ version: '3.7'
 services:
   backend:
     image: ghcr.io/smc40/askyourdocs-backend:${AYD_IMAGE_TAG:-latest}
-    build:
-      context: .
-      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -27,9 +24,6 @@ services:
       - ${TRUST_STORE:-/dev/null}:/cacert.pem:ro
   frontend:
     image: ghcr.io/smc40/askyourdocs-frontend:${AYD_IMAGE_TAG:-latest}
-    build:
-      context: ./app/frontend
-      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
