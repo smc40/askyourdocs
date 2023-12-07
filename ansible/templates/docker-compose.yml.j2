@@ -17,6 +17,7 @@ services:
 {% if proxy_address is defined %}
       - HTTP_PROXY=${HTTP_PROXY}
       - HTTPS_PROXY=${HTTP_PROXY}
+      - NO_PROXY=solr
       - REQUESTS_CA_BUNDLE=/cacert.pem
 {% endif %}
     depends_on:
