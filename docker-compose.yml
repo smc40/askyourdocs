@@ -1,6 +1,7 @@
 version: '3.7'
 services:
   backend:
+    image: ghcr.io/smc40/askyourdocs-backend:${AYD_IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,6 +22,7 @@ services:
     volumes:
       - ./models:/app/models
   frontend:
+    image: ghcr.io/smc40/askyourdocs-frontend:${AYD_IMAGE_TAG:-latest}
     build:
       context: ./app/frontend
       dockerfile: Dockerfile

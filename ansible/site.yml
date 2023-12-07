@@ -31,7 +31,7 @@
       ansible.builtin.git:
         repo: 'https://github:{{ gh_pat }}@github.com/smc40/askyourdocs.git'
         dest: '/opt/askyourdocs'
-        version: ansible
+        version: fix-workflows
     - name: "App: Create directories"
       ansible.builtin.file:
         state: directory

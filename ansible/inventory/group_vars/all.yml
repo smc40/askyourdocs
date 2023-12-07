@@ -1,3 +1,5 @@
+ayd_image_tag: 0.0.5
+
 ayd_backend_url: "http://api.{{ base_domain }}"
 ayd_frontend_url: "http://www.{{ base_domain }}"
 ayd_kc_url: "http://auth.{{ base_domain }}"
