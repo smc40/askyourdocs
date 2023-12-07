@@ -15,7 +15,7 @@ services:
       - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT}
       - HTTP_PROXY=${HTTP_PROXY}
       - HTTPS_PROXY=${HTTP_PROXY}
-      - REQUESTS_CA_BUNDLE=/cacert.pem:ro
+      - REQUESTS_CA_BUNDLE=/cacert.pem
     depends_on:
       solr:
         condition: service_healthy
