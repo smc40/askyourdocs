@@ -21,7 +21,7 @@
   hosts: app
   become: true
   tasks:
-    - name: "Update package manager"
+    - name: "Update package manager for git"
       community.general.zypper:
         name: "git"
         state: present
