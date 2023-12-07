@@ -13,6 +13,7 @@
         registry_url: ghcr.io
         username: git
         password: "{{ gh_pat }}"
+        reauthorize: true
   vars:
     smc40_pki_trust_store_path: "{{ trust_store_path }}"
     smc40_pki_trust_store_file: "{{ trust_store_file }}"
