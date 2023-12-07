@@ -7,4 +7,4 @@ KEYCLOAK_URL={{ ayd_kc_url }}
 HTTP_PROXY={{ proxy_address | default() }}
 HTTPS_PROXY={{ proxy_address | default() }}
 
-TRUST_STORE=/usr/share/trust_store.pem
+TRUST_STORE={{ pki_trust_store_file }}
