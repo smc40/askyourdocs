@@ -32,6 +32,9 @@
         repo: 'https://github:{{ gh_pat }}@github.com/smc40/askyourdocs.git'
         dest: '/opt/askyourdocs'
         version: fix-workflows
+      environment:
+        HTTP_PROXY: {{ proxy_address | default() }}
+        HTTPS_PROXY: {{ proxy_address | default() }}
     - name: "App: Create directories"
       ansible.builtin.file:
         state: directory
