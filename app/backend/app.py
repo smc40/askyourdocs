@@ -39,7 +39,7 @@ app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(origin) for origin in settings.get('cors_origins', ['http://localhost:3000'])],
+    allow_origins=settings.get('cors_origins'),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

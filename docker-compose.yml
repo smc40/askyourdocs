@@ -11,9 +11,9 @@ services:
       - TIKA_URL=http://tika:9998
       - SOLR_URL=http://solr:8983
       - ZK_URLS=zoo1:2181
-      - BACKEND_URL=http://backend:8000
-      - FRONTEND_URL=http://frontend:3000
-      - KEYCLOAK_URL=http://keycloak:8080
+      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
+      - FRONTEND_URL=${FRONTEND_URL:-http://frontend:3000}
+      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
       - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT}
     depends_on:
       solr:
@@ -26,6 +26,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
+      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTP_PROXY}
     depends_on:
       - solr
   tika:
@@ -96,3 +101,21 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+  nginx:
+    image: nginx
+    restart: always
+    volumes:
+      - ./nginx:/etc/nginx/templates
+    ports:
+      - "80:80"
+    environment:
+      AYD_BASE_DOMAIN: ayd-sandbox.4punkt0.ch
+      NGINX_PORT: 80
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost']
+      timeout: 1s
+      start_period: 0s
+      interval: 5s
+      retries: 1
+    depends_on:
+      - keycloak

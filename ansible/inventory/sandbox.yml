@@ -1,0 +1,10 @@
+all:
+  children:
+    app:
+      hosts:
+        ayd-sandbox.4punkt0.ch: # AskYourDocs Dev on Azure, Linux SLES15
+  vars:
+    envname: sandbox
+    base_domain: ayd-sandbox.4punkt0.ch
+    ansible_ssh_user: azureuser
+      # 20.250.166.144

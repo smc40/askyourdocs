@@ -1,0 +1,59 @@
+---
+# Root playbook
+
+- name: Install docker
+  become: true
+  hosts: all
+  roles:
+    - smc40_docker
+    - smc40_pki
+  tasks:
+    - name: Log into private registry and force re-authorization
+      community.docker.docker_login:
+        registry_url: ghcr.io
+        username: git
+        password: "{{ gh_pat }}"
+  vars:
+    smc40_pki_trust_store_path: "{{ trust_store_path }}"
+    smc40_pki_trust_store_file: "{{ trust_store_file }}"
+
+- name: Deploy app stack
+  hosts: app
+  become: true
+  tasks:
+    - name: "Update package manager"
+      community.general.zypper:
+        name: "git"
+        state: present
+        update_cache: true
+      when: ansible_os_family == "Suse"
+    - name: "Git checkout"
+      ansible.builtin.git:
+        repo: 'https://github:{{ gh_pat }}@github.com/smc40/askyourdocs.git'
+        dest: '/opt/askyourdocs'
+        version: ansible
+    - name: "App: Create directories"
+      ansible.builtin.file:
+        state: directory
+        path: "{{ item.path }}"
+        mode: "{{ item.mode }}"
+        owner: "{{ item.owner | default(omit) }}"
+      with_items:
+        - { path: "/opt/solr", mode: '755', owner: '1001' }
+    #- name: "App: Copy files"
+    #  ansible.builtin.copy:
+    #    src: "{{ item.src }}"
+    #    dest: "{{ item.dest }}"
+    #    mode: "{{ item.mode }}"
+    #  with_items:
+    #    - { src: "../docker-compose.yml", dest: "/opt/askyourdocs/", mode: '755'}
+    - name: "App: Templating files"
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: "{{ item.mode }}"
+      with_items:
+        - { src: "./templates/dotenv.j2", dest: "/opt/askyourdocs/.env", mode: '755'}
+    - name: "App: Create and start services"
+      community.docker.docker_compose:
+        project_src: "/opt/askyourdocs"
