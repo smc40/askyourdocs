@@ -1,7 +1,9 @@
 version: '3.7'
 services:
   backend:
-    image: ghcr.io/smc40/askyourdocs-backend:${AYD_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -13,22 +15,22 @@ services:
       - FRONTEND_URL=${FRONTEND_URL:-http://frontend:3000}
       - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
       - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT}
-      - HTTP_PROXY=${HTTP_PROXY}
-      - HTTPS_PROXY=${HTTP_PROXY}
-      - REQUESTS_CA_BUNDLE=/cacert.pem
     depends_on:
       solr:
         condition: service_healthy
     volumes:
       - ./models:/app/models
-      - ${TRUST_STORE:-/dev/null}:/cacert.pem:ro
   frontend:
-    image: ghcr.io/smc40/askyourdocs-frontend:${AYD_IMAGE_TAG:-latest}
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
       - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
       - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTP_PROXY}
     depends_on:
       - solr
   tika:
