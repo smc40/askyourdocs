@@ -18,7 +18,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
-        if request.url.path.startswith('/uploads'):
+        if request.url.path.startswith('/uploads') | request.url.path.startswith('/app') | request.url.path.startswith('/public') or request.url.path =="/":
             response = await call_next(request)
             return response
 
@@ -29,6 +29,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         
         try:
             authorization_info = keycloak_openid.introspect(token)
+
         except Exception as e:
             logging.error("Error raised from keycloak: ", e)
             return JSONResponse({"error": "Unauthorized"}, 401)
