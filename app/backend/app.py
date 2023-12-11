@@ -30,23 +30,18 @@ _FEEDBACK_PIPELINE = FeedbackPipeline(environment=environment, settings=settings
 
 def middleware():
     return [
-        Middleware(CORSMiddleware,
-                   allow_origins=[str(origin) for origin in settings.get('cors_origins', ['http://localhost:3000', 'http://ayd-frontend-1:3000'])],
-                   allow_credentials=True,
-                   allow_methods=["*"],
-                   allow_headers=["*"]),
+        Middleware(
+            CORSMiddleware,
+            allow_origins=settings.get('cors_origins', 'http://localhost:3000'),
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"]
+        ),
         Middleware(AuthenticationMiddleware)
     ]
 
-
-logging.error(str(origin) for origin in settings.get('cors_origins', ['http://localhost:3000', 'http://ayd-frontend-1:3000']))
-
-
 app = FastAPI(title="AYD", middleware=middleware())
-
 app.add_middleware(GZipMiddleware, minimum_size=500)
-
-
 
 solr_client = _SEARCH_PIPELINE.solr_client
 for name in utl.get_solr_collection_names():
