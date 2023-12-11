@@ -4,6 +4,10 @@ export const getDocuments = () => {
     return client.get('/get_documents');
 };
 
+export const getDocumentsById = (source: string) => {
+    return client.get(`/get_documents_by_id?id=${source}`);
+};
+
 export const getAnswer = ({ question }: { question: string }) => {
     return client.post('/query', {
         data: question,

@@ -8,7 +8,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from app.backend.authentication import get_user_info
+from app.backend.authentication import AuthenticationMiddleware
+
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 
 import askyourdocs.utils as utl
@@ -16,6 +19,7 @@ from askyourdocs.settings import SETTINGS as settings
 from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline, RemovalPipeline, SearchPipeline, FeedbackPipeline
 
 import logging
+import os
 
 environment = utl.load_environment()
 _INGESTION_PIPELINE = IngestionPipeline(environment=environment, settings=settings)
@@ -24,30 +28,20 @@ _REMOVAL_PIPELINE = RemovalPipeline(environment=environment, settings=settings)
 _SEARCH_PIPELINE = SearchPipeline(environment=environment, settings=settings)
 _FEEDBACK_PIPELINE = FeedbackPipeline(environment=environment, settings=settings)
 
+def middleware():
+    return [
+        Middleware(
+            CORSMiddleware,
+            allow_origins=settings.get('cors_origins', 'http://localhost:3000'),
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"]
+        ),
+        Middleware(AuthenticationMiddleware)
+    ]
 
-app = FastAPI(title="AYD")
-
-class CustomMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        token = request.headers.get('authorization')
-        userinfo = get_user_info(token)
-        request.state.userinfo = userinfo
-        response = await call_next(request)
-        return response
-
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.get('cors_origins'),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+app = FastAPI(title="AYD", middleware=middleware())
 app.add_middleware(GZipMiddleware, minimum_size=500)
-app.add_middleware(CustomMiddleware)
-
 
 solr_client = _SEARCH_PIPELINE.solr_client
 for name in utl.get_solr_collection_names():
@@ -76,9 +70,9 @@ class DataList(BaseModel):
 def root():
     return {'data': 'Ask your docs api service is ready!!!'}
 
-@app.post("/query", response_model=Text)
+@app.post("/query", response_model=DataList)
 async def get_answer(question_input: Text):
-    answer = _QUERY_PIPELINE.apply(text=question_input.data)
+    answer = _QUERY_PIPELINE.apply(text=question_input.data, answer_only=False)
     return {
         "data":answer
     }
@@ -93,6 +87,19 @@ async def get_documents():
     return {
         "data":response
     }
+
+@app.get("/get_documents_by_id", response_model=DataList)
+async def get_documents(id: str):
+    query = f'id:{id}'
+    collection = settings['solr']['collections']['map']['docs']
+    params={'fl':'name,id,source'}
+    response = _SEARCH_PIPELINE.apply(query=query, collection=collection, params = params)
+    return {
+        "data":response
+    }
+
+pdfs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+app.mount("/uploads", StaticFiles(directory=pdfs_dir), name="uploads")
 
 @app.delete("/delete_document", response_model=Text)
 async def delete_document(id: str):

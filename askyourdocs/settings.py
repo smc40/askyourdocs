@@ -18,7 +18,7 @@ SETTINGS = {
         'root': _root_path,
         'models': _root_path / 'models',
     },
-    'cors_origins': [os.environ.get('FRONTEND_URL','http://localhost:3000'), 'http://ayd-frontend-1:3000'],
+    'cors_origins': os.environ.get('FRONTEND_URL','http://localhost:3000'),
 
     # Solr Settings
     "solr": {

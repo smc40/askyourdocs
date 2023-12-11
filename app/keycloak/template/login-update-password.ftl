@@ -1,6 +1,7 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=true; section>
-  <#if Reset password
+  <#if section = "title">
+      DORI - Reset password
   <#elseif section = "form">
       <form id="kc-passwd-update-form" action="${url.loginAction}" method="post">
             <div class="form-control">

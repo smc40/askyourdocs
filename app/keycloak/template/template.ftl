@@ -35,7 +35,7 @@
 <body class="template">
   <div class="root">
     <div class="container">
-      <img src="${url.resourcesPath}/img/logo.png" style="max-width: 400px;"/>
+      <img src="${url.resourcesPath}/img/logo.png" style="max-width: 400px;" />
       <#if displayMessage && message?has_content>
         <#if message.type = 'success'>
           <div class="message-box success-box">
@@ -47,7 +47,7 @@
       </#if>
       <#nested "form">
     </div>
-    <div class="copyright">AYD</div>
+    <div class="copyright">AskYourDocument</div>
   </div>
 </body>
 </html>

@@ -5,8 +5,7 @@
 
 /* theme */
 body {
-    background-image: linear-gradient(155deg, #eb646a -22%, #eb646a 31%, #fff 45%, #eb646a 113%);
-    background-repeat: no-repeat;
+    background-color: #F9FAFB;
     min-height: 100vh;
 }
 
@@ -17,7 +16,6 @@ body {
 
 .container {
     background-color: #fff;
-    width: 608px;
     align-items: center;
     display: flex;
     left: 50%;
@@ -25,8 +23,9 @@ body {
     position: absolute;
     flex-direction: column;
     transform: translate(-50%, -50%);
-    border-radius: 24px;
-    padding-bottom: 32px;
+    border-radius: 12px;
+    padding: 60px;
+    box-shadow: 0px 20px 24px -4px rgba(16, 24, 40, 0.08), 0px 8px 8px -4px rgba(16, 24, 40, 0.03);
 }
 
 .logo {
@@ -41,33 +40,32 @@ body {
 
 .input {
     width: 432px;
-    height: 48px;
-    border: 2px solid #CCCCCC;
+    border: 1px solid #D0D5DD;
     box-sizing: border-box;
-    border-radius: 7px;
+    border-radius: 8px;
     font-family: Roboto;
     font-style: normal;
-    font-weight: 500;
-    font-size: 14px;
+    font-weight: 400;
+    font-size: 16px;
     line-height: 16px;
     letter-spacing: 0.0909091px;
-    color: #414141;
-    padding-left: 16px;
-    box-shadow: 0 0 0 30px white inset !important;
+    color: #667085;
+    padding: 10px 14px;
     outline: none;
+    box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+    max-width: 280px;
 }
 
 .form-control label {
     display: block;
     font-family: Roboto;
     font-style: normal;
-    font-weight: 500;
+    font-weight: 400;
     font-size: 14px;
     line-height: 16px;
     letter-spacing: 0.0909091px;
     color: #414141;
     margin-bottom: 8px;
-    margin-left: 16px;
 }
 
 .password {
@@ -110,11 +108,8 @@ body {
 
 .form-submit {
     margin-top: 32px;
-    margin-bottom: 100px;
-    width: 432px;
-    height: 56px;
-    background: #4590F7;
-    border-radius: 7px;
+    background: #444CE7;
+    border-radius: 8px;
     border: none;
     cursor: pointer;
     font-family: Roboto;
@@ -124,6 +119,11 @@ body {
     line-height: 19px;
     letter-spacing: 0.0909091px;
     color: #FFFFFF;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+    width: 100%;
+    max-width: 280px;
 }
 
 .form-submit:focus {
@@ -172,7 +172,7 @@ body {
     text-align: center;
     margin-top: -30px;
 }
-
+  
 .message-box div {
     max-width: 289px;
     width: 289px;
@@ -191,3 +191,4 @@ body {
     top: 145px;
     left: 50%;
     transform: translateX(-50%);
+}
