@@ -1,11 +1,11 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayMessage=true; section>
   <#if section = "title">
-      AskYourDocuments - Login
+      DORI - Login
   <#elseif section = "form">
       <form id="kc-form-login" action="${url.loginAction}" method="post">
             <div class="form-control">
-                <label>Username (email address)</label>
+                <label>Email</label>
                 <input class="input" type="text" name="username" value="">
             </div>
             <div class="form-control">
