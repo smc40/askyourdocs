@@ -39,6 +39,8 @@
         dest: "{{ item.dest }}"
         mode: "{{ item.mode }}"
         owner: "{{ item.owner }}"
+      notify:
+        - Restart nginx
       with_items:
         - { src: "../app/pg-init-scripts/", dest: "/opt/pg-init-scripts", mode: '755', owner: '1001' }
         - { src: "../app/postgres_scripts/", dest: "/opt/pg-scripts", mode: '755', owner: '1001' }
@@ -56,3 +58,10 @@
     - name: "App: Create and start services"
       community.docker.docker_compose:
         project_src: "/opt/askyourdocs"
+
+  handlers:
+    - name: "Restart nginx"
+      community.docker.docker_compose:
+        project_src: "/opt/askyourdocs"
+        restarted: true
+        services: [nginx]
