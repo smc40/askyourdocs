@@ -1,0 +1,32 @@
+name: Deploy on sandbox
+
+on:
+  workflow_dispatch:
+    inputs:
+      webapp_tag:
+        description: "Docker tag for webapp image"
+        required: true
+        default: "latest"
+        type: string
+
+jobs:
+  build:
+    name: Ansible deploy
+    runs-on: ubuntu-latest
+    env:
+      ANSIBLE_HOST_KEY_CHECKING: "False"
+      PY_COLORS: '1'
+      ANSIBLE_FORCE_COLOR: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup & run ansible-lint
+        run: |
+          cd ansible
+          ansible-galaxy collection install -r requirements.yml
+          echo ${{ secrets.SANDBOX_VAULT_KEY }} > vault.key
+          # Extract ssh-key from ansible-vault secret
+          ansible-vault view secrets.yml | yq .ssh_key -r > ssh_key
+          chmod 600 ssh_key
+          # Playbook
+          ansible-playbook -e @secrets.yml -i inventory/sandbox.yml -e ansible_ssh_private_key_file=./ssh_key -e docker_ayd_app_tag=${{ github.event.inputs.webapp_tag }} --diff site.yml
