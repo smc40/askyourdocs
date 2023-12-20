@@ -20,6 +20,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: oleksiyrudenko/gha-git-credentials@v2.1.1
+        with:
+          global: true
+          token: '${{ secrets.GH_PAT }}'
       - name: Setup & run ansible-lint
         run: |
           cd ansible
