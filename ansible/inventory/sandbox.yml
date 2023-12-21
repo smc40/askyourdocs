@@ -7,4 +7,3 @@ all:
     envname: sandbox
     base_domain: ayd-sandbox.4punkt0.ch
     ansible_ssh_user: azureuser
-      # 20.250.166.144

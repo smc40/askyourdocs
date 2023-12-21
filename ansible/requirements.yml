@@ -1,13 +1,4 @@
 ---
-
-roles:
-  - name: smc40_monitoring_project
-    src: https://github.com/smc40/smc-bit-monitoring.git
-  - name: smc40_docker
-    src: https://github.com/smc40/dori-deploy.git
-  - name: smc40_pki
-    src: https://github.com/smc40/dori-deploy.git
-
 collections:
   - name: ansible.posix
   - name: community.general
@@ -15,3 +6,6 @@ collections:
   - name: community.postgresql
   - name: ericsysmin.docker
   - name: manala.roles
+  - name: https://github.com/smc40/ansible-bit.git
+    type: git
+    version: master

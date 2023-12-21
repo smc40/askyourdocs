@@ -4,7 +4,7 @@ server {
     # listen 443 ssl;
 
     # Domain names this server should respond to.
-    server_name www.${AYD_BASE_DOMAIN};
+    server_name app.${AYD_BASE_DOMAIN};
 
     # Load the certificate files.
     # ssl_certificate         /etc/letsencrypt/live/test-name/fullchain.pem;

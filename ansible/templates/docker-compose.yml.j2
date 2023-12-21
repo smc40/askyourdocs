@@ -1,0 +1,126 @@
+version: '3.7'
+services:
+  backend:
+    image: ghcr.io/smc40/askyourdocs-backend:${AYD_IMAGE_TAG:-latest}
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - LOG_LEVEL=INFO
+      - TIKA_URL=http://tika:9998
+      - SOLR_URL=http://solr:8983
+      - ZK_URLS=zoo1:2181
+      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
+      - FRONTEND_URL=${FRONTEND_URL:-http://frontend:3000}
+      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
+      - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT}
+{% if proxy_address is defined %}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTP_PROXY}
+      - NO_PROXY=solr
+      - REQUESTS_CA_BUNDLE=/cacert.pem
+{% endif %}
+    depends_on:
+      solr:
+        condition: service_healthy
+    volumes:
+      - /opt/models:/app/models
+{% if proxy_address is defined %}
+      - ${TRUST_STORE:-/dev/null}:/cacert.pem:ro
+{% endif %}
+  frontend:
+    image: ghcr.io/smc40/askyourdocs-frontend:${AYD_IMAGE_TAG:-latest}
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
+      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
+    depends_on:
+      - solr
+  tika:
+    image: apache/tika:latest
+    restart: always
+    ports:
+      - "9998:9998"
+  zoo1:
+    image: zookeeper
+    restart: always
+    hostname: zoo1
+    ports:
+      - 2181:2181
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
+  solr:
+    image: bitnami/solr:9.3.0
+    restart: always
+    ports:
+      - "8983:8983"
+    volumes:
+      - /opt/solr:/bitnami
+    environment:
+      ZK_HOST: zoo1:2181
+      SOLR_JAVA_MEM: "-Xms1g -Xmx1g"
+    depends_on:
+      - zoo1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8983/solr/"]
+      interval: 30s
+      timeout: 10s
+      retries: 30
+  postgres:
+    image: postgres:15
+    volumes:
+      - /opt/pg-data:/var/lib/postgresql/data
+      - /opt/pg-init-scripts:/docker-entrypoint-initdb.d
+      - /opt/pg-scripts:/user_scripts
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${AYD_PSQL_USER:-ayd_dba}
+      - POSTGRES_PASSWORD=${AYD_PSQL_PASSWORD:-aydvault}
+      - POSTGRES_MULTIPLE_DATABASES=${AYD_PSQL_DB:-ayd},${AYD_KC_PSQL_DB:-keycloak}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AYD_PSQL_USER:-ayd_dba}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  keycloak:
+    image: bitnami/keycloak:22.0.4
+    links:
+      - "postgres:database"
+    ports:
+      - "8080:8080"
+    volumes:
+      - /opt/keycloak-config/realm-export.json:/tmp/realm/realm.json
+      - /opt/keycloak-theme:/opt/bitnami/keycloak/themes/ayd/login
+    environment:
+      - KEYCLOAK_ADMIN_USER=${AYD_KC_USER:-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${AYD_KC_PASSWORD:-admin}
+      - KEYCLOAK_DATABASE_NAME=${AYD_KC_PSQL_DB:-ayd}
+      - KEYCLOAK_DATABASE_USER=${AYD_PSQL_USER:-ayd_dba}
+      - KEYCLOAK_DATABASE_PASSWORD=${AYD_PSQL_PASSWORD:-aydvault}
+      - KEYCLOAK_DATABASE_HOST=database
+      - KEYCLOAK_EXTRA_ARGS="-Dkeycloak.import=/tmp/realm/"
+    depends_on:
+      postgres:
+        condition: service_healthy
+  nginx:
+    image: nginx
+    restart: always
+    volumes:
+      - /opt/nginx:/etc/nginx/templates
+    ports:
+      - "80:80"
+    environment:
+      AYD_BASE_DOMAIN: {{ base_domain }}
+      NGINX_PORT: 80
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost']
+      timeout: 1s
+      start_period: 0s
+      interval: 5s
+      retries: 1
+    depends_on:
+      - keycloak

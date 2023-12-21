@@ -1,0 +1,6 @@
+python_pip: pip3.6
+ansible_python_interpreter: python3.6
+proxy_address: http://prxp01.admin.ch:8080/
+python_pip_extra: "--proxy {{ proxy_address }} --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org"
+
+kc_proxy: "edge"

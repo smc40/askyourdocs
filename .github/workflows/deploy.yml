@@ -23,10 +23,12 @@ jobs:
       - name: Setup & run ansible-lint
         run: |
           cd ansible
+          # GH_PAT must authorized read repo on smc40
+          sed -i "s#github.com#git:${{ secrets.GH_PAT }}@github.com#" requirements.yml
           ansible-galaxy collection install -r requirements.yml
           echo ${{ secrets.SANDBOX_VAULT_KEY }} > vault.key
           # Extract ssh-key from ansible-vault secret
           ansible-vault view secrets.yml | yq .ssh_key -r > ssh_key
           chmod 600 ssh_key
           # Playbook
-          ansible-playbook -e @secrets.yml -i inventory/sandbox.yml -e ansible_ssh_private_key_file=./ssh_key -e docker_ayd_app_tag=${{ github.event.inputs.webapp_tag }} --diff site.yml
+          ansible-playbook -e @secrets.yml -i inventory/sandbox.yml -e ansible_ssh_private_key_file=./ssh_key -e ayd_image_tag=${{ github.event.inputs.webapp_tag }} --diff site.yml
