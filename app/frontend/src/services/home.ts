@@ -8,10 +8,16 @@ export const getDocumentsById = (source: string) => {
     return client.get(`/get_documents_by_id?id=${source}`);
 };
 
-export const getAnswer = ({ question }: { question: string }) => {
-    return client.post('/query', {
-        data: question,
-    });
+export const getAnswer = async ({ question }: { question: string }) => {
+    try {
+        const response = await client.post('/query', {
+            data: question,
+        });
+        return response;
+    } catch (error) {
+        console.error('Error fetching answer:', error);
+        throw error;
+    }
 };
 
 export const deleteDocument = (id: string) => {

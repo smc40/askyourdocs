@@ -1,13 +1,14 @@
 from pydantic import BaseModel
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware import Middleware
 from fastapi import File, UploadFile
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.websockets import WebSocketState
 from app.backend.authentication import AuthenticationMiddleware
 
 from fastapi import FastAPI
@@ -70,12 +71,21 @@ class DataList(BaseModel):
 def root():
     return {'data': 'Ask your docs api service is ready!!!'}
 
-@app.post("/query", response_model=DataList)
-async def get_answer(question_input: Text):
-    answer = _QUERY_PIPELINE.apply(text=question_input.data, answer_only=False)
-    return {
-        "data":answer
-    }
+@app.websocket("/query")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()
+            answer = _QUERY_PIPELINE.apply(text=data, answer_only=False)
+            await websocket.send_json(answer)
+    except WebSocketDisconnect:
+        pass
+    finally:
+        if websocket.client_state != WebSocketState.DISCONNECTED:
+            await websocket.close()
+
+
 
 @app.get("/get_documents", response_model=DataList)
 async def get_documents():

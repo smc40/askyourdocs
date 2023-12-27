@@ -4,7 +4,7 @@ import os
 _root_path = Path(__file__).parents[1]
 
 MODEL_NAME = "google/flan-t5-base"
-MODEL_EMBEDDING_DIMENSION = 768
+MODEL_EMBEDDING_DIMENSION = 1024 #to find out, load the HF model and print the model in a console. look for the 'in_feature' variable
 MODEL_NTOKENS = 512
 
 DOCS_COLLECTION = 'ayd_docs'
