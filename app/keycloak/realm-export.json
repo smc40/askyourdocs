@@ -719,9 +719,9 @@
             "clientId": "ayd-backend",
             "name": "ayd-backend",
             "description": "",
-            "rootUrl": "http://172.17.0.1:8000",
-            "adminUrl": "http://172.17.0.1:8000",
-            "baseUrl": "http://172.17.0.1:8000",
+            "rootUrl": "http://localhost:8000",
+            "adminUrl": "http://localhost:8000",
+            "baseUrl": "http://localhost:8000",
             "surrogateAuthRequired": false,
             "enabled": true,
             "alwaysDisplayInConsole": false,
@@ -730,8 +730,8 @@
             "redirectUris": [
                 "http://localhost:8000/*",
                 "http://localhost:8000*",
-                "http://172.17.0.1:8000/*",
-                "http://172.17.0.1:8000*"
+                "http://localhost:8000/*",
+                "http://localhost:8000*"
             ],
             "webOrigins": [
                 "http://localhost:8000/*",

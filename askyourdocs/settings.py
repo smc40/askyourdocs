@@ -3,7 +3,7 @@ import os
 
 _root_path = Path(__file__).parents[1]
 
-MODEL_NAME = "google/flan-t5-base"
+MODEL_NAME = "google/flan-t5-large"
 MODEL_EMBEDDING_DIMENSION = 1024 #to find out, load the HF model and print the model in a console. look for the 'in_feature' variable
 MODEL_NTOKENS = 512
 
@@ -18,7 +18,7 @@ SETTINGS = {
         'root': _root_path,
         'models': _root_path / 'models',
     },
-    'cors_origins': os.environ.get('FRONTEND_URL','http://thunder.local:8000'),
+    'cors_origins': os.environ.get('FRONTEND_URL','http://localhost:8000'),
 
     # Solr Settings
     "solr": {
@@ -166,7 +166,7 @@ SETTINGS = {
 
     # Frontend
     'app': {
-        'keycloak_url': os.environ.get('KEYCLOAK_URL', "http://172.17.0.1:8080/"),
+        'keycloak_url': os.environ.get('KEYCLOAK_URL', "http://keycloak:8080/"),
         'keycloak_realm':'ayd',
         'keycloak_client_id':'ayd-backend',
         'keycloak_client_secret':os.environ.get('BACKEND_KEYCLOAK_SECRET','bQwuuesYTIfcJmOxI4t4fltV48OQsAQq'),

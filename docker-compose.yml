@@ -11,9 +11,9 @@ services:
       - TIKA_URL=http://tika:9998
       - SOLR_URL=http://solr:8983
       - ZK_URLS=zoo1:2181
-      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
+      - BACKEND_URL=${BACKEND_URL:-http://app:8000}
       - KEYCLOAK_URL=http://172.17.0.1:8080
-      #${KEYCLOAK_URL:-http://keycloak:8080}
+      - FRONTEND_URL=http://app:8000/app/index.html
       - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-bQwuuesYTIfcJmOxI4t4fltV48OQsAQq}
       - HTTP_PROXY=${HTTP_PROXY}
       - HTTPS_PROXY=${HTTP_PROXY}
