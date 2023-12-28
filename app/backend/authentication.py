@@ -7,10 +7,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 import logging
 
-keycloak_openid = KeycloakOpenID(server_url=settings['app']['keycloak_url'],
-                                 realm_name=settings['app']['keycloak_realm'],
-                                 client_id=settings['app']['keycloak_client_id'],
-                                 client_secret_key=settings['app']['keycloak_client_secret'])
+keycloak_openid = KeycloakOpenID(server_url="http://thunder.local:8080",
+                                 realm_name="ayd",
+                                 client_id="ayd-backend",
+                                 client_secret_key="bQwuuesYTIfcJmOxI4t4fltV48OQsAQq")
 
 class AuthenticationMiddleware(BaseHTTPMiddleware):
 
@@ -22,13 +22,37 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
             return response
 
+        logging.error("Request Path")
+        logging.error(request.url.path)
+        
+        
+        logging.error("request")
+        logging.error(request)
+
         token = request.headers.get('Authorization')
+        logging.error("token")
+        logging.error(token)
 
         if not token:
             return JSONResponse({"error": "Unauthorized"}, 401)
         
         try:
             authorization_info = keycloak_openid.introspect(token)
+
+            logging.error("authorization_info")
+            logging.error(authorization_info)
+
+
+            logging.error("KeycloakOpenID Settings:")
+            logging.error(f"Client ID: {keycloak_openid.client_id}")
+            logging.error(f"Realm Name: {keycloak_openid.realm_name}")
+            logging.error(f"Client Secret Key: {keycloak_openid.client_secret_key}")
+            logging.error(f"connection: {keycloak_openid.connection}")
+            logging.error(f"authorization: {keycloak_openid.authorization}")
+            # logging.error(f"authorization: {keycloak_openid.}")
+
+            logging.error(settings['app']['keycloak_url'])
+
         except Exception as e:
             logging.error("Error raised from keycloak: ", e)
             return JSONResponse({"error": "Unauthorized"}, 401)

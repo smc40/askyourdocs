@@ -1,7 +1,7 @@
 {
     "realm": "ayd",
     "auth-server-url": "http://localhost:8080/",
-    "resource": "ayd-frontend",
+    "resource": "ayd-client",
     "ssl-required": "none",
     "public-client": true,
     "confidential-port": 0

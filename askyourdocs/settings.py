@@ -18,7 +18,7 @@ SETTINGS = {
         'root': _root_path,
         'models': _root_path / 'models',
     },
-    'cors_origins': os.environ.get('FRONTEND_URL','http://localhost:3000'),
+    'cors_origins': os.environ.get('FRONTEND_URL','http://thunder.local:8000'),
 
     # Solr Settings
     "solr": {
@@ -166,9 +166,9 @@ SETTINGS = {
 
     # Frontend
     'app': {
-        'keycloak_url': os.environ.get('KEYCLOAK_URL', "http://localhost:8080/"),
+        'keycloak_url': os.environ.get('KEYCLOAK_URL', "http://172.17.0.1:8080/"),
         'keycloak_realm':'ayd',
         'keycloak_client_id':'ayd-backend',
-        'keycloak_client_secret':os.environ.get('BACKEND_KEYCLOAK_SECRET','YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT'),
+        'keycloak_client_secret':os.environ.get('BACKEND_KEYCLOAK_SECRET','bQwuuesYTIfcJmOxI4t4fltV48OQsAQq'),
     },
 }

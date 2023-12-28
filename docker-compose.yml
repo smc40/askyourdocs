@@ -12,8 +12,9 @@ services:
       - SOLR_URL=http://solr:8983
       - ZK_URLS=zoo1:2181
       - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
-      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
-      - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT}
+      - KEYCLOAK_URL=http://172.17.0.1:8080
+      #${KEYCLOAK_URL:-http://keycloak:8080}
+      - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-bQwuuesYTIfcJmOxI4t4fltV48OQsAQq}
       - HTTP_PROXY=${HTTP_PROXY}
       - HTTPS_PROXY=${HTTP_PROXY}
     depends_on:
