@@ -18,7 +18,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
-        if request.url.path.startswith('/uploads'):
+        if request.url.path.startswith('/uploads') | request.url.path.startswith('/app'):
             response = await call_next(request)
             return response
 

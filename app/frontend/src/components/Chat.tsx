@@ -90,7 +90,7 @@ const Main: React.FC = () => {
 
     useEffect(() => {
         socket.current = new WebSocket(
-            config.backendUrl.replace('http', 'ws') + '/query'
+            config.backendUrl.replace('http', 'ws') + '/ws/query'
         );
     }, []);
 

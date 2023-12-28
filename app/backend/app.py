@@ -66,12 +66,12 @@ class Feedback(BaseModel):
 class DataList(BaseModel):
     data: list[dict] = []
 
+app.mount("/app", StaticFiles(directory="/app/static"), name="static")
 
-@app.get('/', response_model=Text)
-def root():
-    return {'data': 'Ask your docs api service is ready!!!'}
+pdfs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+app.mount("/uploads", StaticFiles(directory=pdfs_dir), name="uploads")
 
-@app.websocket("/query")
+@app.websocket("/ws/query")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
@@ -86,8 +86,7 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.close()
 
 
-
-@app.get("/get_documents", response_model=DataList)
+@app.get("/api/get_documents", response_model=DataList)
 async def get_documents():
     query = f'*'
     collection = settings['solr']['collections']['map']['docs']
@@ -98,7 +97,7 @@ async def get_documents():
         "data":response
     }
 
-@app.get("/get_documents_by_id", response_model=DataList)
+@app.get("/api/get_documents_by_id", response_model=DataList)
 async def get_documents(id: str):
     query = f'id:{id}'
     collection = settings['solr']['collections']['map']['docs']
@@ -108,10 +107,7 @@ async def get_documents(id: str):
         "data":response
     }
 
-pdfs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
-app.mount("/uploads", StaticFiles(directory=pdfs_dir), name="uploads")
-
-@app.delete("/delete_document", response_model=Text)
+@app.delete("/api/delete_document", response_model=Text)
 async def delete_document(id: str):
     logging.info(f"deleting doc {id} in SOLR")
     _REMOVAL_PIPELINE.apply(id_=id, commit=True)
@@ -119,7 +115,7 @@ async def delete_document(id: str):
         "data": "successfully deleted."
     }
 
-@app.post("/ingest", response_model=ListText)
+@app.post("/api/ingest", response_model=ListText)
 async def upload_file(file: UploadFile = File(...)):
     if file and file.filename:
         logging.info(f'uploading file  {file.filename}')
@@ -133,7 +129,7 @@ async def upload_file(file: UploadFile = File(...)):
         return {"data": "No file provided"}
 
 
-@app.post("/ingest_feedback", response_model=Text)
+@app.post("/api/ingest_feedback", response_model=Text)
 async def upload_feedback(feedback: Feedback):
     doc = _FEEDBACK_PIPELINE.apply(feedback_type = feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, email=feedback.email, commit=True)
     return {"data": doc}

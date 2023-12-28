@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  backend:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -12,27 +12,15 @@ services:
       - SOLR_URL=http://solr:8983
       - ZK_URLS=zoo1:2181
       - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
-      - FRONTEND_URL=${FRONTEND_URL:-http://frontend:3000}
       - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
       - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTP_PROXY}
     depends_on:
       solr:
         condition: service_healthy
     volumes:
       - ./models:/app/models
-  frontend:
-    build:
-      context: ./app/frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
-      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
-      - HTTP_PROXY=${HTTP_PROXY}
-      - HTTPS_PROXY=${HTTP_PROXY}
-    depends_on:
-      - solr
   tika:
     image: apache/tika:latest
     restart: always
