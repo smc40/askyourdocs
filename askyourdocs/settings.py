@@ -12,13 +12,16 @@ TEXTS_COLLECTION = 'ayd_texts'
 VECS_COLLECTION = 'ayd_vecs'
 FEEDBACK_COLLECTION = 'ayd_feedback'
 
+CORS_ALLOWED_STR = os.getenv('CORS_ALLOWED', 'http://localhost:8000,http://localhost:3000')
+CORS_ALLOWED_LIST = CORS_ALLOWED_STR.split(',')
+
 SETTINGS = {
     # Generic Settings
     'paths': {
         'root': _root_path,
         'models': _root_path / 'models',
     },
-    'cors_origins': os.environ.get('FRONTEND_URL','http://localhost:8000'),
+    'cors_origins': CORS_ALLOWED_LIST,
 
     # Solr Settings
     "solr": {

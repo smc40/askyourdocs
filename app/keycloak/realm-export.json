@@ -660,10 +660,12 @@
             "clientAuthenticatorType": "client-secret",
             "secret": "bQwuuesYTIfcJmOxI4t4fltV48OQsAQq",
             "redirectUris": [
-                "http://localhost:8000/*"
+                "http://localhost:8000/*",
+                "http://localhost:3000/*"
             ],
             "webOrigins": [
-                "http://localhost:8000"
+                "http://localhost:8000",
+                "http://localhost:3000"
             ],
             "notBefore": 0,
             "bearerOnly": false,
