@@ -3,6 +3,7 @@ import botIcon from '../img/robot.png';
 import userImage from '../img/avatar.png';
 import thumsUpIcon from '../img/thumsUpIcon.png';
 import thumsDownIcon from '../img/thumsDownIcon.png';
+import easterEggIcon from '../img/easterEgg.gif';
 
 interface MessageProps {
     type: string;
@@ -11,11 +12,11 @@ interface MessageProps {
     source?: string[];
     texts?: string[];
     onFeedbackClick?: (feedback: string, index: number) => void;
-    feedbackType?: string;
     index: number;
     onDocumentUrl?: (source: string, texts: string[]) => void;
     hideButtons: boolean;
     messageFeedback: { [key: number]: string };
+    isEasterEgg: boolean;
 }
 
 const Message: React.FC<MessageProps> = ({
@@ -25,11 +26,11 @@ const Message: React.FC<MessageProps> = ({
     source,
     texts,
     onFeedbackClick,
-    feedbackType,
     index,
     onDocumentUrl,
     hideButtons,
     messageFeedback,
+    isEasterEgg,
 }) => {
     return (
         <div
@@ -39,7 +40,7 @@ const Message: React.FC<MessageProps> = ({
         >
             {type === 'bot' && (
                 <img
-                    src={botIcon} // Assuming botIcon is available in this component
+                    src={isEasterEgg ? easterEggIcon : botIcon}
                     alt="Bot"
                     className="w-8 h-8 rounded-full mr-2 border border-gray-100"
                 />
@@ -54,6 +55,7 @@ const Message: React.FC<MessageProps> = ({
                 {text}
                 {type === 'bot' &&
                     !hideButtons &&
+                    text != 'a lil fun is always allowed 😉' &&
                     filename &&
                     Array.isArray(filename) &&
                     filename.length > 0 && (

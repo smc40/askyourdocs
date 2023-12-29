@@ -3,7 +3,6 @@ import planeIcon from '../img/plane.png';
 import TypingIndicator from './TypingIndicator';
 import * as homeService from '../services/home';
 import config from '../config.js';
-import easterEggIcon from '../img/easterEgg.gif';
 import Modal from 'react-modal';
 import FeedbackModalContent from './FeedbackModalContent';
 import Authentication from '../auth';
@@ -13,7 +12,6 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import HighlightKeywords from './PdfTextSearch';
 
 import Message from './Message';
-import { text } from 'node:stream/consumers';
 
 interface Message {
     type: string;
@@ -25,7 +23,7 @@ interface Message {
 
 const Main: React.FC = () => {
     const [inputValue, setInputValue] = useState('');
-    const [easterEgg, setEasterEgg] = useState(false);
+    const [showEasterEgg, setShowEasterEgg] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [feedback, setFeedback] = useState('');
     const [feedbackOnSentence, setFeedbackOnSentence] = useState('');
@@ -156,7 +154,7 @@ const Main: React.FC = () => {
             ]);
             setTimeout(() => {
                 setIsBotTyping(false);
-                setEasterEgg(true);
+                setShowEasterEgg(!showEasterEgg);
                 setChatMessages((prevMessages) => [
                     ...prevMessages,
                     {
@@ -250,6 +248,7 @@ const Main: React.FC = () => {
                             onDocumentUrl={getDocumentUrl}
                             hideButtons={index === 0}
                             messageFeedback={messageFeedback}
+                            isEasterEgg={showEasterEgg}
                         />
                     ))}
                     {isBotTyping && <TypingIndicator />}
