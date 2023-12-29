@@ -1,0 +1,22 @@
+export LOG_LEVEL="INFO"
+
+# TIKA
+export TIKA_URL="http://172.17.0.1:9998"        # For local host use "http://172.17.0.1:9998"
+
+# Solr
+export SOLR_URL="http://172.17.0.1:8983"        # For local host use "http://172.17.0.1:8983"  
+export solr_url="http://172.17.0.1:8983"
+export ZK_URLS="172.17.0.1:2181"         # For local host use "172.17.0.1:2181"
+
+# Frontend
+export FRONTEND_URL="http://localhost:3000"  
+export BACKEND_URL="http://localhost:8000"
+
+# Postgres
+export AYD_PSQL_USER="ayd_dba"
+export AYD_PSQL_PASSWORD="ayd"
+export AYD_PSQL_DB="ayd"
+
+# Keycloak
+export KEYCLOAK_URL="http://localhost:8080/"
+export BACKEND_KEYCLOAK_SECRET="YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT"

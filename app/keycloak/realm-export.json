@@ -312,7 +312,7 @@
                     "attributes": {}
                 }
             ],
-            "ayd-client": [],
+            "ayd-frontend": [],
             "account": [
                 {
                     "id": "986488d7-273b-453f-b735-571f20c74ccf",
@@ -650,7 +650,7 @@
         },
         {
             "id": "ec2e86f7-2033-4d83-9b9f-bfd53b7d504a",
-            "clientId": "ayd-client",
+            "clientId": "ayd-frontend",
             "rootUrl": "http://localhost:8000/",
             "adminUrl": "http://localhost:8000/",
             "baseUrl": "http://localhost:8000/",

@@ -11,7 +11,7 @@ docker compose -p ayd up -d
 
 docker exec -i ayd-postgres-1 psql -U "${AYD_PSQL_USER:-ayd_dba}" -d $"${AYD_PSQL_DB:-ayd}" -a -f /user_scripts/user_entity_data.sql
 
-url="http://localhost:8000/app/index.html"
+url="http://localhost:8000/"
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     xdg-open "$url"  # Linux/Unix

@@ -20,7 +20,7 @@ RUN pip install -r req_freeze.txt
 # Install Java needed for TIKA
 RUN apt-get update && apt-get install -y default-jre && rm -rf /var/lib/apt/lists/*
 
-
+COPY app/landing /app/
 COPY app/backend app/backend/
 COPY askyourdocs askyourdocs/
 COPY resources resources/

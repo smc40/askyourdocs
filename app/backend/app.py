@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware import Middleware
 from fastapi import File, UploadFile
@@ -67,9 +68,18 @@ class DataList(BaseModel):
     data: list[dict] = []
 
 app.mount("/app", StaticFiles(directory="/app/static"), name="static")
+app.mount("/public", StaticFiles(directory="/app/public"), name="public")
 
 pdfs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
 app.mount("/uploads", StaticFiles(directory=pdfs_dir), name="uploads")
+
+@app.get("/")
+async def read_root():
+    landing_page_path = "/app/index.html"
+    try:
+        return FileResponse(landing_page_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.websocket("/ws/query")
 async def websocket_endpoint(websocket: WebSocket):
