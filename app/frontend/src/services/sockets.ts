@@ -1,9 +1,10 @@
-// homeService.ts
+import config from '../config.js';
+
 class SocketService {
     private socket: WebSocket;
 
     constructor() {
-        this.socket = new WebSocket('ws://localhost:8000/query');
+        this.socket = new WebSocket(config.backendUrl.replace('http', 'ws') + '/ws/query');
         this.setupSocket();
     }
 
