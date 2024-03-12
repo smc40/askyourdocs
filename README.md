@@ -80,14 +80,14 @@ Then define the environment variables:
 export LOG_LEVEL="INFO"
 
 # TIKA
-export TIKA_URL=<changeme>        # For local host use "http://172.17.0.1:9998"
+export TIKA_URL=<changeme>        # For local host use "http://localhost:9998"
 
 # Solr
-export SOLR_URL=<changeme>        # For local host use "http://172.17.0.1:8983"  
-export ZK_URLS=<changeme>         # For local host use "172.17.0.1:2181"
+export SOLR_URL=<changeme>        # For local host use "http://localhost:8983"  
+export ZK_URLS=<changeme>         # For local host use "localhost:2181"
 
 # Frontend
-export FRONTEND_URL=<changeme>    # For local host use "http://172.17.0.1:3000"
+export FRONTEND_URL=<changeme>    # For local host use "http://localhost:3000"
 
 # Postgres
 export AYD_PSQL_USER=<changeme> 
@@ -96,7 +96,7 @@ export AYD_PSQL_DB=<changeme>
 
 # Keycloak
 export KEYCLOAK_URL=<changeme>     # For local deployment via uvicorn use http://localhost:8080/
-export BACKEND_KEYCLOAK_SECRET=<changeme>  #For initial value use YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT. If changed, make sure to adjust in app/keycloak/realm-export.json as well.
+export BACKEND_KEYCLOAK_SECRET=<changeme>  #For initial value use bQwuuesYTIfcJmOxI4t4fltV48OQsAQq. If changed, make sure to adjust in app/keycloak/realm-export.json as well.
 ```
 
 With a `venv` as and an alias `ayd` defined as

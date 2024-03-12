@@ -3,8 +3,8 @@ import os
 
 _root_path = Path(__file__).parents[1]
 
-MODEL_NAME = "google/flan-t5-base"
-MODEL_EMBEDDING_DIMENSION = 768
+MODEL_NAME = "google/flan-t5-large"
+MODEL_EMBEDDING_DIMENSION = 1024 #to find out, load the HF model and print the model in a console. look for the 'in_feature' variable
 MODEL_NTOKENS = 512
 
 DOCS_COLLECTION = 'ayd_docs'
@@ -12,13 +12,16 @@ TEXTS_COLLECTION = 'ayd_texts'
 VECS_COLLECTION = 'ayd_vecs'
 FEEDBACK_COLLECTION = 'ayd_feedback'
 
+CORS_ALLOWED_STR = os.getenv('CORS_ALLOWED', 'http://localhost:8000,http://localhost:3000')
+CORS_ALLOWED_LIST = CORS_ALLOWED_STR.split(',')
+
 SETTINGS = {
     # Generic Settings
     'paths': {
         'root': _root_path,
         'models': _root_path / 'models',
     },
-    'cors_origins': os.environ.get('FRONTEND_URL','http://localhost:3000'),
+    'cors_origins': CORS_ALLOWED_LIST,
 
     # Solr Settings
     "solr": {
@@ -166,9 +169,9 @@ SETTINGS = {
 
     # Frontend
     'app': {
-        'keycloak_url': os.environ.get('KEYCLOAK_URL', "http://localhost:8080/"),
+        'keycloak_url': os.environ.get('KEYCLOAK_URL', "http://keycloak:8080/"),
         'keycloak_realm':'ayd',
         'keycloak_client_id':'ayd-backend',
-        'keycloak_client_secret':os.environ.get('BACKEND_KEYCLOAK_SECRET','YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT'),
+        'keycloak_client_secret':os.environ.get('BACKEND_KEYCLOAK_SECRET','bQwuuesYTIfcJmOxI4t4fltV48OQsAQq'),
     },
 }

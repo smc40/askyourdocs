@@ -400,8 +400,7 @@
                     "containerId": "dad69528-c470-4e74-8fac-11f64d31949d",
                     "attributes": {}
                 }
-            ],
-            "ayd-backend": []
+            ]
         }
     },
     "groups": [],
@@ -650,20 +649,23 @@
             ]
         },
         {
-            "id": "4ea841d4-8583-43de-acf1-1feb8c4bbac8",
-            "clientId": "ayd-backend",
-            "rootUrl": "http://localhost:8000",
-            "adminUrl": "http://localhost:8000",
+            "id": "ec2e86f7-2033-4d83-9b9f-bfd53b7d504a",
+            "clientId": "ayd-frontend",
+            "rootUrl": "http://localhost:8000/",
+            "adminUrl": "http://localhost:8000/",
+            "baseUrl": "http://localhost:8000/",
             "surrogateAuthRequired": false,
             "enabled": true,
             "alwaysDisplayInConsole": false,
             "clientAuthenticatorType": "client-secret",
-            "secret": "YNLAxuEg3JzAnYQARHYOvLzNgmu8zOzT",
+            "secret": "bQwuuesYTIfcJmOxI4t4fltV48OQsAQq",
             "redirectUris": [
-                "http://localhost:8000/*"
+                "http://localhost:8000/*",
+                "http://localhost:3000/*"
             ],
             "webOrigins": [
-                "http://localhost:8000"
+                "http://localhost:8000",
+                "http://localhost:3000"
             ],
             "notBefore": 0,
             "bearerOnly": false,
@@ -672,18 +674,26 @@
             "implicitFlowEnabled": false,
             "directAccessGrantsEnabled": true,
             "serviceAccountsEnabled": false,
-            "publicClient": false,
+            "publicClient": true,
             "frontchannelLogout": false,
             "protocol": "openid-connect",
             "attributes": {
+                "login_theme": "ayd",
+                "id.token.as.detached.signature": "false",
                 "saml.assertion.signature": "false",
                 "saml.force.post.binding": "false",
                 "saml.multivalued.roles": "false",
                 "saml.encrypt": "false",
-                "post.logout.redirect.uris": "+",
+                "oauth2.device.authorization.grant.enabled": "false",
+                "backchannel.logout.revoke.offline.tokens": "false",
                 "saml.server.signature": "false",
                 "saml.server.signature.keyinfo.ext": "false",
+                "use.refresh.tokens": "true",
                 "exclude.session.state.from.auth.response": "false",
+                "oidc.ciba.grant.enabled": "false",
+                "saml.artifact.binding": "false",
+                "backchannel.logout.session.required": "true",
+                "client_credentials.use_refresh_token": "false",
                 "saml_force_name_id_format": "false",
                 "saml.client.signature": "false",
                 "tls.client.certificate.bound.access.tokens": "false",
@@ -708,26 +718,26 @@
             ]
         },
         {
-            "id": "d7d870e3-6578-4183-957c-1a9974238fa1",
-            "clientId": "ayd-frontend",
-            "name": "",
+            "clientId": "ayd-backend",
+            "name": "ayd-backend",
             "description": "",
-            "rootUrl": "http://localhost:3000",
-            "adminUrl": "http://localhost:3000",
-            "baseUrl": "",
+            "rootUrl": "http://localhost:8000",
+            "adminUrl": "http://localhost:8000",
+            "baseUrl": "http://localhost:8000",
             "surrogateAuthRequired": false,
             "enabled": true,
             "alwaysDisplayInConsole": false,
             "clientAuthenticatorType": "client-secret",
+            "secret": "bQwuuesYTIfcJmOxI4t4fltV48OQsAQq",
             "redirectUris": [
-                "http://localhost:3000/*",
-                "*",
-                "http://localhost/*"
+                "http://localhost:8000/*",
+                "http://localhost:8000*",
+                "http://localhost:8000/*",
+                "http://localhost:8000*"
             ],
             "webOrigins": [
-                "*",
-                "http://localhost",
-                "http://localhost:3000"
+                "http://localhost:8000/*",
+                "http://localhost:8000*"
             ],
             "notBefore": 0,
             "bearerOnly": false,
@@ -736,35 +746,22 @@
             "implicitFlowEnabled": false,
             "directAccessGrantsEnabled": true,
             "serviceAccountsEnabled": false,
-            "publicClient": true,
-            "frontchannelLogout": false,
+            "publicClient": false,
+            "frontchannelLogout": true,
             "protocol": "openid-connect",
             "attributes": {
-                "saml.assertion.signature": "false",
-                "saml.force.post.binding": "false",
-                "saml.multivalued.roles": "false",
-                "saml.encrypt": "false",
-                "login_theme": "ayd",
-                "post.logout.redirect.uris": "+",
-                "oauth2.device.authorization.grant.enabled": "false",
-                "backchannel.logout.revoke.offline.tokens": "false",
-                "saml.server.signature": "false",
-                "saml.server.signature.keyinfo.ext": "false",
-                "exclude.session.state.from.auth.response": "false",
                 "oidc.ciba.grant.enabled": "false",
+                "oauth2.device.authorization.grant.enabled": "false",
+                "client.secret.creation.time": "1703761179",
                 "backchannel.logout.session.required": "true",
-                "saml_force_name_id_format": "false",
-                "saml.client.signature": "false",
-                "tls.client.certificate.bound.access.tokens": "false",
-                "saml.authnstatement": "false",
-                "display.on.consent.screen": "false",
-                "saml.onetimeuse.condition": "false"
+                "backchannel.logout.revoke.offline.tokens": "false"
             },
             "authenticationFlowBindingOverrides": {},
             "fullScopeAllowed": true,
             "nodeReRegistrationTimeout": -1,
             "defaultClientScopes": [
                 "web-origins",
+                "acr",
                 "roles",
                 "profile",
                 "email"
@@ -774,7 +771,12 @@
                 "phone",
                 "offline_access",
                 "microprofile-jwt"
-            ]
+            ],
+            "access": {
+                "view": true,
+                "configure": true,
+                "manage": true
+            }
         },
         {
             "id": "cc834e6e-8bff-4297-abf7-b76e31b46f70",

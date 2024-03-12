@@ -1,0 +1,507 @@
+/*
+
+/*------------------------------------------------------------------------------------------*/
+/* 1. Defaults & Reset of specific styles across browsers */
+/*------------------------------------------------------------------------------------------*/
+
+*, *:before, *:after {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, blockquote, th, td {
+    margin: 0;
+    padding: 0;
+    direction: ltr;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+footer a {
+    text-decoration: none;
+    border: none;
+    background: none;
+    display: inline-block;
+}
+
+p {
+    line-height: 25px;
+}
+
+.row img {
+    height: auto;
+    max-width: 100%;
+}
+
+a {
+    text-decoration: none;
+    line-height: inherit;
+    -webkit-transition: opacity 0.3s ease-out;
+    -moz-transition: opacity 0.3s ease-out;
+    -o-transition: opacity 0.3s ease-out;
+    transition: opacity 0.3s ease-out;
+}
+
+
+
+.parallax-window {
+    min-height: 400px;
+    background: transparent;
+}
+
+
+/* Page Border */
+
+.page-border {
+    position: fixed;
+    z-index: 999999;
+    pointer-events: none;
+}
+
+.page-border .bottom-border, .page-border .left-border, .page-border .right-border, .page-border .top-border {
+    background: #f3f3ef;
+    position: fixed;
+    z-index: 9999;
+}
+
+.page-border > .top-border, .page-border > .right-border, .page-border > .bottom-border, .page-border > .left-border {
+    padding: 11px;
+    background: #ccc;
+}
+
+.page-border .bottom-border, .page-border .top-border {
+    width: 100%;
+    padding: 10px;
+    left: 0;
+}
+
+.page-border .left-border, .page-border .right-border {
+    padding: 10px;
+    height: 100%;
+    top: 0;
+}
+
+.page-border .top-border {
+    top: 0;
+}
+
+.page-border .right-border {
+    right: 0;
+}
+
+.page-border .bottom-border {
+    bottom: 0;
+}
+
+.page-border .left-border {
+    left: 0;
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/* 2. Layout Elements */
+/*------------------------------------------------------------------------------------------*/
+
+section {
+    clear: both;
+    overflow: hidden;
+}
+
+/* Rows and Columns */
+
+.row {
+    max-width: 1245px;
+    margin: 0 auto;
+    padding: 75px 0;
+    position: relative;
+}
+
+.no-padding-bottom .row, .no-padding-bottom div, .no-padding-bottom.row {
+    padding-bottom: 0;
+}
+
+.no-padding-top.row, .no-padding-top div {
+    padding-top: 0;
+}
+
+.big-padding-top {
+    padding-top: 75px !important;
+}
+
+.big-padding-bottom {
+    padding-bottom: 85px !important;
+}
+
+/* Targets all elements */
+
+[class*='col-'] {
+    float: left;
+    padding: 20px;
+}
+
+#clients .col-2-3 [class*='col-'] {
+    padding: 0;
+}
+
+/* Clearfix */
+
+.clearfix:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Main Widths */
+
+.col-1 {
+    width: 100%;
+}
+
+
+.col-38 {
+    width: 38.2%;
+}
+
+/* --------- 2.1 Header --------- */
+
+#header {
+    height: 71px !important;
+    overflow: visible;
+    z-index: 9999;
+    width: 100%;
+    position: absolute !important;
+}
+
+#header .row {
+    padding: 0;
+}
+
+#header aside {
+    text-align: right;
+}
+
+#header ul {
+    text-align: center;
+}
+
+#header li {
+    display: inline-block;
+    list-style: none;
+    margin: 0;
+}
+
+/* --------- 2.2 Logo ---------- */
+
+#logo {
+    float: left;
+    height: 71px;
+    line-height: 66px;
+    margin-right: 15px;
+}
+
+#logo h1, #logo h2 {
+    display: inline-block;
+}
+
+#banner #logo h1 {
+    font-size: 28px;
+    margin-right: 10px;
+    font-weight: 900;
+    padding: 0;
+}
+
+#logo h2 {
+    font-size: 18px;
+    padding: 0;
+}
+
+#logo img {
+    max-height: 90px;
+    vertical-align: middle;
+    margin-right: 15px;
+}
+
+#navigation-logo {
+    display: none;
+}
+
+.nav-solid #logo #banner-logo {
+    display: none;
+}
+
+.nav-solid #logo #navigation-logo {
+    display: inline-block;
+}
+
+/* --------- 2.3 Buttons ---------- */
+
+.call-to-action {
+    padding: 35px 0 35px 0;
+}
+
+/*Style*/
+
+.button {
+    font-size: 16px;
+    margin: 35px 0;
+    padding: 11px 16px;
+    -webkit-transition: all .3s linear;
+    -moz-transition: all .3s linear;
+    transition: all .3s linear;
+    display: inline-block;
+    border-width: 3px;
+    border-style: solid;
+}
+
+/* --------- 2.4 Navigation ---------- */
+
+#header {
+    font-size: 13px;
+}
+
+#header aside {
+    float: right;
+}
+
+#header nav ul {
+    text-transform: uppercase;
+
+}
+
+#header nav a {
+    height: 71px;
+    line-height: 71px;
+    display: block;
+    padding: 0 10px;
+}
+
+#header nav a:hover {
+    opacity: 0.6;
+}
+
+
+/* --------- 2.6 Images ---------- */
+
+/*Alignment*/
+
+img {
+    vertical-align: top;
+}
+
+.image-center {
+    display: block;
+    margin: 0 auto;
+}
+
+a img {
+    border: none;
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
+    -webkit-backface-visibility: hidden;
+}
+
+a img:hover {
+    opacity: 0.7;
+}
+
+/*------------------------------------------------------------------------------------------*/
+/* 3. Fonts */
+/*------------------------------------------------------------------------------------------*/
+
+h1 {
+    padding: 20px 0;
+}
+
+h2 {
+    padding: 14px 0;
+}
+
+h3 {
+    padding: 10px 0;
+}
+
+h4 {
+    padding: 7px 0;
+}
+
+h5 {
+    padding: 7px 0;
+}
+
+h6 {
+    padding: 7px 0;
+}
+
+/* Text Alignment */
+
+.text-left {
+    text-align: left;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Section Headings */
+
+.section-heading {
+    padding: 0 0 15px 0;
+}
+
+.section-subtitle {
+    font-size: 18px;
+    padding-top: 0;
+}
+
+.section-heading h3 {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ccc;
+    letter-spacing: 2px;
+    padding-bottom: 0;
+}
+
+/*------------------------------------------------------------------------------------------*/
+/* 4. Banner */
+/*------------------------------------------------------------------------------------------*/
+
+#banner {
+    background-size: cover;
+}
+
+#banner-content.row {
+    padding-top: 170px;
+    padding-bottom: 100px;
+}
+
+#banner h1 {
+    padding-top: 5%;
+}
+
+#banner .section-heading:before {
+    content: "";
+    display: block;
+    width: 30px;
+    height: 5px;
+    margin-top: 30px;
+}
+
+
+
+/* --------- 5.3 Divider ---------- */
+
+.divider {
+    position: relative;
+    width: 40%;
+    height: 20px;
+    line-height: 20px;
+    margin: 10px auto 5px auto;
+    clear: both;
+    text-align: center;
+}
+
+.divider-inner {
+    position: absolute;
+    height: 1px;
+    width: 100%;
+    top: 50%;
+    margin-top: -1px;
+    border-top: 1px solid;
+    border-color: #e1e1e1;
+}
+
+.divider i {
+    background: #fff;
+    position: relative;
+    top: -11px;
+    padding: 0 5px 0 5px;
+    color: #e1e1e1;
+}
+
+/*------------------------------------------------------------------------------------------*/
+/* 6. Landing Page Sections */
+/*------------------------------------------------------------------------------------------*/
+
+/* --------- 6.1 Introduction ---------- */
+
+.introduction img.featured {
+    padding: 55px 0 0 0;
+}
+
+/* --------- 6.2 Features ---------- */
+
+.features.row {
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+.features div:nth-child(4) {
+    clear: both;
+}
+
+/* --------- 6.3 Testimonials ---------- */
+
+.testimonial {
+    padding: 15px;
+}
+
+blockquote {
+    position: relative;
+}
+
+.testimonial img {
+    max-height: 120px;
+    border-radius: 250em;
+}
+
+.testimonial footer {
+    padding-top: 12px;
+}
+
+/* Style Classic - Avatar above Testimonial */
+
+.testimonial.classic img {
+    display: inline-block;
+    margin-bottom: 25px;
+}
+
+.testimonial.classic q {
+    display: block;
+}
+
+.testimonial.classic footer:before {
+    display: block;
+    content: "";
+    width: 30px;
+    height: 4px;
+    margin: 10px auto 15px auto;
+}
+
+/* Style Big */
+
+.testimonial.bigtest {
+    padding-top: 0;
+}
+
+.testimonial.bigtest q {
+    font-size: 22px;
+}
+

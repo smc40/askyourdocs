@@ -171,3 +171,7 @@ models
 
 # todo file
 todo.md
+
+#frontend files
+**/*.lock
+**/*lock.json

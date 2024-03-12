@@ -1,26 +1,34 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10-slim
 
-# Set the working directory in the container to /app
+# app/frontend/Dockerfile
+FROM node:14 as builder
+
 WORKDIR /app
 
-# Copy the requirements file into the container at /app
-COPY req_freeze.txt req_freeze.txt
+COPY ./app/frontend /app
 
-# Install any needed packages specified in requirements.txt
+RUN npm install
+RUN npm run build
+
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY req_freeze.txt ./req_freeze.txt
+
 RUN pip install -r req_freeze.txt
 
 # Install Java needed for TIKA
 RUN apt-get update && apt-get install -y default-jre && rm -rf /var/lib/apt/lists/*
 
-# Copy the backend source code into the container at /app/backend
+COPY app/landing /app/
 COPY app/backend app/backend/
 COPY askyourdocs askyourdocs/
 COPY resources resources/
 RUN mkdir -p app/backend/uploads
 
-# Expose the port the app runs on
+# Copy the built React app into the FastAPI statimc directory
+COPY --from=builder /app/build /app/static
+
 EXPOSE 8000
 
-# Run uvicorn when the container launches
 CMD ["uvicorn", "app.backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
