@@ -12,3 +12,4 @@ kazoo
 fastapi
 uvicorn[standard]
 python-keycloak
+openai

@@ -12,7 +12,7 @@ RUN npm run build
 FROM python:3.10-slim
 
 WORKDIR /app
-
+# RUN touch requirements.txt
 COPY req_freeze.txt ./req_freeze.txt
 
 RUN pip install -r req_freeze.txt
@@ -32,3 +32,6 @@ COPY --from=builder /app/build /app/static
 EXPOSE 8000
 
 CMD ["uvicorn", "app.backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# docker build -t bouldermaettel/askyourdocs-app:0.0.1 .
+# docker push bouldermaettel/askyourdocs-app:0.0.1

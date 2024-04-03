@@ -6,23 +6,38 @@ import nltk.data
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, T5ForConditionalGeneration
+import os
+from openai import AzureOpenAI
 
 
 class TextEmbedder:
 
-    def __init__(self, model_name: str, cache_folder: str):
+    def __init__(self, model_name: str, cache_folder: str, use_azure: bool = False):
         self._model_name = model_name
         self._cache_folder = cache_folder
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self._model = SentenceTransformer(model_name, cache_folder=cache_folder, device=self._device)
+        self._use_azure = use_azure
 
     def apply(self, texts: str | List[str], show_progress_bar: bool = None, normalize_embeddings: bool = True) -> np.ndarray:
-        embeddings = self._model.encode(
-            sentences=texts,
-            show_progress_bar=show_progress_bar,
-            device=self._device,
-            normalize_embeddings=normalize_embeddings,
-        )
+        if self._use_azure:
+            # Connect to Azure OpenAI service
+            api_key = os.getenv("AZURE_OPENAI_API_KEY")
+            api_version = "2023-05-15"
+            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+            client = AzureOpenAI(api_key=api_key, api_version=api_version, azure_endpoint=azure_endpoint)
+            
+            def generate_embeddings(text, model="text-embedding-ada-002"):
+                return client.embeddings.create(input=[text], model=model).data[0].embedding
+
+            embeddings = [generate_embeddings(text) for text in texts]
+        else:
+            embeddings = self._model.encode(
+                sentences=texts,
+                show_progress_bar=show_progress_bar,
+                device=self._device,
+                normalize_embeddings=normalize_embeddings,
+            )
         return embeddings
 
 

@@ -201,6 +201,7 @@ class QueryPipeline(Pipeline):
 
         logging.info(f'search k-nearest-neighbors for text')
         knn_vecs = self._get_knn_vecs_from_text(text=text)
+        print(knn_vecs)
 
         logging.info(f'search text entities')
         text_entities = self._get_text_entities_from_knn_vecs(knn_vecs=knn_vecs)
@@ -273,3 +274,18 @@ class FeedbackPipeline(Pipeline):
         response = self._solr_client.add_document(document=feedback, collection=collection, commit=commit)
 
         return response
+    
+    
+if __name__ == "__main__":
+    
+    # execute in shell: export PYTHONPATH="/home/bouldermaettel/Documents/python-projects/askyourdocs:$PYTHONPATH"
+    import sys
+    from askyourdocs.settings import SETTINGS as settings
+    sys.path.append('/home/bouldermaettel/Documents/python-projects/askyourdocs')
+    print(sys.path)
+    emb = TextEmbedder(model_name="google/flan-t5-small", cache_folder="cache",  use_azure=False).apply(texts=["Hello, world! i want more world!", "It is enough world for me!"], show_progress_bar = True)
+    print(emb)
+    vec = TextEmbedder(model_name="google/flan-t5-small", cache_folder="cache").apply(texts=["Hello, world! i want more world!", "It is not enough world for me!"])
+    
+    result = QueryPipeline(environment=Environment, settings=settings).apply(text="Hello, world! i want more world!", answer_only=False)
+    
