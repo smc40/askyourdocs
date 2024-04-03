@@ -20,7 +20,7 @@ class ModellingService(Service):
                 logging.info(f'start text embedding')
                 model_name = self._settings['modelling']['model_name']
                 cache_folder = self._settings['paths']['models']
-                model = TextEmbedder(model_name=model_name, cache_folder=cache_folder)
+                model = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=self._settings)
 
                 text = self._environment.text
                 vector = model.apply(texts=text)

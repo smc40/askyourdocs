@@ -3,9 +3,10 @@ import os
 
 _root_path = Path(__file__).parents[1]
 
-MODEL_NAME = "google/flan-t5-small"
-MODEL_EMBEDDING_DIMENSION = 512 #1536 # 1024 #to find out, load the HF model and print the model in a console. look for the 'in_feature' variable
-MODEL_NTOKENS = 512
+MODEL_NAME = "gpt-35-turbo"  #"google/flan-t5-small"
+EMBEDDING_MODEL_NAME = "text-embedding-ada-002"
+MODEL_EMBEDDING_DIMENSION = 1536 if 'gpt-' in MODEL_NAME else 512 # 1024 #512 #to find out, load the HF model and print the model in a console. look for the 'in_feature' variable
+MODEL_NTOKENS = 1024 if 'gpt-' in MODEL_NAME else 512   # this is half the input size of the model 2048 is max token with prompt + answer
 
 DOCS_COLLECTION = 'ayd_docs'
 TEXTS_COLLECTION = 'ayd_texts'
@@ -160,6 +161,7 @@ SETTINGS = {
     # Modeling
     'modelling': {
         'model_name': MODEL_NAME,
+        'embedding_model_name': EMBEDDING_MODEL_NAME,
         'embedding_dimension': MODEL_EMBEDDING_DIMENSION,
         'tokenizer_package': 'punkt',
         'ntok_max': MODEL_NTOKENS,

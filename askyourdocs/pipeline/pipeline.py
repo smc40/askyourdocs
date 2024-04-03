@@ -42,7 +42,7 @@ class IngestionPipeline(Pipeline):
         # Text embedding service
         model_name = settings['modelling']['model_name']
         cache_folder = settings['paths']['models']
-        self._text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder)
+        self._text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=settings)
 
     def _get_document_from_file(self, filename: str) -> TextDocument:
         """Extract the text from a given file."""
@@ -124,14 +124,14 @@ class QueryPipeline(Pipeline):
         # Text embedding service
         model_name = settings['modelling']['model_name']
         cache_folder = settings['paths']['models']
-        self._text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder)
+        self._text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=settings)
 
         self._ntok_max = settings['modelling']['ntok_max']
         self._ntok_context_fraction = settings['modelling']['ntok_context_fraction']
         self._ntok_context = int(self._ntok_max * self._ntok_context_fraction)
 
         self._summarizer = Summarizer(settings=settings)
-        self._tokenizer = AutoTokenizer.from_pretrained(settings['modelling']['model_name'])
+        self._tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small") if 'gpt-' in model_name else AutoTokenizer.from_pretrained(model_name)
 
     @staticmethod
     def _add_similarity_values(vector: np.ndarray, knn_embedding_entities: List[dict]):
@@ -202,6 +202,7 @@ class QueryPipeline(Pipeline):
         logging.info(f'search k-nearest-neighbors for text')
         knn_vecs = self._get_knn_vecs_from_text(text=text)
         print(knn_vecs)
+        print(len(knn_vecs[1].get('vector')))
 
         logging.info(f'search text entities')
         text_entities = self._get_text_entities_from_knn_vecs(knn_vecs=knn_vecs)
@@ -222,6 +223,7 @@ class QueryPipeline(Pipeline):
         # Perform a Solr lookup to get the names associated with doc_ids
         collection = self._settings['solr']['collections']['map']['docs']
         query = " OR ".join([f'id:{doc_id}' for doc_id in doc_ids])
+        print(query)
         params = {"fl": "id,name"}  # Assuming the name field in your Solr collection is named "name"
         response = self._solr_client.search(query=query, collection=collection, params=params)
 
@@ -282,10 +284,15 @@ if __name__ == "__main__":
     import sys
     from askyourdocs.settings import SETTINGS as settings
     sys.path.append('/home/bouldermaettel/Documents/python-projects/askyourdocs')
-    print(sys.path)
-    emb = TextEmbedder(model_name="google/flan-t5-small", cache_folder="cache",  use_azure=False).apply(texts=["Hello, world! i want more world!", "It is enough world for me!"], show_progress_bar = True)
-    print(emb)
-    vec = TextEmbedder(model_name="google/flan-t5-small", cache_folder="cache").apply(texts=["Hello, world! i want more world!", "It is not enough world for me!"])
     
-    result = QueryPipeline(environment=Environment, settings=settings).apply(text="Hello, world! i want more world!", answer_only=False)
+    Environment.solr_url = "http://localhost:8983"
+    Environment.zk_urls = "http://localhost:2181"
     
+    query_pipeline = QueryPipeline(environment=Environment, settings=settings)
+
+    # results = query_pipeline._get_knn_vecs_from_text(text="is there an appropriate model for more than 512 tokens?")
+    results = query_pipeline._get_knn_vecs_from_text(text="is bern considered a city?")
+    print([result.get('score') for result in results])
+    result_text = query_pipeline._get_text_entities_from_knn_vecs(knn_vecs=results)
+    text = query_pipeline._get_context_from_text_entities(text_entities=result_text)
+    print(text)
