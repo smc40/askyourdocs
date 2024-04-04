@@ -29,6 +29,7 @@ SETTINGS = {
         'nshards': 1,
         'datetime_format': "%Y-%m-%dT%H:%M:%S.%fZ",
         'top_k': 5,
+        'filter_on_score': 0.5, # use None if you want to disable the filter
         'collections': {
             'map': {
                 'docs': DOCS_COLLECTION,

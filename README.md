@@ -16,12 +16,12 @@
 At the ingestion stage, one or several documents are stored into the database with the corresponding semantic
 embeddings. The `IngestionPipeline` object defined in `askyourdocs.pipeline.pipeline` enchains the following steps:
 
-|     | Stage           | Remark                                         | Related Object(s)                                 |
-| --- | --------------- | ---------------------------------------------- | ------------------------------------------------- |
-| 1   | Extraction      | Extracts the text from the retrieved documents | `askyourdocs.storage.scraping` -> `TikaExtractor` |
-| 2   | Text Entities   | Split text into text chunks                    | `askyourdocs.modelling.llm` -> `TextTokenizer`    |
-| 3   | Text Embeddings | Compute vector embeddings of the text chunks   | `askyourdocs.modelling.llm` -> `TextEmbedder`     |
-| 4   | Storage in Solr | Add documents and embeddings to Solr           | `askyourdocs.storage.client` -> `SolrClient`      |
+|   | Stage           | Remark                                         | Related Object(s)                                     |
+| - | --------------- | ---------------------------------------------- | ----------------------------------------------------- |
+| 1 | Extraction      | Extracts the text from the retrieved documents | `askyourdocs.storage.scraping` -> `TikaExtractor` |
+| 2 | Text Entities   | Split text into text chunks                    | `askyourdocs.modelling.llm` -> `TextTokenizer`    |
+| 3 | Text Embeddings | Compute vector embeddings of the text chunks   | `askyourdocs.modelling.llm` -> `TextEmbedder`     |
+| 4 | Storage in Solr | Add documents and embeddings to Solr           | `askyourdocs.storage.client` -> `SolrClient`      |
 
 ### Query
 
@@ -29,12 +29,12 @@ At the query stage, a given user input is transformed into a semantic vector, fr
 parts are retrieved and used for formulating an answer. The `QueryPipeline` object defined in
 `askyourdocs.pipeline.pipeline` enchains the following steps:
 
-|     | Stage               | Remark                                        | Related Object(s)                             |
-| --- | ------------------- | --------------------------------------------- | --------------------------------------------- |
-| 1   | Text Embeddings     | Compute vector embeddings of query            | `askyourdocs.modelling.llm` -> `TextEmbedder` |
-| 2   | k-nearest-neighbors | Search the semantically closest text entities | `askyourdocs.storage.client` -> `SolrClient`  |
-| 3   | Create context      | Create text context from relevant documents   | -                                             |
-| 4   | Answer              | Use context to form an answer to the query    | `askyourdocs.modelling.llm` -> `Summarizer`   |
+|   | Stage               | Remark                                        | Related Object(s)                                 |
+| - | ------------------- | --------------------------------------------- | ------------------------------------------------- |
+| 1 | Text Embeddings     | Compute vector embeddings of query            | `askyourdocs.modelling.llm` -> `TextEmbedder` |
+| 2 | k-nearest-neighbors | Search the semantically closest text entities | `askyourdocs.storage.client` -> `SolrClient`  |
+| 3 | Create context      | Create text context from relevant documents   | -                                                 |
+| 4 | Answer              | Use context to form an answer to the query    | `askyourdocs.modelling.llm` -> `Summarizer`   |
 
 ## Automatic Setup
 
@@ -99,7 +99,7 @@ export TIKA_URL=<changeme>        # For local host use "http://localhost:9998"
 
 # Solr
 export SOLR_URL=<changeme>        # For local host use "http://localhost:8983"
-export ZK_URLS=<changeme>         # For local host use "localhost:2181"
+export ZK_URLS=<changeme>         # For local host use "http://localhost:2181"
 
 # Frontend
 export FRONTEND_URL=<changeme>    # For local host use "http://localhost:3000"

@@ -8,9 +8,10 @@ from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, T5ForConditionalGeneration
 import os
 from openai import AzureOpenAI
+from askyourdocs.settings import SETTINGS as settings
 
 class AzureOpenAIClient:
-    def __init__(self, api_key: None | str = None, azure_endpoint: None | str = None, api_version: str = "2023-05-15"):
+    def __init__(self, api_key: None | str = None, azure_endpoint: None | str = None, api_version: str = "2023-05-15", settings=settings):
         if api_key:
             self._api_key = api_key
         else:
@@ -26,18 +27,20 @@ class AzureOpenAIClient:
             return AzureOpenAI(api_key=self._api_key, 
                             api_version=self._api_version,
                             azure_endpoint=self._azure_endpoint)
+            
         else:
             logging.error("Azure OpenAI API key or endpoint not provided")
             return None
         
-    def get_embedding(self, text: str, model: str = "text-embedding-ada-002"):
+    def get_embedding(self, text: str, model: str = settings['modelling']['embedding_model_name']):
         client = self.get_client()
         if client:
+            print(f'input_text: {text}')
             return client.embeddings.create(input=[text], model=model).data[0].embedding
         else:
             return None
     
-    def get_summary(self, task: str, query: str, context: str, summarizing_model: str = "gpt-35-turbo"):
+    def get_summary(self, task: str, query: str, context: str, summarizing_model: str = settings['modelling']['model_name']):
         client = self.get_client()
         if client:
             messages=[
@@ -45,6 +48,8 @@ class AzureOpenAIClient:
                 {"role": "user", "content": f'{query}'},
                 {"role": "assistant", "content": f'{context}'},
             ]
+            
+            print(f'messages: {messages}')
             response = client.chat.completions.create(
                 model=summarizing_model,
                 messages=messages
@@ -66,24 +71,29 @@ class TextEmbedder:
         
 
     def apply(self, texts: str | List[str], show_progress_bar: bool = None, normalize_embeddings: bool = True) -> np.ndarray:
-        texts, flatten = (texts[0], True) if isinstance(texts, str) and texts else (texts, None)
+        # Ensure `texts` is always treated as a list for uniform processing
+        texts, flatten = ([texts], True) if isinstance(texts, str) else (texts, False)
+        
         if self._client:
-            embeddings = [self._client.get_embedding(text=text, model=self._settings['modelling'].get('embedding_model_name')) for text in texts]
-            if normalize_embeddings:
-                norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+            # Fetch embeddings
+            embeddings_list = [self._client.get_embedding(text=text, model=self._settings['modelling'].get('embedding_model_name')) for text in texts if isinstance(text, str) and len(text) > 10]
+            embeddings = np.array(embeddings_list)  # Convert list to NumPy array for uniform processing
+            
+            if normalize_embeddings and embeddings.size > 0:
+                norms = np.linalg.norm(embeddings, axis=-1 if embeddings.ndim == 1 else 1, keepdims=True)
+                norms[norms == 0] = 1  # Prevent division by zero
                 embeddings = embeddings / norms
         else:
+            # Assuming the model's encode method returns a NumPy array or can be treated as such
             embeddings = self._model.encode(
                 sentences=texts,
                 show_progress_bar=show_progress_bar,
                 device=self._device,
                 normalize_embeddings=normalize_embeddings,
             )
-        if flatten:
-            return embeddings[0]
-        else:
-            return embeddings
-
+        
+        # Decide whether to return a single embedding or all embeddings based on the input
+        return embeddings[0] if flatten and embeddings.ndim > 1 else embeddings
 
 class TextTokenizer:
 
@@ -94,18 +104,41 @@ class TextTokenizer:
         except LookupError:
             nltk.download(f'{package}')
 
-    @staticmethod
-    def get_text_entities(text: str, entity: str = 'sentence') -> List[str]:
+    def get_text_entities(self, text: str, entity: str = 'sentence') -> List[str]:
         match entity:
             case 'sentence':
                 logging.info('tokenizing text into sentences')
-                return nltk.sent_tokenize(text=text)
+                sentences = nltk.sent_tokenize(text=text)
+                sentences = self._ensure_sentence_length(sentences, text)
+                return sentences
             case 'word':
                 logging.info('tokenizing text into words')
                 return nltk.word_tokenize(text=text)
 
             case _:
                 logging.error(f'unknown token entity {entity}')
+                
+    @staticmethod
+    def _ensure_sentence_length(sentences: List[str], original_text: str, min_length: int = 20) -> List[str]:
+        """
+        Ensure sentences have at least `min_length` characters, concatenating them if necessary,
+        and keep original spacing after dots.
+        """
+        processed_sentences = []
+        sentence_buffer = ""
+        for i, sentence in enumerate(sentences):
+            sentence_with_space = sentence + " "
+            if len(sentence_buffer + sentence_with_space) >= min_length and len(sentence_buffer) < min_length:
+                processed_sentences.append((sentence_buffer + sentence_with_space).strip())
+                sentence_buffer = ""
+            else:
+                sentence_buffer += sentence_with_space
+
+            # Check if it's the last sentence and add it to the processed sentences
+            if i == len(sentences) - 1 and len(processed_sentences) >= min_length:
+                processed_sentences.append(sentence_buffer.strip())
+
+        return processed_sentences
 
 
 class Summarizer:
@@ -140,7 +173,7 @@ class Summarizer:
     
 if __name__ ==  '__main__':
     
-        # execute in shell: export PYTHONPATH="/home/bouldermaettel/Documents/python-projects/askyourdocs:$PYTHONPATH"
+    # execute in shell: export PYTHONPATH="/home/bouldermaettel/Documents/python-projects/askyourdocs:$PYTHONPATH"
     from askyourdocs.settings import SETTINGS as settings
     summarizer = Summarizer(settings=settings)
     query = "What is the capital of Switzerland?"
@@ -152,9 +185,12 @@ if __name__ ==  '__main__':
     model_name = settings['modelling']['model_name']
     cache_folder = settings['paths']['models']
 
-    text = ["Hello, world! i want more world!", 'be as you are']
+    # text = ["Hello, world! i want more world!", 'be as you are']
+    text = "Hello, world! i want more world!"
     text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder,settings=settings)
     emb = text_embedder.apply(text, normalize_embeddings=True)
     print(emb)
     
-    #TODO: test if the nested text is ok or if it should be flattened in case it is a string.
+    tokenizer = TextTokenizer()
+    sents = tokenizer.get_text_entities(text="Hello, world! i want more world! 1. 2. Helllo", entity='sentence')
+    print(sents)

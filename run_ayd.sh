@@ -22,3 +22,4 @@ elif [[ "$OSTYPE" == "msys"* ]]; then
 else
     echo "Unsupported operating system."
 fi
+

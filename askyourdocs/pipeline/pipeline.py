@@ -148,6 +148,10 @@ class QueryPipeline(Pipeline):
         collection = self._settings['solr']['collections']['map']['vecs']
         response = self._solr_client.search(query=query, collection=collection)
         knn_embedding_entities = self._add_similarity_values(vector=vector, knn_embedding_entities=response['docs'])
+        
+        if threshold := self._settings['solr']['filter_on_score']:
+            knn_embedding_entities = [ent for ent in knn_embedding_entities if ent['score'] > threshold]
+            print(f"scores: {[ent['score'] for ent in knn_embedding_entities]}")
         return knn_embedding_entities
 
     def _get_text_entities_from_knn_vecs(self, knn_vecs: List[dict]) -> List[dict]:
@@ -155,6 +159,7 @@ class QueryPipeline(Pipeline):
         query = f'id:({" OR ".join(te_ids)})'
         collection = self._settings['solr']['collections']['map']['texts']
         response = self._solr_client.search(query=query, collection=collection)
+        print(f"text_chucks: {[ent['text'] for ent in response['docs']]}")
         return response['docs']
 
     def _get_context_from_text_entities(self, text_entities: List[dict]) -> str:
@@ -181,11 +186,13 @@ class QueryPipeline(Pipeline):
         candidates = [(te['doc_id'], te['index']) for te in text_entities]
         context_texts = pd.Series([], index=multi_index)
         while len(candidates):
-            doc_id, index = candidates.pop()
+            #TODO: start from the beginning and not from the end (pop(0) instead of pop())
+            doc_id, index = candidates.pop(0)
             if (doc_id, index) not in context_texts:
                 context_texts[(doc_id, index)] = doc_texts[(doc_id, index)]
 
                 if not _is_below_ntok_max(context_texts):
+                    print('too many tokens')
                     context_texts.drop((doc_id, index), inplace=True)
                     break
 
@@ -201,14 +208,13 @@ class QueryPipeline(Pipeline):
 
         logging.info(f'search k-nearest-neighbors for text')
         knn_vecs = self._get_knn_vecs_from_text(text=text)
-        print(knn_vecs)
-        print(len(knn_vecs[1].get('vector')))
 
         logging.info(f'search text entities')
         text_entities = self._get_text_entities_from_knn_vecs(knn_vecs=knn_vecs)
 
         logging.info(f'extract context from documents')
         context = self._get_context_from_text_entities(text_entities=text_entities)
+        print(context)
 
         logging.info(f'generate answer to "{text}" based on context "{context[:200]}..."')
         answer = self._summarizer.get_answer(query=text, context=context)
@@ -223,7 +229,6 @@ class QueryPipeline(Pipeline):
         # Perform a Solr lookup to get the names associated with doc_ids
         collection = self._settings['solr']['collections']['map']['docs']
         query = " OR ".join([f'id:{doc_id}' for doc_id in doc_ids])
-        print(query)
         params = {"fl": "id,name"}  # Assuming the name field in your Solr collection is named "name"
         response = self._solr_client.search(query=query, collection=collection, params=params)
 

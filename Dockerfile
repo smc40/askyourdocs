@@ -33,5 +33,4 @@ EXPOSE 8000
 
 CMD ["uvicorn", "app.backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
-# docker build -t bouldermaettel/askyourdocs-app:0.0.1 .
-# docker push bouldermaettel/askyourdocs-app:0.0.1
+# docker build -t bouldermaettel/askyourdocs-app:0.0.1 . ; docker push bouldermaettel/askyourdocs-app:0.0.1 
