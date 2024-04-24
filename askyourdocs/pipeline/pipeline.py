@@ -169,7 +169,10 @@ class QueryPipeline(Pipeline):
 
         def _is_below_ntok_max(cntxt: pd.Series) -> bool:
             text = _concatenate_texts_from_series(cntxt=cntxt)
-            ntoks = len(self._tokenizer.tokenize(text))
+            if 'gpt-' in self._settings['modelling']['model_name']:
+                ntoks = len(text.split())
+            else:
+                ntoks = len(self._tokenizer.tokenize(text))
             return ntoks <= self._ntok_context
 
         multi_index = pd.MultiIndex.from_arrays([[], []], names=['doc_id', 'txt_ind'])
@@ -180,8 +183,11 @@ class QueryPipeline(Pipeline):
             query = f'doc_id:{te["doc_id"]}'
             params = {'start': start, 'rows': rows, "sort": "index asc"}
             response = self._solr_client.search(query=query, collection=self._texts_collection, params=params)
+            print(f'reponse["docs"]: {response["docs"]}')
             for _te in response['docs']:
-                doc_texts[(_te['doc_id'], _te['index'])] = _te['text']
+                print(f'_te: {_te}')
+                text = _te.get('text') if _te.get('text') else ''
+                doc_texts[(_te['doc_id'], _te['index'])] = text
 
         candidates = [(te['doc_id'], te['index']) for te in text_entities]
         context_texts = pd.Series([], index=multi_index)
@@ -192,7 +198,6 @@ class QueryPipeline(Pipeline):
                 context_texts[(doc_id, index)] = doc_texts[(doc_id, index)]
 
                 if not _is_below_ntok_max(context_texts):
-                    print('too many tokens')
                     context_texts.drop((doc_id, index), inplace=True)
                     break
 

@@ -87,8 +87,14 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            answer = _QUERY_PIPELINE.apply(text=data, answer_only=False)
-            await websocket.send_json(answer)
+            # Check if data is not empty and not just whitespace
+            if data.strip():  # This checks if the data is not just whitespace
+                answer = _QUERY_PIPELINE.apply(text=data, answer_only=False)
+                await websocket.send_json(answer)
+            else:
+                pass
+                # Optionally, send back an error or ignore message if the data is empty
+                # await websocket.send_json({'error': 'No content provided'})
     except WebSocketDisconnect:
         pass
     finally:

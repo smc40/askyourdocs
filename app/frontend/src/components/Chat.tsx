@@ -6,6 +6,7 @@ import config from '../config.js';
 import Modal from 'react-modal';
 import FeedbackModalContent from './FeedbackModalContent';
 import Authentication from '../auth';
+import Sidebar from './Sidebar';
 
 import { Worker } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
@@ -40,6 +41,30 @@ const Main: React.FC = () => {
             setChatMessages(JSON.parse(storedMessages));
         }
     }, []);
+
+    const clearChat = () => {
+        if (
+            window.confirm(
+                'Are you sure you want to clear the chat? This action cannot be undone.'
+            )
+        ) {
+            // Temporarily disable WebSocket communication
+            if (socket.current) {
+                socket.current.close(); // Close the socket connection
+            }
+
+            // Clear chat messages from state and local storage
+            setChatMessages([]);
+            localStorage.removeItem('chatMessages');
+
+            // Optionally, reinitialize the WebSocket after a brief delay
+            setTimeout(() => {
+                socket.current = new WebSocket(
+                    config.backendUrl.replace('http', 'ws') + '/ws/query'
+                );
+            }, 1000); // Reopen after 1 second
+        }
+    };
 
     const [chatMessages, setChatMessages] = useState<Message[]>(() => {
         const storedMessages = localStorage.getItem('chatMessages');
@@ -227,6 +252,15 @@ const Main: React.FC = () => {
         <main className="bg-white p-4 w-full">
             <div className="chat over max-h-[75vh]">
                 <div className="overflow-y-auto max-h-[75vh]">
+                    <div className="chat-controls flex justify-start mt-4">
+                        <button
+                            onClick={clearChat}
+                            className="mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                            Clear Chat{' '}
+                        </button>
+                    </div>
+
                     {/* Message list */}
                     {chatMessages.map((message, index) => (
                         <Message
@@ -272,14 +306,19 @@ const Main: React.FC = () => {
                     <button
                         type="submit"
                         className="absolute right-0 px-4"
-                        style={{ top: '50%', transform: 'translateY(-50%)' }}
+                        style={{ top: '35%', transform: 'translateY(-50%)' }}
                         disabled={inputValue.length <= 3}
                     >
                         <img src={planeIcon} className="h-8" alt="Submit" />
                     </button>
+                    {/* <button
+                        onClick={clearChat}
+                        className="mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                    >
+                        Clear Chat
+                    </button> */}
                 </form>
             </div>
-
             <Modal
                 isOpen={isOpen}
                 onRequestClose={closeModal}

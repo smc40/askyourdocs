@@ -3,6 +3,7 @@ import React from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Chat from './components/Chat';
+// import Chat, { clearChat } from './components/Chat';
 
 const App: React.FC = () => {
     const handleFileUpload = (file: File) => {

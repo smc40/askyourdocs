@@ -3,10 +3,11 @@ import os
 
 _root_path = Path(__file__).parents[1]
 
-MODEL_NAME = "gpt-35-turbo"  #"google/flan-t5-small"
+MODEL_NAME = "gpt-4-32k" # "gpt-35-turbo"  #"google/flan-t5-small"
 EMBEDDING_MODEL_NAME = "text-embedding-ada-002"
-MODEL_EMBEDDING_DIMENSION = 1536 if 'gpt-' in MODEL_NAME else 512 # 1024 #512 #to find out, load the HF model and print the model in a console. look for the 'in_feature' variable
-MODEL_NTOKENS = 1024 if 'gpt-' in MODEL_NAME else 512   # this is half the input size of the model 2048 is max token with prompt + answer
+MODEL_EMBEDDING_DIMENSION = 1536 if 'ada-002' in EMBEDDING_MODEL_NAME else 512 # 1024 #512 #to find out, load the HF model and print the model in a console. look for the 'in_feature' variable
+MODEL_NTOKENS = 10000 if 'gpt-4-32k' in MODEL_NAME else 1024 if 'gpt-35-turbo' in MODEL_NAME else 512  
+FILTER_ON_SCORE = 0.5 # use None if you want to disable the filter
 
 DOCS_COLLECTION = 'ayd_docs'
 TEXTS_COLLECTION = 'ayd_texts'
@@ -29,7 +30,7 @@ SETTINGS = {
         'nshards': 1,
         'datetime_format': "%Y-%m-%dT%H:%M:%S.%fZ",
         'top_k': 5,
-        'filter_on_score': 0.5, # use None if you want to disable the filter
+        'filter_on_score': FILTER_ON_SCORE, 
         'collections': {
             'map': {
                 'docs': DOCS_COLLECTION,
