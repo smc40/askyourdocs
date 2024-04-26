@@ -146,7 +146,8 @@ class Summarizer:
     _task = """I want you to act like a most rational person that only give answers for which he has strong evidence. 
     Therefore, I don't want you to give me any information that is not contained in the provided context. 
     Please just summarize the context with respect to the asked question in simple words. If there is no 
-    related information in the context please inform me accordingly and do not generate the answer from your knowledge."""
+    related information in the context please inform me accordingly and do not generate the answer from your knowledge. Reply in the 
+    language of the question."""
 
     def __init__(self, settings: dict):
         self._settings = settings

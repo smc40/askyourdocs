@@ -6,7 +6,6 @@ import config from '../config.js';
 import Modal from 'react-modal';
 import FeedbackModalContent from './FeedbackModalContent';
 import Authentication from '../auth';
-import Sidebar from './Sidebar';
 
 import { Worker } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
@@ -48,21 +47,30 @@ const Main: React.FC = () => {
                 'Are you sure you want to clear the chat? This action cannot be undone.'
             )
         ) {
-            // Temporarily disable WebSocket communication
             if (socket.current) {
                 socket.current.close(); // Close the socket connection
             }
 
-            // Clear chat messages from state and local storage
-            setChatMessages([]);
-            localStorage.removeItem('chatMessages');
+            const defaultInitialMessage = {
+                type: 'bot',
+                text: 'Welcome back! Start a new conversation or upload documents to get started.',
+                source: [],
+                texts: [],
+                filename: [],
+            };
 
-            // Optionally, reinitialize the WebSocket after a brief delay
+            setChatMessages([defaultInitialMessage]);
+
+            localStorage.setItem(
+                'chatMessages',
+                JSON.stringify([defaultInitialMessage])
+            );
+
             setTimeout(() => {
                 socket.current = new WebSocket(
                     config.backendUrl.replace('http', 'ws') + '/ws/query'
                 );
-            }, 1000); // Reopen after 1 second
+            }, 1000); // Reopen the socket after 1 second
         }
     };
 
@@ -156,6 +164,11 @@ const Main: React.FC = () => {
                 socket.current.readyState === WebSocket.OPEN
             ) {
                 socket.current.send(JSON.stringify({ data: inputValue }));
+            } else {
+                console.log(
+                    'WebSocket is not ready. Attempting to reconnect...'
+                );
+                // Attempt to reconnect or handle the not ready state appropriately
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -250,17 +263,8 @@ const Main: React.FC = () => {
 
     return (
         <main className="bg-white p-4 w-full">
-            <div className="chat over max-h-[75vh]">
+            <div className="chat-container max-h-[75vh]">
                 <div className="overflow-y-auto max-h-[75vh]">
-                    <div className="chat-controls flex justify-start mt-4">
-                        <button
-                            onClick={clearChat}
-                            className="mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                            Clear Chat{' '}
-                        </button>
-                    </div>
-
                     {/* Message list */}
                     {chatMessages.map((message, index) => (
                         <Message
@@ -289,10 +293,10 @@ const Main: React.FC = () => {
                     <div ref={chatEndRef} />
                 </div>
 
-                {/* Chat input form */}
+                {/* Chat input form  */}
                 <form
                     onSubmit={handleSubmit}
-                    className="fixed bottom-10 w-9/12 max-w-3xl"
+                    className="chat-controls fixed bottom-10 w-9/12 max-w-3xl flex justify-between items-center"
                 >
                     <textarea
                         value={inputValue}
@@ -300,23 +304,22 @@ const Main: React.FC = () => {
                         onKeyDown={handleKeyDown}
                         placeholder="Type a question for your documents..."
                         className="w-full p-2 border border-gray-300 rounded-lg mr-2 mt-4 focus:ring-red-500 shadow-lg"
-                        style={{ resize: 'none' }}
+                        style={{ resize: 'none', paddingRight: '3rem' }}
                     />
-
                     <button
                         type="submit"
-                        className="absolute right-0 px-4"
-                        style={{ top: '35%', transform: 'translateY(-50%)' }}
+                        className="absolute right-0 top-1/2 transform -translate-y-1/2 px-4"
+                        style={{ right: '130px' }}
                         disabled={inputValue.length <= 3}
                     >
                         <img src={planeIcon} className="h-8" alt="Submit" />
                     </button>
-                    {/* <button
+                    <button
                         onClick={clearChat}
-                        className="mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                        className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                     >
                         Clear Chat
-                    </button> */}
+                    </button>
                 </form>
             </div>
             <Modal

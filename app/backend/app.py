@@ -84,22 +84,22 @@ async def read_root():
 @app.websocket("/ws/query")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    try:
+    try {
         while True:
             data = await websocket.receive_text()
-            # Check if data is not empty and not just whitespace
-            if data.strip():  # This checks if the data is not just whitespace
+            if data.strip():
                 answer = _QUERY_PIPELINE.apply(text=data, answer_only=False)
                 await websocket.send_json(answer)
-            else:
-                pass
-                # Optionally, send back an error or ignore message if the data is empty
-                # await websocket.send_json({'error': 'No content provided'})
+            # else:
+            #     await websocket.send_json({"error": "Empty input"})
     except WebSocketDisconnect:
-        pass
+        logging.info("WebSocket was disconnected.")
+    except Exception as e:
+        logging.error(f"Error during WebSocket communication: {e}")
     finally:
         if websocket.client_state != WebSocketState.DISCONNECTED:
             await websocket.close()
+
 
 
 @app.get("/api/get_documents", response_model=DataList)
