@@ -84,7 +84,7 @@ async def read_root():
 @app.websocket("/ws/query")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    try {
+    try:
         while True:
             data = await websocket.receive_text()
             if data.strip():
