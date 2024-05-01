@@ -1,7 +1,7 @@
 version: '3.7'
 services:
-  backend:
-    image: ghcr.io/smc40/askyourdocs-backend:${AYD_IMAGE_TAG:-latest}
+  app:
+    image: ghcr.io/smc40/askyourdocs-app:${AYD_IMAGE_TAG:-latest}
     restart: always
     ports:
       - "8000:8000"
@@ -10,8 +10,7 @@ services:
       - TIKA_URL=http://tika:9998
       - SOLR_URL=http://solr:8983
       - ZK_URLS=zoo1:2181
-      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
-      - FRONTEND_URL=${FRONTEND_URL:-http://frontend:3000}
+      - BACKEND_URL=${BACKEND_URL:-http://app:8000}
       - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
       - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-bQwuuesYTIfcJmOxI4t4fltV48OQsAQq} 
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
@@ -30,15 +29,6 @@ services:
 {% if proxy_address is defined %}
       - ${TRUST_STORE:-/dev/null}:/cacert.pem:ro
 {% endif %}
-  frontend:
-    image: ghcr.io/smc40/askyourdocs-frontend:${AYD_IMAGE_TAG:-latest}
-    ports:
-      - "3000:3000"
-    environment:
-      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
-      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
-    depends_on:
-      - solr
   tika:
     image: apache/tika:latest
     restart: always
