@@ -8,7 +8,7 @@ set -u
 
 sudo chown 1001 /opt/solr
 
-docker compose -p ayd build --no-cache
+# docker compose -p ayd build --no-cache
 docker compose -p ayd up -d
 
 docker exec -i ayd-postgres-1 psql -U "${AYD_PSQL_USER:-ayd_dba}" -d $"${AYD_PSQL_DB:-ayd}" -a -f /user_scripts/user_entity_data.sql

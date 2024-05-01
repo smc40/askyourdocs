@@ -87,19 +87,16 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            if data.strip():
-                answer = _QUERY_PIPELINE.apply(text=data, answer_only=False)
-                await websocket.send_json(answer)
+            # if data.strip():
+            answer = _QUERY_PIPELINE.apply(text=data, answer_only=False)
+            await websocket.send_json(answer)
             # else:
             #     await websocket.send_json({"error": "Empty input"})
     except WebSocketDisconnect:
-        logging.info("WebSocket was disconnected.")
-    except Exception as e:
-        logging.error(f"Error during WebSocket communication: {e}")
+        pass
     finally:
         if websocket.client_state != WebSocketState.DISCONNECTED:
             await websocket.close()
-
 
 
 @app.get("/api/get_documents", response_model=DataList)
