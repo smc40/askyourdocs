@@ -6,7 +6,7 @@ sudo rm -rf /opt/solr; sudo mkdir /opt/solr
 set -e
 set -u
 
- 
+sudo chown 1001 /opt/solr
 
 # docker compose -p ayd build --no-cache
 docker compose -p ayd up -d

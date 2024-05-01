@@ -1,10 +1,10 @@
 version: '3.7'
 services:
   app:
-    # image: bouldermaettel/askyourdocs-app:0.0.5
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: bouldermaettel/askyourdocs-app:0.0.5
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
