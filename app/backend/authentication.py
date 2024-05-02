@@ -15,7 +15,7 @@ keycloak_openid = KeycloakOpenID(server_url=settings['app']['keycloak_url'],
 class AuthenticationMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app):
-        self.ident = True
+        self.no_ident = True
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
