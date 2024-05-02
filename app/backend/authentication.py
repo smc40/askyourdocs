@@ -15,10 +15,11 @@ keycloak_openid = KeycloakOpenID(server_url=settings['app']['keycloak_url'],
 class AuthenticationMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app):
+        self.ident = True
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):
-        if request.url.path.startswith('/uploads') | request.url.path.startswith('/app') | request.url.path.startswith('/public') or request.url.path =="/":
+        if request.url.path.startswith('/uploads') | request.url.path.startswith('/app') | request.url.path.startswith('/public') or request.url.path =="/" or self.no_ident:
             response = await call_next(request)
             return response
 
