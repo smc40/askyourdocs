@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: bouldermaettel/askyourdocs-app:0.0.5
+    image: bouldermaettel/askyourdocs-app:0.0.6
     # build:
     #   context: .
     #   dockerfile: Dockerfile
@@ -96,8 +96,8 @@ services:
   nginx:
     image: nginx
     restart: always
-    # volumes:
-    #   - ./nginx:/etc/nginx/templates
+    volumes:
+      - ./nginx:/etc/nginx/templates
     ports:
       - "80:80"
     environment:
