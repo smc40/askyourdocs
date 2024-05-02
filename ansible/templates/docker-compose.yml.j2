@@ -85,7 +85,6 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      {% comment %} - /opt/keycloak-config/realm-export.json:/tmp/realm/realm.json {% endcomment %}
       - /opt/keycloak-theme:/opt/bitnami/keycloak/themes/ayd/login
     environment:
       - KEYCLOAK_ADMIN_USER=${AYD_KC_USER:-admin}
