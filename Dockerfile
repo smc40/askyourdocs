@@ -1,13 +1,13 @@
 
-# app/frontend/Dockerfile
-FROM node:14 as builder
+# # app/frontend/Dockerfile
+# FROM node:14 as builder
 
-WORKDIR /app
+# WORKDIR /app
 
-COPY ./app/frontend /app
+# COPY ./app/frontend /app
 
-RUN npm install
-RUN npm run build
+# RUN npm install
+# RUN npm run build
 
 FROM python:3.10-slim
 
