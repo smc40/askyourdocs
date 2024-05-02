@@ -15,35 +15,41 @@ keycloak_openid = KeycloakOpenID(server_url=settings['app']['keycloak_url'],
 class AuthenticationMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app):
-        self.no_ident = True
         super().__init__(app)
 
-    async def dispatch(self, request: Request, call_next):
-        if request.url.path.startswith('/uploads') | request.url.path.startswith('/app') | request.url.path.startswith('/public') or request.url.path =="/" or self.no_ident:
+    async def dispatch(self, request: Request, call_next):       
+        if request.url.path.startswith('/uploads') | request.url.path.startswith('/app') | request.url.path.startswith('/public') or request.url.path =="/" :
             response = await call_next(request)
             return response
-
-        token = request.headers.get('Authorization')
-
-        if not token:
-            return JSONResponse({"error": "Unauthorized"}, 401)
-        
-        try:
-            authorization_info = keycloak_openid.introspect(token)
-
-        except Exception as e:
-            logging.error("Error raised from keycloak: ", e)
-            return JSONResponse({"error": "Unauthorized"}, 401)
-
-        if authorization_info.get("active") is not True:
-            return JSONResponse({"error": "Unauthorized"}, 401)
         
         request.state.userinfo = {
-            "id": authorization_info['sub'],
-            "name": authorization_info.get("name", None),
-            "username": authorization_info['preferred_username'],
-            "email": authorization_info.get("email"),
+            "id": "test-user-id",
+            "name": "Test User",
+            "username": "testuser",
+            "email": "testuser@example.com",
         }
+
+        # token = request.headers.get('Authorization')
+
+        # if not token:
+        #     return JSONResponse({"error": "Unauthorized"}, 401)
+        
+        # try:
+        #     authorization_info = keycloak_openid.introspect(token)
+
+        # except Exception as e:
+        #     logging.error("Error raised from keycloak: ", e)
+        #     return JSONResponse({"error": "Unauthorized"}, 401)
+
+        # if authorization_info.get("active") is not True:
+        #     return JSONResponse({"error": "Unauthorized"}, 401)
+        
+        # request.state.userinfo = {
+        #     "id": authorization_info['sub'],
+        #     "name": authorization_info.get("name", None),
+        #     "username": authorization_info['preferred_username'],
+        #     "email": authorization_info.get("email"),
+        # }
 
         response = await call_next(request)
         return response
