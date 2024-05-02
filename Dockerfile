@@ -33,4 +33,4 @@ EXPOSE 8000
 
 CMD ["uvicorn", "app.backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
-# IMAGE_TAG=0.0.5; docker build -t bouldermaettel/askyourdocs-app:$IMAGE_TAG . ; docker push bouldermaettel/askyourdocs-app:$IMAGE_TAG
+# IMAGE_TAG=0.0.6; docker build -t bouldermaettel/askyourdocs-app:$IMAGE_TAG . ; docker push bouldermaettel/askyourdocs-app:$IMAGE_TAG
