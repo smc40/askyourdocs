@@ -1,0 +1,36 @@
+server {
+    # Listen to port 80 (HTTP) on both IPv4 and IPv6.
+    listen 80;
+
+    # Domain names this server should respond to.
+    server_name api.${AYD_BASE_DOMAIN} app.${AYD_BASE_DOMAIN};
+
+    # SSL Configuration (currently commented out but can be enabled if needed)
+    # listen 443 ssl;
+    # ssl_certificate         /etc/letsencrypt/live/test-name/fullchain.pem;
+    # ssl_certificate_key     /etc/letsencrypt/live/test-name/privkey.pem;
+    # ssl_trusted_certificate /etc/letsencrypt/live/test-name/chain.pem;
+    # ssl_dhparam /etc/letsencrypt/dhparams/dhparam.pem;
+
+    location / {
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $server_name;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_cookie_path / "/; HTTPOnly; Secure";
+
+        proxy_set_header Host $http_host;
+        proxy_set_header X-NginX-Proxy true;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_pass http://app;
+        proxy_redirect off;
+    }
+}
+
+# Define the upstream app only once to avoid duplication
+upstream app {
+    server app:8000;
+}

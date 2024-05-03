@@ -12,9 +12,9 @@ services:
       - TIKA_URL=http://tika:9998
       - SOLR_URL=http://solr:8983
       - ZK_URLS=zoo1:2181
-      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://172.17.0.1:8080}
+      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://keycloak:8080}
       - BACKEND_URL=${BACKEND_URL:-http://app:8000}
-      - FRONTEND_URL=${FRONTEND_URL:-http://frontend:3000}
+      - FRONTEND_URL=${FRONTEND_URL:-http://app:8000}
       - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-bQwuuesYTIfcJmOxI4t4fltV48OQsAQq}
       - HTTP_PROXY=${HTTP_PROXY}
       - HTTPS_PROXY=${HTTP_PROXY}
@@ -74,41 +74,41 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-  # keycloak:
-  #   image: bitnami/keycloak:22.0.4
-  #   links:
-  #     - "postgres:database"
-  #   ports:
-  #     - "8080:8080"
-  #   volumes:
-  #     - ./app/keycloak/realm-export.json:/tmp/realm/realm.json
-  #     - ./app/keycloak/template:/opt/bitnami/keycloak/themes/ayd/login
-  #   environment:
-  #     - KEYCLOAK_ADMIN_USER=${AYD_KC_USER:-admin}
-  #     - KEYCLOAK_ADMIN_PASSWORD=${AYD_KC_PASSWORD:-admin}
-  #     - KEYCLOAK_DATABASE_NAME=${AYD_KC_PSQL_DB:-ayd}
-  #     - KEYCLOAK_DATABASE_USER=${AYD_PSQL_USER:-ayd_dba}
-  #     - KEYCLOAK_DATABASE_PASSWORD=${AYD_PSQL_PASSWORD:-aydvault}
-  #     - KEYCLOAK_DATABASE_HOST=database
-  #     - KEYCLOAK_EXTRA_ARGS="-Dkeycloak.import=/tmp/realm/"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  # nginx:
-  #   image: nginx
-  #   restart: always
-  #   volumes:
-  #     - ./nginx:/etc/nginx/templates
-  #   ports:
-  #     - "80:80"
-  #   environment:
-  #     AYD_BASE_DOMAIN: ayd-sandbox.4punkt0.ch
-  #     NGINX_PORT: 80
-  #   healthcheck:
-  #     test: ['CMD', 'curl', '-f', 'http://localhost']
-  #     timeout: 1s
-  #     start_period: 0s
-  #     interval: 5s
-  #     retries: 1
-  #   depends_on:
-  #     - keycloak
+  keycloak:
+    image: bitnami/keycloak:22.0.4
+    links:
+      - "postgres:database"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./app/keycloak/realm-export.json:/tmp/realm/realm.json
+      - ./app/keycloak/template:/opt/bitnami/keycloak/themes/ayd/login
+    environment:
+      - KEYCLOAK_ADMIN_USER=${AYD_KC_USER:-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${AYD_KC_PASSWORD:-admin}
+      - KEYCLOAK_DATABASE_NAME=${AYD_KC_PSQL_DB:-ayd}
+      - KEYCLOAK_DATABASE_USER=${AYD_PSQL_USER:-ayd_dba}
+      - KEYCLOAK_DATABASE_PASSWORD=${AYD_PSQL_PASSWORD:-aydvault}
+      - KEYCLOAK_DATABASE_HOST=database
+      - KEYCLOAK_EXTRA_ARGS="-Dkeycloak.import=/tmp/realm/"
+    depends_on:
+      postgres:
+        condition: service_healthy
+  nginx:
+    image: nginx
+    restart: always
+    volumes:
+      - ./nginx:/etc/nginx/templates
+    ports:
+      - "80:80"
+    environment:
+      AYD_BASE_DOMAIN: ayd-sandbox.4punkt0.ch
+      NGINX_PORT: 80
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost']
+      timeout: 1s
+      start_period: 0s
+      interval: 5s
+      retries: 1
+    depends_on:
+      - keycloak
