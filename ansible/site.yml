@@ -46,7 +46,7 @@
         - { src: "../app/postgres_scripts/", dest: "/opt/pg-scripts", mode: '755', owner: '1001' }
         - { src: "../app/keycloak/realm-export.json", dest: "/opt/keycloak-config/realm-export.json", mode: '755', owner: '1001' }
         - { src: "../app/keycloak/template/", dest: "/opt/keycloak-theme", mode: '755', owner: '1001' }
-        # - { src: "files/nginx/", dest: "/opt/nginx", mode: '755', owner: '1001' }
+        - { src: "files/nginx/", dest: "/opt/nginx", mode: '755', owner: '1001' }
     - name: "App: Templating files"
       ansible.builtin.template:
         src: "{{ item.src }}"
