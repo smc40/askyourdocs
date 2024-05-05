@@ -1,5 +1,5 @@
 ayd_image_tag: 0.0.6
 
-ayd_backend_url: http://app:8000 #"http://api.{{ base_domain }}"
-ayd_frontend_url: http://app:8000 #"http://app.{{ base_domain }}"
-ayd_kc_url: http://keycloak:8080 # "http://auth.{{ base_domain }}"
+ayd_backend_url: "http://api.{{ base_domain }}" # http://app:8000 
+ayd_frontend_url: "http://app.{{ base_domain }}" # http://app:8000 
+ayd_kc_url: "http://auth.{{ base_domain }}" # http://keycloak:8080
