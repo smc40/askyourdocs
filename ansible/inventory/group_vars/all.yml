@@ -1,4 +1,4 @@
-ayd_image_tag: 0.0.6
+ayd_image_tag: 0.0.8
 
 ayd_backend_url: "http://api.{{ base_domain }}" # http://app:8000 
 ayd_frontend_url: "http://app.{{ base_domain }}" # http://app:8000 
