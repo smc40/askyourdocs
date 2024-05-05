@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: bouldermaettel/askyourdocs-app:0.0.5
+    image: bouldermaettel/askyourdocs-app:0.0.6
     # build:
     #   context: .
     #   dockerfile: Dockerfile
@@ -111,3 +111,4 @@ services:
       retries: 1
     depends_on:
       - keycloak
+      - app
