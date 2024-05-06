@@ -33,6 +33,7 @@
         - { path: "/opt/keycloak-config", mode: '755', owner: '1001' }
         - { path: "/opt/keycloak-theme", mode: '755', owner: '1001' }
         - { path: "/opt/nginx", mode: '755', owner: '1001' }
+          { path: "/opt/js-config", mode: '755', owner: '1001'}
     - name: "App: Copy files"
       ansible.builtin.copy:
         src: "{{ item.src }}"
@@ -55,6 +56,7 @@
       with_items:
         - { src: "./templates/dotenv.j2", dest: "/opt/askyourdocs/.env", mode: '755'}
         - { src: "./templates/docker-compose.yml.j2", dest: "/opt/askyourdocs/docker-compose.yml", mode: '755'}
+        - { src: ./templates/config.js.j2, dest: "/opt/js-config/config.js", mode: '755', owner: '1001' }
     - name: "App: Create and start services"
       community.docker.docker_compose:
         project_src: "/opt/askyourdocs"
