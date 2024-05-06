@@ -1,5 +1,7 @@
 #!/bin/bash
 
+docker rm $(docker ps -aq) -f
+
 sudo rm -rf /opt/solr; sudo mkdir /opt/solr
 
 
