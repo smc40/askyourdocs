@@ -30,7 +30,9 @@ RUN mkdir -p app/backend/uploads
 COPY --from=builder /app/build /app/static
 
 EXPOSE 8000
+COPY app/frontend/entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ["uvicorn", "app.backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "app.backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # IMAGE_TAG=0.0.6; docker build -t bouldermaettel/askyourdocs-app:$IMAGE_TAG . ; docker push bouldermaettel/askyourdocs-app:$IMAGE_TAG

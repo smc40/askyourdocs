@@ -13,7 +13,7 @@ services:
       - BACKEND_URL=${BACKEND_URL:-http://api.ayd-sandbox.4punkt0.ch:8000}
       - FRONTEND_URL=${FRONTEND_URL:-http://app.ayd-sandbox.4punkt0.ch:8000}
       - KEYCLOAK_URL=${KEYCLOAK_URL:-http://auth.ayd-sandbox.4punkt0.ch:8080}
-      - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-bQwuuesYTIfcJmOxI4t4fltV48OQsAQq} 
+      - BACKEND_KEYCLOAK_SECRET=${BACKEND_KEYCLOAK_SECRET:-bQwuuesYTIfcJmOxI4t4fltV48OQsAQq} 
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
 {% if proxy_address is defined %}
