@@ -157,6 +157,22 @@ const Main: React.FC = () => {
         };
     }, [addMessageToChat]);
 
+    useEffect(() => {
+        const handleSocketError = (event) => {
+            console.error('WebSocket Error:', event);
+        };
+
+        if (socket.current) {
+            socket.current.addEventListener('error', handleSocketError);
+        }
+
+        return () => {
+            if (socket.current) {
+                socket.current.removeEventListener('error', handleSocketError);
+            }
+        };
+    }, []);
+
     const fetchAnswer = async () => {
         try {
             if (
