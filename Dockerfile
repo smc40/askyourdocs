@@ -35,4 +35,4 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 # CMD ["uvicorn", "app.backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
-# IMAGE_TAG=0.0.11; docker build -t bouldermaettel/askyourdocs-app:$IMAGE_TAG . ; docker push bouldermaettel/askyourdocs-app:$IMAGE_TAG
+# IMAGE_TAG=0.0.12; docker build -t bouldermaettel/askyourdocs-app:$IMAGE_TAG . ; docker push bouldermaettel/askyourdocs-app:$IMAGE_TAG

@@ -4,7 +4,8 @@ class SocketService {
     private socket: WebSocket;
 
     constructor() {
-        this.socket = new WebSocket(config.backendUrl.replace('http', 'ws') + '/ws/query');
+        // this.socket = new WebSocket(config.backendUrl.replace('http', 'ws') + '/ws/query');
+        this.socket = new WebSocket(config.backendUrl + '/ws/query');
         this.setupSocket();
     }
 

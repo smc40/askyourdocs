@@ -1,29 +1,29 @@
 server {
-    # Listen to port 80 (HTTP) on both IPv4 and IPv6.
+    # Listen on port 80 (HTTP)
     listen 80;
 
-    # Domain names this server should respond to.
-    server_name api.${AYD_BASE_DOMAIN} app.${AYD_BASE_DOMAIN};
+    # Domain names this server should respond to
+    server_name api.${AYD_BASE_DOMAIN} app.${AYD_BASE_DOMAIN}; 
 
-    # SSL Configuration (currently commented out but can be enabled if needed)
-    # listen 443 ssl;
-    # ssl_certificate         /etc/letsencrypt/live/test-name/fullchain.pem;
-    # ssl_certificate_key     /etc/letsencrypt/live/test-name/privkey.pem;
-    # ssl_trusted_certificate /etc/letsencrypt/live/test-name/chain.pem;
-    # ssl_dhparam /etc/letsencrypt/dhparams/dhparam.pem;
-
+    # Standard proxy configuration for all requests to the app service
     location / {
         proxy_set_header Host $http_host;
         proxy_set_header X-NginX-Proxy true;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-
+        
+        # Increase buffer and timeout settings for WebSocket connections
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_read_timeout 86400;
         proxy_pass http://app;
         proxy_redirect off;
     }
 }
 
+# Upstream definition for app server
 upstream app {
     server app:8000;
 }

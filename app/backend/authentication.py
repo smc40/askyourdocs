@@ -17,17 +17,21 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
 
-    async def dispatch(self, request: Request, call_next):       
+    async def dispatch(self, request: Request, call_next):   
+        
+        print(f"Request url: {str(request.url)}")    
         if request.url.path.startswith('/uploads') | request.url.path.startswith('/app') | request.url.path.startswith('/public') or request.url.path =="/" :
             response = await call_next(request)
             return response
-    
+
         token = request.headers.get('Authorization')
 
         if not token:
             return JSONResponse({"error": "Unauthorized"}, 401)
-        
+        print(f"Received token: {token}")
         try:
+            actual_token = token.split(' ')[1] if 'Bearer' in token else token
+            print(f"Actual token used for introspection: {actual_token}")            
             authorization_info = keycloak_openid.introspect(token)
 
         except Exception as e:
