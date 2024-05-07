@@ -33,7 +33,6 @@
         - { path: "/opt/keycloak-config", mode: '755', owner: '1001' }
         - { path: "/opt/keycloak-theme", mode: '755', owner: '1001' }
         - { path: "/opt/nginx", mode: '755', owner: '1001' }
-          { path: "/opt/js-config", mode: '755', owner: '1001'}
     - name: "App: Copy files"
       ansible.builtin.copy:
         src: "{{ item.src }}"
