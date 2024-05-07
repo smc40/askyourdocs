@@ -3,3 +3,5 @@ export default {
     easterEggTrigger: 'magic schnauz',
     easterEggTriggerMsg: 'magic schnauz 〰️',
 };
+
+console.log(`Backend URL: ${process.env.BACKEND_URL || document.location.origin}`);
