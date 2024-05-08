@@ -157,35 +157,41 @@ const Main: React.FC = () => {
         };
     }, [addMessageToChat]);
 
-    useEffect(() => {
-        const handleSocketError = (event) => {
-            console.error('WebSocket Error:', event);
-        };
+    // useEffect(() => {
+    //     const handleSocketError = (event) => {
+    //         console.error('WebSocket Error:', event);
+    //     };
 
-        if (socket.current) {
-            socket.current.addEventListener('error', handleSocketError);
-        }
+    //     if (socket.current) {
+    //         socket.current.addEventListener('error', handleSocketError);
+    //     }
 
-        return () => {
-            if (socket.current) {
-                socket.current.removeEventListener('error', handleSocketError);
-            }
-        };
-    }, []);
+    //     return () => {
+    //         if (socket.current) {
+    //             socket.current.removeEventListener('error', handleSocketError);
+    //         }
+    //     };
+    // }, []);
 
     const fetchAnswer = async () => {
         try {
+            // If WebSocket is not open, re-establish the connection
             if (
-                socket.current &&
-                socket.current.readyState === WebSocket.OPEN
+                !socket.current ||
+                socket.current.readyState !== WebSocket.OPEN
             ) {
-                socket.current.send(JSON.stringify({ data: inputValue }));
-            } else {
-                console.log(
-                    'WebSocket is not ready. Attempting to reconnect...'
+                socket.current = new WebSocket(
+                    config.backendUrl.replace('http', 'ws') + '/ws/query'
                 );
-                // Attempt to reconnect or handle the not ready state appropriately
+                // Ensure the new connection has time to establish before sending data
+                await new Promise((resolve) => {
+                    socket.current!.addEventListener('open', resolve, {
+                        once: true,
+                    });
+                });
             }
+
+            socket.current.send(JSON.stringify({ data: inputValue }));
         } catch (error) {
             console.error('Error fetching data:', error);
         }
