@@ -34,7 +34,7 @@ def middleware():
     return [
         Middleware(
             CORSMiddleware,
-            allow_origins=settings.get('cors_origins', ['*','http://localhost:8000','http://localhost:3000', 'http://app:8000', 'http://app:3000', 'http://app.ayd-sandbox.4punkt0.ch']),
+            allow_origins=settings.get('cors_origins', ['http://localhost:8000','http://localhost:3000', 'http://app:8000', 'http://app:3000', 'http://app.ayd-sandbox.4punkt0.ch']),
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"]
