@@ -22,7 +22,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         logging.info(f"Request url: {str(request.url)}")
         print(f"Request url: {str(request.url)}")
         
-        if request.url.path.startswith('/uploads') | request.url.path.startswith('/app') | request.url.path.startswith('/public') or request.url.path =="/":
+        if request.url.path.startswith('/uploads') | request.url.path.startswith('/app') | request.url.path.startswith('/public') or request.url.path =="/" :
             response = await call_next(request)
             return response
 
