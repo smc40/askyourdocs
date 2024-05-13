@@ -28,6 +28,7 @@ const Main: React.FC = () => {
     const [feedback, setFeedback] = useState('');
     const [feedbackOnSentence, setFeedbackOnSentence] = useState('');
     const [showFeedback, setShowFeedback] = useState(false);
+    const [chatCleared, setChatCleared] = useState(false); // New state to track chat clearance
 
     const closeModal = () => {
         setIsOpen(false);
@@ -65,12 +66,12 @@ const Main: React.FC = () => {
                 'chatMessages',
                 JSON.stringify([defaultInitialMessage])
             );
+            // Reset the typing indicator
+            setIsBotTyping(false);
 
-            setTimeout(() => {
-                socket.current = new WebSocket(
-                    config.backendUrl.replace('http', 'ws') + '/ws/query'
-                );
-            }, 1000); // Reopen the socket after 1 second
+            // Temporarily set chatCleared to true and then revert it after 5 seconds
+            setChatCleared(true);
+            setTimeout(() => setChatCleared(false), 2000);
         }
     };
 
@@ -120,10 +121,13 @@ const Main: React.FC = () => {
     const socket = useRef<WebSocket | null>(null);
 
     useEffect(() => {
-        socket.current = new WebSocket(
-            config.backendUrl.replace('http', 'ws') + '/ws/query'
-        );
-    }, []);
+        // Only establish a WebSocket connection if the chat hasn't been cleared
+        if (!chatCleared) {
+            socket.current = new WebSocket(
+                config.backendUrl.replace('http', 'ws') + '/ws/query'
+            );
+        }
+    }, [chatCleared]);
 
     useEffect(() => {
         const handleSocketMessage = (event: MessageEvent) => {
@@ -143,7 +147,7 @@ const Main: React.FC = () => {
             }
         };
 
-        if (socket.current) {
+        if (socket.current && !chatCleared) {
             socket.current.addEventListener('message', handleSocketMessage);
         }
 
@@ -155,25 +159,15 @@ const Main: React.FC = () => {
                 );
             }
         };
-    }, [addMessageToChat]);
-
-    // useEffect(() => {
-    //     const handleSocketError = (event) => {
-    //         console.error('WebSocket Error:', event);
-    //     };
-
-    //     if (socket.current) {
-    //         socket.current.addEventListener('error', handleSocketError);
-    //     }
-
-    //     return () => {
-    //         if (socket.current) {
-    //             socket.current.removeEventListener('error', handleSocketError);
-    //         }
-    //     };
-    // }, []);
+    }, [addMessageToChat, chatCleared]);
 
     const fetchAnswer = async () => {
+        // Prevent fetching answers if the chat is in the cleared state
+        if (chatCleared) {
+            console.log('Fetch operation skipped because the chat is cleared.');
+            return; // Exit the function early
+        }
+
         try {
             // If WebSocket is not open, re-establish the connection
             if (
@@ -191,6 +185,7 @@ const Main: React.FC = () => {
                 });
             }
 
+            // Send the data through the WebSocket
             socket.current.send(JSON.stringify({ data: inputValue }));
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -237,7 +232,12 @@ const Main: React.FC = () => {
             addMessageToChat(newMessage); // Update chatMessages and localStorage
             setInputValue('');
 
-            setIsBotTyping(true);
+            if (chatCleared) {
+                setIsBotTyping(false);
+            } else {
+                setIsBotTyping(true);
+            }
+
             fetchAnswer();
         }
     };
@@ -318,27 +318,28 @@ const Main: React.FC = () => {
                 {/* Chat input form  */}
                 <form
                     onSubmit={handleSubmit}
-                    className="chat-controls fixed bottom-10 w-9/12 max-w-3xl flex justify-between items-center"
+                    className="chat-controls fixed bottom-10 w-full max-w-3xl flex justify-between items-center space-x-4"
                 >
-                    <textarea
-                        value={inputValue}
-                        onChange={handleChange}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Type a question for your documents..."
-                        className="w-full p-2 border border-gray-300 rounded-lg mr-2 mt-4 focus:ring-red-500 shadow-lg"
-                        style={{ resize: 'none', paddingRight: '3rem' }}
-                    />
-                    <button
-                        type="submit"
-                        className="absolute right-0 top-1/2 transform -translate-y-1/2 px-4"
-                        style={{ right: '130px' }}
-                        disabled={inputValue.length <= 3}
-                    >
-                        <img src={planeIcon} className="h-8" alt="Submit" />
-                    </button>
+                    <div className="relative w-full flex items-center">
+                        <textarea
+                            value={inputValue}
+                            onChange={handleChange}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Type a question for your documents..."
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-red-500 shadow-lg resize-none pr-10"
+                            style={{ minHeight: '3rem' }}
+                        />
+                        <button
+                            type="submit"
+                            className="absolute right-0 mr-2 top-1/2 transform -translate-y-1/2 px-4"
+                            disabled={inputValue.length <= 3}
+                        >
+                            <img src={planeIcon} className="h-6" alt="Submit" />
+                        </button>
+                    </div>
                     <button
                         onClick={clearChat}
-                        className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                     >
                         Clear Chat
                     </button>
