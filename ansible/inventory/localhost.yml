@@ -1,0 +1,9 @@
+all:
+  children:
+    app:
+      hosts:
+        localhost: # AskYourDocs Dev on Azure, Linux SLES15
+  vars:
+    envname: local
+    base_domain: fedora.local
+    ansible_ssh_user: bouldermaettel
