@@ -2,7 +2,7 @@ all:
   children:
     app:
       hosts:
-        localhost: # AskYourDocs Dev on Azure, Linux SLES15
+        185.12.128.148: # get ip with curl ifconfig.me (on linux)
   vars:
     envname: local
     base_domain: fedora.local
