@@ -2,7 +2,7 @@ all:
   children:
     app:
       hosts:
-        172.50.30.132: # get ip with curl ifconfig.me (on linux)
+        109.164.211.149: # get ip with curl ifconfig.me (on linux)
   vars:
     envname: local
     base_domain: fedora.local
