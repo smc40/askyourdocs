@@ -35,7 +35,6 @@ class AzureOpenAIClient:
     def get_embedding(self, text: str, model: str = settings['modelling']['embedding_model_name']):
         client = self.get_client()
         if client:
-            print(f'input_text: {text}')
             return client.embeddings.create(input=[text], model=model).data[0].embedding
         else:
             return None
@@ -146,8 +145,10 @@ class Summarizer:
     _task = """I want you to act like a most rational person that only give answers for which he has strong evidence. 
     Therefore, I don't want you to give me any information that is not contained in the provided context. 
     Please just summarize the context with respect to the asked question in simple words. If there is no 
-    related information in the context please inform me accordingly and do not generate the answer from your knowledge. Reply in the 
-    language of the question."""
+    related information in the context please inform me accordingly and do not generate the answer from your knowledge. 
+    The context provided includes the chat history where the bot is your generated answer and the user is the query from the user.
+    Please refer to the last user input and take the chat history into account when appropiate. Generate the answer in the language
+    of the last user input."""
 
     def __init__(self, settings: dict):
         self._settings = settings
@@ -195,3 +196,5 @@ if __name__ ==  '__main__':
     tokenizer = TextTokenizer()
     sents = tokenizer.get_text_entities(text="Hello, world! i want more world! 1. 2. Helllo", entity='sentence')
     print(sents)
+    #test
+    

@@ -86,18 +86,28 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
-            data = await websocket.receive_text()
-            # if data.strip():
-            answer = _QUERY_PIPELINE.apply(text=data, answer_only=False)
-            await websocket.send_json(answer)
-            # else:
-            #     await websocket.send_json({"error": "Empty input"})
+            message = await websocket.receive_json()
+            data = message.get("data")
+            context = message.get("context", [])
+            combined_text = ""
+
+            for msg in context:
+                combined_text += f"{msg['type']}: {msg['text']} "
+
+            combined_text += f"user: {data}"
+            print(f"Combined text: {combined_text}")
+
+            if data.strip():
+                answer = _QUERY_PIPELINE.apply(text=combined_text, answer_only=False)
+                # Send bot response to frontend
+                await websocket.send_json(answer)
+            else:
+                await websocket.send_json({"error": "Empty input"})
     except WebSocketDisconnect:
         pass
     finally:
         if websocket.client_state != WebSocketState.DISCONNECTED:
             await websocket.close()
-
 
 @app.get("/api/get_documents", response_model=DataList)
 async def get_documents():
@@ -146,3 +156,5 @@ async def upload_file(file: UploadFile = File(...)):
 async def upload_feedback(feedback: Feedback):
     doc = _FEEDBACK_PIPELINE.apply(feedback_type = feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, email=feedback.email, commit=True)
     return {"data": doc}
+
+# test the mount

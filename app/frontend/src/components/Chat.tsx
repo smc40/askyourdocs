@@ -28,13 +28,12 @@ const Main: React.FC = () => {
     const [feedback, setFeedback] = useState('');
     const [feedbackOnSentence, setFeedbackOnSentence] = useState('');
     const [showFeedback, setShowFeedback] = useState(false);
-    const [chatCleared, setChatCleared] = useState(false); // New state to track chat clearance
+    const [chatCleared, setChatCleared] = useState(false);
 
     const closeModal = () => {
         setIsOpen(false);
     };
 
-    // Load chat messages from localStorage on component mount
     useEffect(() => {
         const storedMessages = localStorage.getItem('chatMessages');
         if (storedMessages) {
@@ -49,7 +48,7 @@ const Main: React.FC = () => {
             )
         ) {
             if (socket.current) {
-                socket.current.close(); // Close the socket connection
+                socket.current.close();
             }
 
             const defaultInitialMessage = {
@@ -66,10 +65,7 @@ const Main: React.FC = () => {
                 'chatMessages',
                 JSON.stringify([defaultInitialMessage])
             );
-            // Reset the typing indicator
             setIsBotTyping(false);
-
-            // Temporarily set chatCleared to true and then revert it after 5 seconds
             setChatCleared(true);
             setTimeout(() => setChatCleared(false), 2000);
         }
@@ -121,7 +117,6 @@ const Main: React.FC = () => {
     const socket = useRef<WebSocket | null>(null);
 
     useEffect(() => {
-        // Only establish a WebSocket connection if the chat hasn't been cleared
         if (!chatCleared) {
             socket.current = new WebSocket(
                 config.backendUrl.replace('http', 'ws') + '/ws/query'
@@ -162,14 +157,12 @@ const Main: React.FC = () => {
     }, [addMessageToChat, chatCleared]);
 
     const fetchAnswer = async () => {
-        // Prevent fetching answers if the chat is in the cleared state
         if (chatCleared) {
             console.log('Fetch operation skipped because the chat is cleared.');
-            return; // Exit the function early
+            return;
         }
 
         try {
-            // If WebSocket is not open, re-establish the connection
             if (
                 !socket.current ||
                 socket.current.readyState !== WebSocket.OPEN
@@ -177,7 +170,6 @@ const Main: React.FC = () => {
                 socket.current = new WebSocket(
                     config.backendUrl.replace('http', 'ws') + '/ws/query'
                 );
-                // Ensure the new connection has time to establish before sending data
                 await new Promise((resolve) => {
                     socket.current!.addEventListener('open', resolve, {
                         once: true,
@@ -185,8 +177,14 @@ const Main: React.FC = () => {
                 });
             }
 
-            // Send the data through the WebSocket
-            socket.current.send(JSON.stringify({ data: inputValue }));
+            const contextMessages = chatMessages.map((msg) => ({
+                type: msg.type,
+                text: msg.text,
+            }));
+
+            socket.current.send(
+                JSON.stringify({ data: inputValue, context: contextMessages })
+            );
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -229,7 +227,7 @@ const Main: React.FC = () => {
                 texts: [''],
                 filename: [''],
             };
-            addMessageToChat(newMessage); // Update chatMessages and localStorage
+            addMessageToChat(newMessage);
             setInputValue('');
 
             if (chatCleared) {
@@ -287,7 +285,6 @@ const Main: React.FC = () => {
         <main className="bg-white p-4 w-full">
             <div className="chat-container max-h-[75vh]">
                 <div className="overflow-y-auto max-h-[75vh]">
-                    {/* Message list */}
                     {chatMessages.map((message, index) => (
                         <Message
                             key={index}
@@ -315,7 +312,6 @@ const Main: React.FC = () => {
                     <div ref={chatEndRef} />
                 </div>
 
-                {/* Chat input form  */}
                 <form
                     onSubmit={handleSubmit}
                     className="chat-controls fixed bottom-10 w-full max-w-3xl flex justify-between items-center space-x-4"
