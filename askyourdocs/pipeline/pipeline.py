@@ -154,7 +154,7 @@ class QueryPipeline(Pipeline):
         
         if threshold := self._settings['solr']['filter_on_score']:
             knn_embedding_entities = [ent for ent in knn_embedding_entities if ent['score'] > threshold]
-            f"scores: {[ent['score'] for ent in knn_embedding_entities]}")
+            f"scores: {[ent['score'] for ent in knn_embedding_entities]}"
         return knn_embedding_entities
 
     def _get_text_entities_from_knn_vecs(self, knn_vecs: List[dict]) -> List[dict]:
