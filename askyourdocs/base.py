@@ -75,7 +75,8 @@ class Document(ABC):
 
 @dataclass(eq=False)
 class TextEntity(Document):
-
+    
+    user_id: str
     text: str
     index: int | None = None
     doc_id: str | None = None
@@ -87,7 +88,8 @@ class TextEntity(Document):
 
 @dataclass(eq=False)
 class EmbeddingEntity(Document):
-
+    
+    user_id: str
     vector: List[float]
     doc_id: str | None = None
     txt_ent_id: str | None = None
@@ -105,6 +107,7 @@ class EmbeddingEntity(Document):
 @dataclass(eq=False)
 class TextDocument(Document):
 
+    user_id: str
     name: str
     source: str
     text: str | None
@@ -113,10 +116,11 @@ class TextDocument(Document):
         cls_name = self.__class__.__name__
         rlib = reprlib.Repr()
         id_repr = rlib.repr(self.id)
+        user_id_repr = rlib.repr(self.user_id)
         name_repr = rlib.repr(self.name)
         source_repr = rlib.repr(self.source)
         text_repr = rlib.repr(self.text)
-        return f'{cls_name}(id={id_repr}, name={name_repr}, source={source_repr}, text={text_repr})'
+        return f'{cls_name}(id={id_repr}, user_id={user_id_repr}, name={name_repr}, source={source_repr}, text={text_repr})'
 
     @property
     def _id_prefix(self):

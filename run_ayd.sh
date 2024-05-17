@@ -1,4 +1,5 @@
 #!/bin/bash
+source .env_local_dev
 
 docker rm $(docker ps -aq) -f
 

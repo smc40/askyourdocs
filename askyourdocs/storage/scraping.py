@@ -8,7 +8,7 @@ from tika import parser
 import validators
 
 from askyourdocs import Environment, Service, TextDocument
-
+from app.backend.context_manager import get_current_user_id
 
 class Extractor(Service):
     """Abstract base class for all scrapers (text-extractors)"""
@@ -36,12 +36,12 @@ class TikaExtractor(Extractor):
         text = re.sub('\s{2,}', ' ', text)[:self._nchar_log_text]
         return text
 
-    def apply(self, filename: str) -> TextDocument:
+    def apply(self, filename: str, user_id: str = None) -> TextDocument:
         """Extracting the text from pdfs."""
 
         if Path(filename).is_file():
             logging.info(f'parsing local file "{filename}"')
-            parsed = parser.from_file(filename, self._tika_url)
+            parsed = parser.from_file(filename, self._tika_url) 
             text = parsed['content']
 
         elif validators.url(filename):
@@ -64,4 +64,5 @@ class TikaExtractor(Extractor):
             # Clean newline characters
             logging.info(f'text (len={len(text)}): "{self._get_log_text(text=text)}..."')
         filename = Path(filename)
-        return TextDocument(id=str(filename), name=filename.name, source=str(filename.parent), text=text)
+        print(f'tika_user_id: {user_id}')
+        return TextDocument(id=str(filename), user_id=user_id, name=filename.name, source=str(filename.parent), text=text)

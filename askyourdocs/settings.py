@@ -3,11 +3,15 @@ import os
 
 _root_path = Path(__file__).parents[1]
 
-MODEL_NAME = "gpt-4-32k" # "gpt-35-turbo"  #"google/flan-t5-small"
+MODEL_NAME = "gpt-4-32k"  # "gpt-35-turbo"  #"google/flan-t5-small"
 EMBEDDING_MODEL_NAME = "text-embedding-ada-002"
-MODEL_EMBEDDING_DIMENSION = 1536 if 'ada-002' in EMBEDDING_MODEL_NAME else 512 # 1024 #512 #to find out, load the HF model and print the model in a console. look for the 'in_feature' variable
-MODEL_NTOKENS = 10000 if 'gpt-4-32k' in MODEL_NAME else 1024 if 'gpt-35-turbo' in MODEL_NAME else 512  
-FILTER_ON_SCORE = 0.5 # use None if you want to disable the filter
+MODEL_EMBEDDING_DIMENSION = (
+    1536 if 'ada-002' in EMBEDDING_MODEL_NAME else 512
+)  # 1024 #512 #to find out, load the HF model and print the model in a console. look for the 'in_feature' variable
+MODEL_NTOKENS = (
+    10000 if 'gpt-4-32k' in MODEL_NAME else 1024 if 'gpt-35-turbo' in MODEL_NAME else 512
+)
+FILTER_ON_SCORE = 0.5  # use None if you want to disable the filter
 
 DOCS_COLLECTION = 'ayd_docs'
 TEXTS_COLLECTION = 'ayd_texts'
@@ -30,7 +34,7 @@ SETTINGS = {
         'nshards': 1,
         'datetime_format': "%Y-%m-%dT%H:%M:%S.%fZ",
         'top_k': 5,
-        'filter_on_score': FILTER_ON_SCORE, 
+        'filter_on_score': FILTER_ON_SCORE,
         'collections': {
             'map': {
                 'docs': DOCS_COLLECTION,
@@ -41,6 +45,13 @@ SETTINGS = {
             DOCS_COLLECTION: {
                 'config_files': 'resources/solr/conf',
                 'fields': [
+                    {
+                        "name": "user_id",
+                        "type": "string",
+                        "indexed": "true",
+                        "stored": "true",
+                        "multiValued": "false"
+                    },
                     {
                         'name': 'name',
                         'type': 'string',
@@ -68,6 +79,13 @@ SETTINGS = {
                 'config_files': 'resources/solr/conf',
                 'fields': [
                     {
+                        "name": "user_id",
+                        "type": "string",
+                        "indexed": "true",
+                        "stored": "true",
+                        "multiValued": "false"
+                    },
+                    {
                         'name': 'text',
                         'type': 'text_general',
                         'indexed': 'true',
@@ -93,6 +111,12 @@ SETTINGS = {
             VECS_COLLECTION: {
                 'config_files': 'resources/solr/conf',
                 'fields': [
+                    {
+                        "name": "user_id",
+                        "type": "string",
+                        "indexed": "true",
+                        "stored": "true"
+                    },
                     {
                         'name': 'vector',
                         'type': 'knn_vector',
@@ -174,8 +198,8 @@ SETTINGS = {
     # Frontend
     'app': {
         'keycloak_url': os.environ.get('KEYCLOAK_URL', "http://keycloak:8080/"),
-        'keycloak_realm':'ayd',
-        'keycloak_client_id':'ayd-backend',
-        'keycloak_client_secret':os.environ.get('BACKEND_KEYCLOAK_SECRET','bQwuuesYTIfcJmOxI4t4fltV48OQsAQq'),
+        'keycloak_realm': 'ayd',
+        'keycloak_client_id': 'ayd-backend',
+        'keycloak_client_secret': os.environ.get('BACKEND_KEYCLOAK_SECRET', 'bQwuuesYTIfcJmOxI4t4fltV48OQsAQq'),
     },
 }

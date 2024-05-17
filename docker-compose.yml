@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: bouldermaettel/askyourdocs-app:0.1.1
+    image: bouldermaettel/askyourdocs-app:0.0.1
     # build:
     #   context: .
     #   dockerfile: Dockerfile
@@ -24,10 +24,9 @@ services:
       solr:
         condition: service_healthy
     volumes:
-      # - ./askyourdocs:/app/askyourdocs
+      - ./askyourdocs:/app/askyourdocs
       - ./models:/app/models
-      - ./app/backend/app.py:/app/app/backend/app.py
-      - ./askyourdocs/modelling:/app/askyourdocs/modelling
+      - ./app/backend:/app/app/backend
       - /opt/askyourdocs/uploads:/app/app/backend/uploads
   tika:
     image: apache/tika:latest

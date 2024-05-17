@@ -1,4 +1,6 @@
 annotated-types==0.5.0
+ansible==9.5.1
+ansible-core==2.16.6
 anyio==3.7.1
 argon2-cffi==23.1.0
 argon2-cffi-bindings==21.2.0
@@ -15,6 +17,8 @@ charset-normalizer==3.2.0
 click==8.1.7
 cmake==3.27.5
 comm==0.2.2
+contextvars==2.4
+cryptography==42.0.5
 debugpy==1.8.1
 decorator==5.1.1
 defusedxml==0.7.1
@@ -34,6 +38,7 @@ httptools==0.6.0
 httpx==0.27.0
 huggingface-hub==0.17.3
 idna==3.4
+immutables==0.20
 iniconfig==2.0.0
 ipykernel==6.29.3
 ipython==8.22.2
@@ -122,6 +127,7 @@ referencing==0.34.0
 regex==2023.8.8
 requests==2.31.0
 requests-toolbelt==1.0.0
+resolvelib==1.0.1
 rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
 rpds-py==0.18.0

@@ -13,3 +13,4 @@ fastapi
 uvicorn[standard]
 python-keycloak
 openai
+contextvars

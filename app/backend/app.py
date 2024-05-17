@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware import Middleware
@@ -11,6 +11,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.websockets import WebSocketState
 from app.backend.authentication import AuthenticationMiddleware
+from app.backend.context_manager import get_current_user_id
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -81,8 +82,11 @@ async def read_root():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def get_user_id() -> str:
+    return get_current_user_id()
+
 @app.websocket("/ws/query")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, user_id: str = Depends(get_user_id)):
     await websocket.accept()
     try:
         while True:
@@ -98,7 +102,7 @@ async def websocket_endpoint(websocket: WebSocket):
             print(f"Combined text: {combined_text}")
 
             if data.strip():
-                answer = _QUERY_PIPELINE.apply(text=combined_text, answer_only=False)
+                answer = _QUERY_PIPELINE.apply(text=combined_text, answer_only=False, user_id=user_id)
                 # Send bot response to frontend
                 await websocket.send_json(answer)
             else:
@@ -139,13 +143,13 @@ async def delete_document(id: str):
     }
 
 @app.post("/api/ingest", response_model=ListText)
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(file: UploadFile = File(...), user_id: str = Depends(get_user_id)):
     if file and file.filename:
         logging.info(f'uploading file  {file.filename}')
         filepath = f"./app/backend/uploads/{file.filename}"
         with open(filepath, "wb") as f:
             f.write(file.file.read())
-        doc = _INGESTION_PIPELINE.apply(source=filepath, commit=True)
+        doc = _INGESTION_PIPELINE.apply(source=filepath, commit=True, user_id=user_id)
         logging.info(doc)
         return {"data": doc}
     else:
@@ -153,8 +157,6 @@ async def upload_file(file: UploadFile = File(...)):
 
 
 @app.post("/api/ingest_feedback", response_model=Text)
-async def upload_feedback(feedback: Feedback):
-    doc = _FEEDBACK_PIPELINE.apply(feedback_type = feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, email=feedback.email, commit=True)
+async def upload_feedback(feedback: Feedback, user_id: str = Depends(get_user_id)):
+    doc = _FEEDBACK_PIPELINE.apply(feedback_type = feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, email=feedback.email, commit=True, user_id=user_id)
     return {"data": doc}
-
-# test the mount
