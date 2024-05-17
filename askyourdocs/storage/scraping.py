@@ -64,5 +64,4 @@ class TikaExtractor(Extractor):
             # Clean newline characters
             logging.info(f'text (len={len(text)}): "{self._get_log_text(text=text)}..."')
         filename = Path(filename)
-        print(f'tika_user_id: {user_id}')
         return TextDocument(id=str(filename), user_id=user_id, name=filename.name, source=str(filename.parent), text=text)

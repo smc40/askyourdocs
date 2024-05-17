@@ -118,8 +118,10 @@ const Main: React.FC = () => {
 
     useEffect(() => {
         if (!chatCleared) {
+            const token = Authentication.getToken(); // Ensure you get the token from your auth logic
             socket.current = new WebSocket(
-                config.backendUrl.replace('http', 'ws') + '/ws/query'
+                config.backendUrl.replace('http', 'ws') +
+                    `/ws/query?token=${token}`
             );
         }
     }, [chatCleared]);
@@ -167,9 +169,12 @@ const Main: React.FC = () => {
                 !socket.current ||
                 socket.current.readyState !== WebSocket.OPEN
             ) {
+                const token = Authentication.getToken(); // Ensure you get the token from your auth logic
                 socket.current = new WebSocket(
-                    config.backendUrl.replace('http', 'ws') + '/ws/query'
+                    config.backendUrl.replace('http', 'ws') +
+                        `/ws/query?token=${token}`
                 );
+
                 await new Promise((resolve) => {
                     socket.current!.addEventListener('open', resolve, {
                         once: true,
@@ -362,15 +367,13 @@ const Main: React.FC = () => {
                     },
                 }}
             >
-                {showFeedback && (
+                {showFeedback ? (
                     <FeedbackModalContent
                         onClose={closeModal}
                         feedbackType={feedback}
                         answerProvided={feedbackOnSentence}
                     />
-                )}
-
-                {!showFeedback && (
+                ) : (
                     <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
                         <HighlightKeywords
                             fileUrl={fileUrl}

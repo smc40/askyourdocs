@@ -48,7 +48,6 @@ class AzureOpenAIClient:
                 {"role": "assistant", "content": f'{context}'},
             ]
             
-            print(f'messages: {messages}')
             response = client.chat.completions.create(
                 model=summarizing_model,
                 messages=messages

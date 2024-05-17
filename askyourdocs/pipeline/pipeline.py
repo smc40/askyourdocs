@@ -44,7 +44,6 @@ class IngestionPipeline(Pipeline):
         """Extract the text from a given file."""
         tika_extractor = TikaExtractor(environment=self._environment, settings=self._settings)
         document = tika_extractor.apply(filename=filename, user_id=user_id)
-        print(f'document: {document}')
         return document
 
     def _get_text_entities_from_document(self, document: TextDocument, user_id: str) -> List[TextEntity]:
@@ -141,29 +140,31 @@ class QueryPipeline(Pipeline):
     def _get_knn_vecs_from_text(self, text: str, user_id: str, show_progress_bar: bool = True, normalize_embeddings: bool = True) -> List[dict]:
         vector = self._text_embedder.apply(texts=text, show_progress_bar=show_progress_bar, normalize_embeddings=normalize_embeddings)
         top_k = self._settings['solr']['top_k']
-        # vec_str = '[' + ', '.join(str(v) for v in vector) + ']'
         vec_str = '[' + ', '.join(map(str, vector)) + ']'
-        query = f'user_id:{user_id} AND {{!knn f=vector topK={top_k}}}{vec_str}'
-        print(f'knn_query: {query}')
+        knn_query = f'{{!knn f=vector topK={top_k}}}{vec_str}'
 
         collection = self._settings['solr']['collections']['map']['vecs']
-        response = self._solr_client.search(query=query, collection=collection)
+        # Perform the Solr search with the constructed query and filter query
+        params = {
+            'fq': f'user_id:{user_id}'  # Filter query for user_id
+        }
+    
+        response = self._solr_client.search(query=knn_query, collection=collection, params=params)
         knn_embedding_entities = self._add_similarity_values(vector=vector, knn_embedding_entities=response['docs'])
         
         if threshold := self._settings['solr']['filter_on_score']:
             knn_embedding_entities = [ent for ent in knn_embedding_entities if ent['score'] > threshold]
-            print(f"scores: {[ent['score'] for ent in knn_embedding_entities]}")
+            f"scores: {[ent['score'] for ent in knn_embedding_entities]}")
         return knn_embedding_entities
 
-    def _get_text_entities_from_knn_vecs(self, knn_vecs: List[dict], user_id: str) -> List[dict]:
+    def _get_text_entities_from_knn_vecs(self, knn_vecs: List[dict]) -> List[dict]:
         te_ids = list(set(v['txt_ent_id'] for v in knn_vecs))
-        query = f'id:({" OR ".join(te_ids)} AND user_id:{user_id})'
+        query = f'id:({" OR ".join(te_ids)})'
         collection = self._settings['solr']['collections']['map']['texts']
         response = self._solr_client.search(query=query, collection=collection)
-        print(f"text_chucks: {[ent['text'] for ent in response['docs']]}")
         return response['docs']
 
-    def _get_context_from_text_entities(self, text_entities: List[dict], user_id: str) -> str:
+    def _get_context_from_text_entities(self, text_entities: List[dict]) -> str:
 
         def _concatenate_texts_from_series(cntxt: pd.Series) -> str:
             return self._txt_sep.join(cntxt.sort_index())
@@ -184,9 +185,7 @@ class QueryPipeline(Pipeline):
             query = f'doc_id:{te["doc_id"]}'
             params = {'start': start, 'rows': rows, "sort": "index asc"}
             response = self._solr_client.search(query=query, collection=self._texts_collection, params=params)
-            print(f'reponse["docs"]: {response["docs"]}')
             for _te in response['docs']:
-                print(f'_te: {_te}')
                 text = _te.get('text') if _te.get('text') else ''
                 doc_texts[(_te['doc_id'], _te['index'])] = text
 
@@ -213,15 +212,13 @@ class QueryPipeline(Pipeline):
         logging.info(f'generate text embeddings for text "{text}"')
 
         logging.info(f'search k-nearest-neighbors for text')
-        print(f'KNN_user_id: {user_id}')
         knn_vecs = self._get_knn_vecs_from_text(text=text, user_id=user_id)
 
         logging.info(f'search text entities')
-        text_entities = self._get_text_entities_from_knn_vecs(knn_vecs=knn_vecs, user_id=user_id)
+        text_entities = self._get_text_entities_from_knn_vecs(knn_vecs=knn_vecs)
 
         logging.info(f'extract context from documents')
-        context = self._get_context_from_text_entities(text_entities=text_entities, user_id=user_id)
-        print(context)
+        context = self._get_context_from_text_entities(text_entities=text_entities)
 
         logging.info(f'generate answer to "{text}" based on context "{context[:200]}..."')
         answer = self._summarizer.get_answer(query=text, context=context)
@@ -255,7 +252,7 @@ class RemovalPipeline(Pipeline):
         super().__init__(environment=environment, settings=settings)
         self._solr_client = SolrClient(environment=environment, settings=settings)
 
-    def apply(self, id_: str, commit: bool = False, user_id: str = None):
+    def apply(self, id_: str, commit: bool = False):
         collection = self._settings['solr']['collections']['map']['docs']
         self._solr_client.delete_document(by=f"id:{id_}", collection=collection, commit=commit)
         collection = self._settings['solr']['collections']['map']['texts']
@@ -270,7 +267,7 @@ class SearchPipeline(Pipeline):
         super().__init__(environment=environment, settings=settings)
         self.solr_client = SolrClient(environment=environment, settings=settings)
 
-    def apply(self, query: str, collection: str, params: dict):
+    def apply(self, query: str, collection: str, params: dict, user_id: str = None):
         response = self.solr_client.search(query=query, collection=collection, params=params)
         return response['docs']
 
@@ -281,9 +278,9 @@ class FeedbackPipeline(Pipeline):
         super().__init__(environment=environment, settings=settings)
         self._solr_client = SolrClient(environment=environment, settings=settings)
 
-    def apply(self, feedback_type:str, feedback_text:str , email:str, commit: bool, feedback_to: str, user_id: str = None):
+    def apply(self, feedback_type:str, feedback_text:str , email:str, commit: bool, feedback_to: str):
         collection = self._settings['solr']['collections']['map']['feedback']
-        feedback = FeedbackDocument(id=feedback_type+feedback_text, feedback_type=feedback_type, text=feedback_text, feedback_to=feedback_to, email=email, user_id=user_id)
+        feedback = FeedbackDocument(id=feedback_type+feedback_text, feedback_type=feedback_type, text=feedback_text, feedback_to=feedback_to, email=email)
         logging.info(feedback)
         response = self._solr_client.add_document(document=feedback, collection=collection, commit=commit)
 
@@ -302,9 +299,9 @@ if __name__ == "__main__":
     
     query_pipeline = QueryPipeline(environment=Environment, settings=settings)
 
-    # results = query_pipeline._get_knn_vecs_from_text(text="is there an appropriate model for more than 512 tokens?")
-    results = query_pipeline._get_knn_vecs_from_text(text="is bern considered a city?")
+    # Perform a query
+    results = query_pipeline._get_knn_vecs_from_text(text="is bern considered a city?", user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
     print([result.get('score') for result in results])
-    result_text = query_pipeline._get_text_entities_from_knn_vecs(knn_vecs=results, user_id='some_user_id')
-    text = query_pipeline._get_context_from_text_entities(text_entities=result_text, user_id='some_user_id')
+    result_text = query_pipeline._get_text_entities_from_knn_vecs(knn_vecs=results, user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
+    text = query_pipeline._get_context_from_text_entities(text_entities=result_text, user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
     print(text)

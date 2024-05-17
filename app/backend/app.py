@@ -1,28 +1,20 @@
-from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, File, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware import Middleware
-from fastapi import File, UploadFile
-
-from fastapi import FastAPI
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.websockets import WebSocketState
-from app.backend.authentication import AuthenticationMiddleware
-from app.backend.context_manager import get_current_user_id
-
-from fastapi import FastAPI
+from starlette.middleware import Middleware
+from app.backend.authentication import AuthenticationMiddleware, validate_token
+from app.backend.context_manager import get_current_user_id, user_id
 from fastapi.staticfiles import StaticFiles
-
-
-import askyourdocs.utils as utl
-from askyourdocs.settings import SETTINGS as settings
-from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline, RemovalPipeline, SearchPipeline, FeedbackPipeline
-
+from pydantic import BaseModel
 import logging
 import os
+
+from askyourdocs.settings import SETTINGS as settings
+from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline, RemovalPipeline, SearchPipeline, FeedbackPipeline
+import askyourdocs.utils as utl
 
 environment = utl.load_environment()
 _INGESTION_PIPELINE = IngestionPipeline(environment=environment, settings=settings)
@@ -35,7 +27,7 @@ def middleware():
     return [
         Middleware(
             CORSMiddleware,
-            allow_origins=settings.get('cors_origins', ['http://localhost:8000','http://localhost:3000', 'http://app:8000', 'http://app:3000', 'http://app.ayd-sandbox.4punkt0.ch']),
+            allow_origins=settings.get('cors_origins', ['http://localhost:8000', 'http://localhost:3000', 'http://app:8000', 'http://app:3000', 'http://app.ayd-sandbox.4punkt0.ch']),
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"]
@@ -50,16 +42,14 @@ solr_client = _SEARCH_PIPELINE.solr_client
 for name in utl.get_solr_collection_names():
     solr_client.create_collection(name=name)
 
-
 class Text(BaseModel):
     data: str
-
 
 class ListText(BaseModel):
     data: list
 
-
 class Feedback(BaseModel):
+
     feedbackType: str
     feedbackText: str
     feedbackTo: str
@@ -86,7 +76,20 @@ def get_user_id() -> str:
     return get_current_user_id()
 
 @app.websocket("/ws/query")
-async def websocket_endpoint(websocket: WebSocket, user_id: str = Depends(get_user_id)):
+async def websocket_endpoint(websocket: WebSocket):
+    token = websocket.query_params.get('token')
+    if not token:
+        await websocket.close(code=1008)
+        return
+
+    try:
+        user_info = validate_token(token)
+        user_id.set(user_info['id'])  # Set the user ID in context_manager
+    except Exception as e:
+        logging.error("Error during token validation: ", e)
+        await websocket.close(code=1008)
+        return
+
     await websocket.accept()
     try:
         while True:
@@ -99,11 +102,9 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = Depends(get_us
                 combined_text += f"{msg['type']}: {msg['text']} "
 
             combined_text += f"user: {data}"
-            print(f"Combined text: {combined_text}")
 
             if data.strip():
-                answer = _QUERY_PIPELINE.apply(text=combined_text, answer_only=False, user_id=user_id)
-                # Send bot response to frontend
+                answer = _QUERY_PIPELINE.apply(text=combined_text, answer_only=False, user_id=user_id.get())
                 await websocket.send_json(answer)
             else:
                 await websocket.send_json({"error": "Empty input"})
@@ -114,24 +115,23 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = Depends(get_us
             await websocket.close()
 
 @app.get("/api/get_documents", response_model=DataList)
-async def get_documents():
-    query = f'*'
+async def get_documents(user_id: str = Depends(get_user_id)):
+    query = f'user_id:{user_id}'
     collection = settings['solr']['collections']['map']['docs']
-    params={'fl':'name,id'}
-    response = _SEARCH_PIPELINE.apply(query=query, collection=collection, params = params)
-
+    params = {'fl': 'name,id'}
+    response = _SEARCH_PIPELINE.apply(query=query, collection=collection, params=params)
     return {
-        "data":response
+        "data": response
     }
 
 @app.get("/api/get_documents_by_id", response_model=DataList)
 async def get_documents(id: str):
     query = f'id:{id}'
     collection = settings['solr']['collections']['map']['docs']
-    params={'fl':'name,id,source'}
-    response = _SEARCH_PIPELINE.apply(query=query, collection=collection, params = params)
+    params = {'fl': 'name,id,source'}
+    response = _SEARCH_PIPELINE.apply(query=query, collection=collection, params=params)
     return {
-        "data":response
+        "data": response
     }
 
 @app.delete("/api/delete_document", response_model=Text)
@@ -155,8 +155,7 @@ async def upload_file(file: UploadFile = File(...), user_id: str = Depends(get_u
     else:
         return {"data": "No file provided"}
 
-
 @app.post("/api/ingest_feedback", response_model=Text)
-async def upload_feedback(feedback: Feedback, user_id: str = Depends(get_user_id)):
-    doc = _FEEDBACK_PIPELINE.apply(feedback_type = feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, email=feedback.email, commit=True, user_id=user_id)
+async def upload_feedback(feedback: Feedback):
+    doc = _FEEDBACK_PIPELINE.apply(feedback_type=feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, email=feedback.email, commit=True)
     return {"data": doc}

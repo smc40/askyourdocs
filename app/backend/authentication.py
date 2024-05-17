@@ -18,8 +18,6 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next):   
-        
-        print(f"Request url: {str(request.url)}")    
         if request.url.path.startswith('/uploads') or request.url.path.startswith('/app') or request.url.path.startswith('/public') or request.url.path == "/":
             response = await call_next(request)
             return response
@@ -28,7 +26,6 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
 
         if not token:
             return JSONResponse({"error": "Unauthorized"}, 401)
-        print(f"Received token: {token}")
         try:         
             authorization_info = keycloak_openid.introspect(token)
 
@@ -46,7 +43,23 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             "email": authorization_info.get("email"),
         }
         user_id.set(request.state.userinfo.get('id')) 
-        print(f"User_id: {user_id.get()}")
 
         response = await call_next(request)
         return response
+
+def validate_token(token: str):
+    try:
+        authorization_info = keycloak_openid.introspect(token)
+        if authorization_info.get("active") is not True:
+            raise Exception("Token is not active")
+        user_info = {
+            "id": authorization_info['sub'],
+            "name": authorization_info.get("name", None),
+            "username": authorization_info['preferred_username'],
+            "email": authorization_info.get("email"),
+        }
+        user_id.set(user_info['id'])  # Set the user ID in context_manager
+        return user_info
+    except Exception as e:
+        logging.error("Error raised from keycloak: ", e)
+        raise
