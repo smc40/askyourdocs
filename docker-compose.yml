@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: bouldermaettel/askyourdocs-app:0.1.0
+    image: bouldermaettel/askyourdocs-app:0.1.1
     # build:
     #   context: .
     #   dockerfile: Dockerfile

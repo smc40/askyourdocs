@@ -57,6 +57,9 @@ class Feedback(BaseModel):
 
 class DataList(BaseModel):
     data: list[dict] = []
+    
+class UserSettings(BaseModel):
+    llm_model_name: str
 
 app.mount("/app", StaticFiles(directory="/app/static"), name="static")
 app.mount("/public", StaticFiles(directory="/app/public"), name="public")
@@ -159,3 +162,11 @@ async def upload_file(file: UploadFile = File(...), user_id: str = Depends(get_u
 async def upload_feedback(feedback: Feedback):
     doc = _FEEDBACK_PIPELINE.apply(feedback_type=feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, email=feedback.email, commit=True)
     return {"data": doc}
+
+@app.post("/api/update_user_settings")
+async def update_user_settings(settings: UserSettings, user_id: str = Depends(get_user_id)) -> str:
+    query = f'user_id:{user_id}'
+    collection = settings['solr']['collections']['map']['user_settings']
+    params = {'fl': 'name,id,source'}
+    response = _SEARCH_PIPELINE.apply(query=query, collection=collection, params=params)
+    return response

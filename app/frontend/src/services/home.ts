@@ -36,3 +36,7 @@ export const uploadFeedback = (
         email,
     });
 };
+
+export const updateUserSettings = (settings) => {
+    return client.post('/api/update_user_settings', settings);
+};

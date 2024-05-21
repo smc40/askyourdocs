@@ -124,7 +124,7 @@ class QueryPipeline(Pipeline):
         cache_folder = settings['paths']['models']
         self._text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=settings)
 
-        self._ntok_max = settings['modelling']['ntok_max']
+        self._ntok_max = 1000 if 'gpt-3.5' in model_name else 10000 if 'gpt-4' in model_name else 512
         self._ntok_context_fraction = settings['modelling']['ntok_context_fraction']
         self._ntok_context = int(self._ntok_max * self._ntok_context_fraction)
 
@@ -269,7 +269,7 @@ class SearchPipeline(Pipeline):
 
     def apply(self, query: str, collection: str, params: dict, user_id: str = None):
         response = self.solr_client.search(query=query, collection=collection, params=params)
-        return response['docs']
+        return response['docs'] if 'ayd_docs' in collection else response.get('user_settings')['llm_model_name']
 
 
 class FeedbackPipeline(Pipeline):

@@ -260,3 +260,18 @@ class SolrClient:
 
         delete_request = {'delete': {'query': by}}
         self._post(url=url, data=delete_request)
+        
+    def get_user_settings(self, user_id: str) -> dict:
+        query = f"user_id:{user_id}"
+        response = self.search(query, "ayd_user")
+        if response['numFound'] > 0:
+            return response['docs'][0]
+        else:
+            return {}
+        
+    def add_user_settings(self, user_id: str, llm_model_name: str):
+        document = {
+            "user_id": user_id,
+            "llm_model_name": llm_model_name,
+        }
+        self.add_document(document, "ayd_user", commit=True)

@@ -16,6 +16,7 @@ FILTER_ON_SCORE = 0.5  # use None if you want to disable the filter
 DOCS_COLLECTION = 'ayd_docs'
 TEXTS_COLLECTION = 'ayd_texts'
 VECS_COLLECTION = 'ayd_vecs'
+USER_COLLECTION = 'ayd_user'
 FEEDBACK_COLLECTION = 'ayd_feedback'
 
 CORS_ALLOWED_STR = os.getenv('CORS_ALLOWED', 'http://localhost:8000,http://localhost:3000')
@@ -41,6 +42,7 @@ SETTINGS = {
                 'texts': TEXTS_COLLECTION,
                 'vecs': VECS_COLLECTION,
                 'feedback': FEEDBACK_COLLECTION,
+                'user_settings': USER_COLLECTION
             },
             DOCS_COLLECTION: {
                 'config_files': 'resources/solr/conf',
@@ -176,6 +178,25 @@ SETTINGS = {
                         'stored': 'true',
                         'multiValued': 'false'
                     },
+                ]
+            },
+            USER_COLLECTION: {
+                'config_files': 'resources/solr/conf',
+                'fields': [
+                    {
+                        "name": "user_id",
+                        "type": "string",
+                        "indexed": "true",
+                        "stored": "true",
+                        "multiValued": "false"
+                    },
+                    {
+                        'name': 'llm_model_name',
+                        'type': 'string',
+                        'indexed': 'false',
+                        'stored': 'true',
+                        'multiValued': 'false'
+                    }          
                 ]
             },
             'test_origin': {

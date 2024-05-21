@@ -23,6 +23,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
     const [noDocuments, setNoDocuments] = useState(false);
     const [serverDown, setServerDown] = useState(false);
     const [wrongFiletype, setWrongFiletype] = useState(false);
+    const [selectedModel, setSelectedModel] = useState('gpt-4-32k'); // Default value
 
     useEffect(() => {
         homeService
@@ -70,6 +71,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
             }
         }
     };
+
     const handleRemoveItem = (index: number) => {
         const itemID = list[index].id;
         homeService.deleteDocument(itemID).then(() => {
@@ -83,6 +85,17 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 return updatedList;
             });
         });
+    };
+
+    const handleModelChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedModel = e.target.value;
+        setSelectedModel(selectedModel);
+
+        try {
+            await homeService.updateUserSettings({ llm_model_name: selectedModel });
+        } catch (error) {
+            console.error('Error updating user settings:', error);
+        }
     };
 
     return (
@@ -99,6 +112,19 @@ const Sidebar: React.FC<SidebarProps> = () => {
                         className="hidden"
                     />
                 </label>
+            </div>
+
+            <div className="mb-4">
+                <label htmlFor="modelSelect" className="block mb-2">Select Model:</label>
+                <select
+                    id="modelSelect"
+                    value={selectedModel}
+                    onChange={handleModelChange}
+                    className="block w-full p-2 border border-gray-300 rounded"
+                >
+                    <option value="gpt-3.5">gpt-3.5</option>
+                    <option value="gpt-4-32k">gpt-4</option>
+                </select>
             </div>
 
             {noDocuments && (

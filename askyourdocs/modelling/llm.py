@@ -12,6 +12,7 @@ from askyourdocs.settings import SETTINGS as settings
 
 class AzureOpenAIClient:
     def __init__(self, api_key: None | str = None, azure_endpoint: None | str = None, api_version: str = "2023-05-15", settings=settings):
+    
         if api_key:
             self._api_key = api_key
         else:
@@ -21,6 +22,17 @@ class AzureOpenAIClient:
         else:
             self._azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
         self._api_version = api_version
+        self._model_name = self.get_user_settings()
+        
+    def get_user_settings(self, user_id: str | None = None) -> dict:
+        if user_id:
+            settings = self._solr_client.get_user_settings(user_id)
+        elif not settings:
+            # Provide default settings if none exist
+            user_settings = {
+                'llm_model_name': 'gpt-4-32k',
+            }
+        return user_settings.get('llm_model_name')
         
     def get_client(self):
         if self._api_key and self._azure_endpoint:
@@ -39,7 +51,7 @@ class AzureOpenAIClient:
         else:
             return None
     
-    def get_summary(self, task: str, query: str, context: str, summarizing_model: str = settings['modelling']['model_name']):
+    def get_summary(self, task: str, query: str, context: str, summarizing_model: str = self._model_name):
         client = self.get_client()
         if client:
             messages=[
@@ -157,7 +169,7 @@ class Summarizer:
             
         self._tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small") # use always the same tokenizer
         # TODO do not use T5ForConditionalGeneration but rather a generic model
-        self._ntok_max = settings['modelling']['ntok_max']
+        self._ntok_max = 1000 if 'gpt-3.5' in model_name else 10000 if 'gpt-4' in model_name else 512
         self._no_repeat_ngram_size = settings['modelling']['no_repeat_ngram_size']
 
     def get_answer(self, query: str, context: str) -> str:
