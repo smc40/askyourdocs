@@ -195,10 +195,18 @@ class SolrClient:
         if commit:
             url += '?commit=true'
 
-        response = requests.post(url, headers=self._headers, data=json.dumps(document.to_dict()))
+        # Convert the document to a dictionary
+        document_data = document.to_dict()
+
+        # Log the document data for debugging
+        logging.debug(f'Document data: {document_data}')
+
+        # Send the document to Solr
+        response = requests.post(url, headers=self._headers, data=json.dumps(document_data))
         response.raise_for_status()
 
         return document.id
+
 
     def add_documents(self, documents: DocumentList, collection: str, commit: bool = False):
         logging.info(f'add {len(documents)} documents to collection "{collection}"')
@@ -261,17 +269,17 @@ class SolrClient:
         delete_request = {'delete': {'query': by}}
         self._post(url=url, data=delete_request)
         
-    def get_user_settings(self, user_id: str) -> dict:
-        query = f"user_id:{user_id}"
-        response = self.search(query, "ayd_user")
-        if response['numFound'] > 0:
-            return response['docs'][0]
-        else:
-            return {}
+    # def get_user_settings(self, user_id: str) -> dict:
+    #     query = f"user_id:{user_id}"
+    #     response = self.search(query, "ayd_user")
+    #     if response['numFound'] > 0:
+    #         return response['docs'][0]
+    #     else:
+    #         return {}
         
-    def add_user_settings(self, user_id: str, llm_model_name: str):
-        document = {
-            "user_id": user_id,
-            "llm_model_name": llm_model_name,
-        }
-        self.add_document(document, "ayd_user", commit=True)
+    # def add_user_settings(self, user_id: str, llm_model_name: str):
+    #     document = {
+    #         "user_id": user_id,
+    #         "llm_model_name": llm_model_name,
+    #     }
+    #     self.add_document(document, "ayd_user", commit=True)

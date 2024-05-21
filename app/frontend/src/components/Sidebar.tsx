@@ -7,6 +7,7 @@ import Loader from './Loader';
 import ErrorMsg from './ErrorMsg';
 
 import * as homeService from '../services/home';
+import { UserSettings } from '../services/home';
 
 interface SidebarProps {
     onFileUpload: (file: File) => void;
@@ -87,12 +88,16 @@ const Sidebar: React.FC<SidebarProps> = () => {
         });
     };
 
-    const handleModelChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleModelChange = async (
+        e: React.ChangeEvent<HTMLSelectElement>
+    ) => {
         const selectedModel = e.target.value;
         setSelectedModel(selectedModel);
 
+        const settings: UserSettings = { llm_model_name: selectedModel };
+
         try {
-            await homeService.updateUserSettings({ llm_model_name: selectedModel });
+            await homeService.updateUserSettings(settings);
         } catch (error) {
             console.error('Error updating user settings:', error);
         }
@@ -115,7 +120,9 @@ const Sidebar: React.FC<SidebarProps> = () => {
             </div>
 
             <div className="mb-4">
-                <label htmlFor="modelSelect" className="block mb-2">Select Model:</label>
+                <label htmlFor="modelSelect" className="block mb-2">
+                    Select Model:
+                </label>
                 <select
                     id="modelSelect"
                     value={selectedModel}

@@ -1,5 +1,10 @@
 import client from '../utils/client';
 
+// Define the type for UserSettings
+export interface UserSettings {
+    llm_model_name: string;
+}
+
 export const getDocuments = () => {
     return client.get('/api/get_documents');
 };
@@ -37,6 +42,7 @@ export const uploadFeedback = (
     });
 };
 
-export const updateUserSettings = (settings) => {
+// Update the function to use the UserSettings type
+export const updateUserSettings = (settings: UserSettings) => {
     return client.post('/api/update_user_settings', settings);
 };

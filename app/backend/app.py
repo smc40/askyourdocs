@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, File, UploadFile
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, File, UploadFile, Request
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -15,6 +15,7 @@ import os
 from askyourdocs.settings import SETTINGS as settings
 from askyourdocs.pipeline.pipeline import QueryPipeline, IngestionPipeline, RemovalPipeline, SearchPipeline, FeedbackPipeline
 import askyourdocs.utils as utl
+from askyourdocs import UserSettingDocument, TextEntity
 
 environment = utl.load_environment()
 _INGESTION_PIPELINE = IngestionPipeline(environment=environment, settings=settings)
@@ -163,10 +164,12 @@ async def upload_feedback(feedback: Feedback):
     doc = _FEEDBACK_PIPELINE.apply(feedback_type=feedback.feedbackType, feedback_text=feedback.feedbackText, feedback_to=feedback.feedbackTo, email=feedback.email, commit=True)
     return {"data": doc}
 
-@app.post("/api/update_user_settings")
-async def update_user_settings(settings: UserSettings, user_id: str = Depends(get_user_id)) -> str:
-    query = f'user_id:{user_id}'
+@app.post("/api/update_user_settings", response_model=Text)
+async def update_user_settings(request: Request, user_id: str = Depends(get_user_id)):
+    user_settings = await request.json()
     collection = settings['solr']['collections']['map']['user_settings']
-    params = {'fl': 'name,id,source'}
-    response = _SEARCH_PIPELINE.apply(query=query, collection=collection, params=params)
-    return response
+    doc_id = f"user_{user_id}"
+    doc = UserSettingDocument(id=doc_id, entry_id=doc_id, user_id=user_id, llm_model_name=user_settings.get('llm_model_name'))
+    solr_client.add_document(document=doc, collection=collection, commit=True)
+
+    return {"data": "User settings updated successfully"} 

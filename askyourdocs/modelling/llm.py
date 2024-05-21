@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 import torch.cuda
 import nltk.data
@@ -11,8 +11,8 @@ from openai import AzureOpenAI
 from askyourdocs.settings import SETTINGS as settings
 
 class AzureOpenAIClient:
-    def __init__(self, api_key: None | str = None, azure_endpoint: None | str = None, api_version: str = "2023-05-15", settings=settings):
-    
+    def __init__(self, api_key: Optional[str] = None, azure_endpoint: Optional[str] = None, api_version: str = "2023-05-15", settings=settings):
+        self._solr_client = None  # Initialize Solr client here if needed
         if api_key:
             self._api_key = api_key
         else:
@@ -23,38 +23,39 @@ class AzureOpenAIClient:
             self._azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
         self._api_version = api_version
         self._model_name = self.get_user_settings()
-        
-    def get_user_settings(self, user_id: str | None = None) -> dict:
+
+    def get_user_settings(self, user_id: Optional[str] = None) -> str:
         if user_id:
             settings = self._solr_client.get_user_settings(user_id)
-        elif not settings:
+        else:
             # Provide default settings if none exist
             user_settings = {
                 'llm_model_name': 'gpt-4-32k',
             }
         return user_settings.get('llm_model_name')
-        
+
     def get_client(self):
         if self._api_key and self._azure_endpoint:
             return AzureOpenAI(api_key=self._api_key, 
                             api_version=self._api_version,
                             azure_endpoint=self._azure_endpoint)
-            
         else:
             logging.error("Azure OpenAI API key or endpoint not provided")
             return None
-        
+
     def get_embedding(self, text: str, model: str = settings['modelling']['embedding_model_name']):
         client = self.get_client()
         if client:
             return client.embeddings.create(input=[text], model=model).data[0].embedding
         else:
             return None
-    
-    def get_summary(self, task: str, query: str, context: str, summarizing_model: str = self._model_name):
+
+    def get_summary(self, task: str, query: str, context: str, summarizing_model: Optional[str] = None):
+        if summarizing_model is None:
+            summarizing_model = self._model_name
         client = self.get_client()
         if client:
-            messages=[
+            messages = [
                 {"role": "system", "content": f'{task}'},
                 {"role": "user", "content": f'{query}'},
                 {"role": "assistant", "content": f'{context}'},
@@ -67,8 +68,6 @@ class AzureOpenAIClient:
             return response.choices[0].message.content
         else:
             return None
-        
-        
 
 class TextEmbedder:
 
@@ -78,9 +77,8 @@ class TextEmbedder:
         self._cache_folder = cache_folder
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'            
         self._client, self._model = (AzureOpenAIClient(), None) if 'gpt-' in model_name else (None, SentenceTransformer(model_name, cache_folder=cache_folder, device=self._device))
-        
 
-    def apply(self, texts: str | List[str], show_progress_bar: bool = None, normalize_embeddings: bool = True) -> np.ndarray:
+    def apply(self, texts: str | List[str], show_progress_bar: Optional[bool] = None, normalize_embeddings: bool = True) -> np.ndarray:
         # Ensure `texts` is always treated as a list for uniform processing
         texts, flatten = ([texts], True) if isinstance(texts, str) else (texts, False)
         
@@ -127,7 +125,8 @@ class TextTokenizer:
 
             case _:
                 logging.error(f'unknown token entity {entity}')
-                
+                return []
+
     @staticmethod
     def _ensure_sentence_length(sentences: List[str], original_text: str, min_length: int = 20) -> List[str]:
         """
@@ -145,11 +144,10 @@ class TextTokenizer:
                 sentence_buffer += sentence_with_space
 
             # Check if it's the last sentence and add it to the processed sentences
-            if i == len(sentences) - 1 and len(processed_sentences) >= min_length:
+            if i == len(sentences) - 1 and len(sentence_buffer) >= min_length:
                 processed_sentences.append(sentence_buffer.strip())
 
         return processed_sentences
-
 
 class Summarizer:
 
@@ -158,7 +156,7 @@ class Summarizer:
     Please just summarize the context with respect to the asked question in simple words. If there is no 
     related information in the context please inform me accordingly and do not generate the answer from your knowledge. 
     The context provided includes the chat history where the bot is your generated answer and the user is the query from the user.
-    Please refer to the last user input and take the chat history into account when appropiate. Generate the answer in the language
+    Please refer to the last user input and take the chat history into account when appropriate. Generate the answer in the language
     of the last user input."""
 
     def __init__(self, settings: dict):
@@ -200,12 +198,10 @@ if __name__ ==  '__main__':
 
     # text = ["Hello, world! i want more world!", 'be as you are']
     text = "Hello, world! i want more world!"
-    text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder,settings=settings)
+    text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=settings)
     emb = text_embedder.apply(text, normalize_embeddings=True)
     print(emb)
     
     tokenizer = TextTokenizer()
     sents = tokenizer.get_text_entities(text="Hello, world! i want more world! 1. 2. Helllo", entity='sentence')
     print(sents)
-    #test
-    

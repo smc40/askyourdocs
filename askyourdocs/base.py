@@ -85,6 +85,17 @@ class TextEntity(Document):
     def _id_prefix(self) -> str:
         return 'txt_ent_'
 
+@dataclass(eq=False)
+class UserSettingDocument(Document):
+    
+    entry_id: str
+    user_id: str
+    llm_model_name: str | None = None
+
+    @property
+    def _id_prefix(self) -> str:
+        return 'entry_id'
+
 
 @dataclass(eq=False)
 class EmbeddingEntity(Document):
