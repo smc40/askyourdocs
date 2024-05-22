@@ -88,7 +88,6 @@ class TextEntity(Document):
 @dataclass(eq=False)
 class UserSettingDocument(Document):
     
-    entry_id: str
     user_id: str
     llm_model_name: str | None = None
 

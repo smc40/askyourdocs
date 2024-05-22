@@ -138,6 +138,11 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 </select>
             </div>
 
+            <hr
+                className="my-6 border-t border-gray-300"
+                style={{ width: 'calc(100% + 2rem)', marginLeft: '-1rem' }}
+            />
+
             <div className="flex items-center mb-4">
                 <h2 className="text-xl mr-4">Your documents</h2>
                 <label htmlFor="fileInput" className="cursor-pointer">
@@ -151,14 +156,12 @@ const Sidebar: React.FC<SidebarProps> = () => {
                     />
                 </label>
             </div>
-
             {noDocuments && (
                 <ErrorMsg
                     message="You have no documents yet. Start by uploading a first one by clicking on plus icon above."
                     type="info"
                 />
             )}
-
             {wrongFiletype && (
                 <ErrorMsg
                     message="Filetype not supported, try another file (PDF, no OCR)."
@@ -171,11 +174,9 @@ const Sidebar: React.FC<SidebarProps> = () => {
                     type="danger"
                 />
             )}
-
             {showLoader && (
                 <Loader message="Your upload is being processed..." />
             )}
-
             <ul className="mt-12">
                 {list.map((item, index) => (
                     <li

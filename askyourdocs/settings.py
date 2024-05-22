@@ -183,13 +183,7 @@ SETTINGS = {
             USER_COLLECTION: {
                 'config_files': 'resources/solr/conf',
                 'fields': [
-                    {
-                        'name': 'entry_id',
-                        'type': 'string',
-                        'indexed': 'false',
-                        'stored': 'true',
-                        'multiValued': 'false'
-                    },     
+ 
                     {
                         "name": "user_id",
                         "type": "string",

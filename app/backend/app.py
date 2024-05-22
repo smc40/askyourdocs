@@ -169,7 +169,7 @@ async def update_user_settings(request: Request, user_id: str = Depends(get_user
     user_settings = await request.json()
     collection = settings['solr']['collections']['map']['user_settings']
     doc_id = f"user_{user_id}"
-    doc = UserSettingDocument(id=doc_id, entry_id=doc_id, user_id=user_id, llm_model_name=user_settings.get('llm_model_name'))
+    doc = UserSettingDocument(id=doc_id, user_id=user_id, llm_model_name=user_settings.get('llm_model_name'))
     solr_client.add_document(document=doc, collection=collection, commit=True)
 
     return {"data": "User settings updated successfully"} 
