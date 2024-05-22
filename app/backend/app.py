@@ -173,3 +173,25 @@ async def update_user_settings(request: Request, user_id: str = Depends(get_user
     solr_client.add_document(document=doc, collection=collection, commit=True)
 
     return {"data": "User settings updated successfully"} 
+
+@app.get("/api/solr/default-model", response_model=UserSettings)
+async def get_default_model_name():
+    solr_url = settings['solr']['url'] + '/your_collection/select'
+    query_params = {
+        'q': '*:*',
+        'rows': 1,
+        'fl': 'llm_model_name'
+    }
+
+    try:
+        response = solr_client.get(solr_url, params=query_params)
+        results = response.json()
+
+        if results['response']['numFound'] > 0:
+            llm_model_name = results['response']['docs'][0].get('llm_model_name')
+            if llm_model_name:
+                return {"llm_model_name": llm_model_name}
+        return {"llm_model_name": "gpt-4-32k"}  # Default value if no model name found
+    except Exception as e:
+        logging.error(f"Error querying Solr: {e}")
+        raise HTTPException(status_code=500, detail="Error querying Solr")

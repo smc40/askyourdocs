@@ -27,6 +27,21 @@ const Sidebar: React.FC<SidebarProps> = () => {
     const [selectedModel, setSelectedModel] = useState('gpt-4-32k'); // Default value
 
     useEffect(() => {
+        // Fetch default model name from Solr
+        homeService
+            .getDefaultModelName()
+            .then((response: { data: UserSettings }) => {
+                const defaultModelName =
+                    response.data.llm_model_name || 'gpt-4-32k';
+                setSelectedModel(defaultModelName);
+            })
+            .catch((error: unknown) => {
+                // Specify the type of error
+                console.error('Error fetching default model name:', error);
+                // Optionally handle the error or set a fallback value
+            });
+
+        // Fetch documents
         homeService
             .getDocuments()
             .then((response) => {
@@ -39,11 +54,12 @@ const Sidebar: React.FC<SidebarProps> = () => {
                     })
                 );
                 setList(documents);
-                if (documents.length == 0) {
+                if (documents.length === 0) {
                     setNoDocuments(true);
                 }
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
+                // Specify the type of error
                 console.error('Error fetching data:', error);
                 setServerDown(true);
             });
@@ -62,7 +78,8 @@ const Sidebar: React.FC<SidebarProps> = () => {
                         { id: response.data, name: file.name },
                     ]);
                 });
-            } catch (error) {
+            } catch (error: unknown) {
+                // Specify the type of error
                 setShowLoader(false);
                 setWrongFiletype(true);
                 setTimeout(() => {
@@ -98,13 +115,29 @@ const Sidebar: React.FC<SidebarProps> = () => {
 
         try {
             await homeService.updateUserSettings(settings);
-        } catch (error) {
+        } catch (error: unknown) {
+            // Specify the type of error
             console.error('Error updating user settings:', error);
         }
     };
 
     return (
         <aside className="p-4 border-r w-1/3">
+            <div className="mb-4">
+                <label htmlFor="modelSelect" className="block mb-2">
+                    Select Model:
+                </label>
+                <select
+                    id="modelSelect"
+                    value={selectedModel}
+                    onChange={handleModelChange}
+                    className="block w-full p-2 border border-gray-300 rounded"
+                >
+                    <option value="gpt-35-turbo">gpt-3.5</option>
+                    <option value="gpt-4-32k">gpt-4</option>
+                </select>
+            </div>
+
             <div className="flex items-center mb-4">
                 <h2 className="text-xl mr-4">Your documents</h2>
                 <label htmlFor="fileInput" className="cursor-pointer">
@@ -117,21 +150,6 @@ const Sidebar: React.FC<SidebarProps> = () => {
                         className="hidden"
                     />
                 </label>
-            </div>
-
-            <div className="mb-4">
-                <label htmlFor="modelSelect" className="block mb-2">
-                    Select Model:
-                </label>
-                <select
-                    id="modelSelect"
-                    value={selectedModel}
-                    onChange={handleModelChange}
-                    className="block w-full p-2 border border-gray-300 rounded"
-                >
-                    <option value="gpt-3.5">gpt-3.5</option>
-                    <option value="gpt-4-32k">gpt-4</option>
-                </select>
             </div>
 
             {noDocuments && (
