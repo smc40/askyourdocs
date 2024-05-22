@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, File, UploadFile, Request
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile, Request
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -6,7 +6,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.websockets import WebSocketState
 from starlette.middleware import Middleware
 from app.backend.authentication import AuthenticationMiddleware, validate_token
-from app.backend.context_manager import get_current_user_id, user_id
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import logging
@@ -76,9 +75,6 @@ async def read_root():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def get_user_id() -> str:
-    return get_current_user_id()
-
 @app.websocket("/ws/query")
 async def websocket_endpoint(websocket: WebSocket):
     token = websocket.query_params.get('token')
@@ -88,7 +84,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         user_info = validate_token(token)
-        user_id.set(user_info['id'])  # Set the user ID in context_manager
     except Exception as e:
         logging.error("Error during token validation: ", e)
         await websocket.close(code=1008)
@@ -108,7 +103,7 @@ async def websocket_endpoint(websocket: WebSocket):
             combined_text += f"user: {data}"
 
             if data.strip():
-                answer = _QUERY_PIPELINE.apply(text=combined_text, answer_only=False, user_id=user_id.get())
+                answer = _QUERY_PIPELINE.apply(text=combined_text, answer_only=False, user_id=user_info['id'])
                 await websocket.send_json(answer)
             else:
                 await websocket.send_json({"error": "Empty input"})
@@ -119,7 +114,8 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.close()
 
 @app.get("/api/get_documents", response_model=DataList)
-async def get_documents(user_id: str = Depends(get_user_id)):
+async def get_documents(request: Request):
+    user_id = request.state.userinfo["id"]
     query = f'user_id:{user_id}'
     collection = settings['solr']['collections']['map']['docs']
     params = {'fl': 'name,id'}
@@ -147,7 +143,8 @@ async def delete_document(id: str):
     }
 
 @app.post("/api/ingest", response_model=ListText)
-async def upload_file(file: UploadFile = File(...), user_id: str = Depends(get_user_id)):
+async def upload_file(request: Request, file: UploadFile = File(...)):
+    user_id = request.state.userinfo["id"]
     if file and file.filename:
         logging.info(f'uploading file  {file.filename}')
         filepath = f"./app/backend/uploads/{file.filename}"
@@ -165,14 +162,15 @@ async def upload_feedback(feedback: Feedback):
     return {"data": doc}
 
 @app.post("/api/update_user_settings", response_model=Text)
-async def update_user_settings(request: Request, user_id: str = Depends(get_user_id)):
+async def update_user_settings(request: Request):
+    user_id = request.state.userinfo["id"]
     user_settings = await request.json()
     collection = settings['solr']['collections']['map']['user_settings']
     doc_id = f"user_{user_id}"
     doc = UserSettingDocument(id=doc_id, user_id=user_id, llm_model_name=user_settings.get('llm_model_name'))
     solr_client.add_document(document=doc, collection=collection, commit=True)
 
-    return {"data": "User settings updated successfully"} 
+    return {"data": "User settings updated successfully"}
 
 @app.get("/api/solr/default-model", response_model=UserSettings)
 async def get_default_model_name():
@@ -195,3 +193,5 @@ async def get_default_model_name():
     except Exception as e:
         logging.error(f"Error querying Solr: {e}")
         raise HTTPException(status_code=500, detail="Error querying Solr")
+    
+    

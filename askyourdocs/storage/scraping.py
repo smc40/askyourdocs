@@ -8,7 +8,6 @@ from tika import parser
 import validators
 
 from askyourdocs import Environment, Service, TextDocument
-from app.backend.context_manager import get_current_user_id
 
 class Extractor(Service):
     """Abstract base class for all scrapers (text-extractors)"""

@@ -3,7 +3,6 @@ from askyourdocs.settings import SETTINGS as settings
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from app.backend.context_manager import user_id
 
 import logging
 
@@ -42,8 +41,6 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             "username": authorization_info['preferred_username'],
             "email": authorization_info.get("email"),
         }
-        user_id.set(request.state.userinfo.get('id')) 
-
         response = await call_next(request)
         return response
 
@@ -58,7 +55,6 @@ def validate_token(token: str):
             "username": authorization_info['preferred_username'],
             "email": authorization_info.get("email"),
         }
-        user_id.set(user_info['id'])  # Set the user ID in context_manager
         return user_info
     except Exception as e:
         logging.error("Error raised from keycloak: ", e)
