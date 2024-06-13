@@ -29,10 +29,10 @@ class AzureOpenAIClient:
             settings = self._solr_client.get_user_settings(user_id)
         else:
             # Provide default settings if none exist
-            user_settings = {
+            settings = {
                 'llm_model_name': 'gpt-4-32k',
             }
-        return user_settings.get('llm_model_name')
+        return settings.get('llm_model_name')
 
     def get_client(self):
         if self._api_key and self._azure_endpoint:
