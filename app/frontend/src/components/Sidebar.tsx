@@ -24,7 +24,8 @@ const Sidebar: React.FC<SidebarProps> = () => {
     const [noDocuments, setNoDocuments] = useState(false);
     const [serverDown, setServerDown] = useState(false);
     const [wrongFiletype, setWrongFiletype] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('gpt-4-32k'); // Default value
+    const [selectedModel, setSelectedModel] = useState(''); // Initialize with an empty string
+    const [isUpdatingModel, setIsUpdatingModel] = useState(false); // Track model update status
 
     useEffect(() => {
         // Fetch default model name from Solr
@@ -36,9 +37,9 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 setSelectedModel(defaultModelName);
             })
             .catch((error: unknown) => {
-                // Specify the type of error
                 console.error('Error fetching default model name:', error);
                 // Optionally handle the error or set a fallback value
+                setSelectedModel('gpt-4-32k'); // Fallback value
             });
 
         // Fetch documents
@@ -59,7 +60,6 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 }
             })
             .catch((error: unknown) => {
-                // Specify the type of error
                 console.error('Error fetching data:', error);
                 setServerDown(true);
             });
@@ -79,7 +79,6 @@ const Sidebar: React.FC<SidebarProps> = () => {
                     ]);
                 });
             } catch (error: unknown) {
-                // Specify the type of error
                 setShowLoader(false);
                 setWrongFiletype(true);
                 setTimeout(() => {
@@ -110,16 +109,24 @@ const Sidebar: React.FC<SidebarProps> = () => {
     ) => {
         const selectedModel = e.target.value;
         setSelectedModel(selectedModel);
+        setIsUpdatingModel(true);
 
         const settings: UserSettings = { llm_model_name: selectedModel };
 
         try {
             await homeService.updateUserSettings(settings);
+            setIsUpdatingModel(false);
         } catch (error: unknown) {
-            // Specify the type of error
             console.error('Error updating user settings:', error);
+            setIsUpdatingModel(false);
         }
     };
+
+    useEffect(() => {
+        if (isUpdatingModel) {
+            // Optional: Add some logic or indication when updating the model
+        }
+    }, [isUpdatingModel]);
 
     return (
         <aside className="p-4 border-r w-1/3">
@@ -132,9 +139,11 @@ const Sidebar: React.FC<SidebarProps> = () => {
                     value={selectedModel}
                     onChange={handleModelChange}
                     className="block w-full p-2 border border-gray-300 rounded"
+                    disabled={isUpdatingModel} // Disable the dropdown while updating
                 >
                     <option value="gpt-35-turbo">gpt-3.5</option>
                     <option value="gpt-4-32k">gpt-4</option>
+                    <option value="mistral-7b">mistral-7b</option>
                 </select>
             </div>
 

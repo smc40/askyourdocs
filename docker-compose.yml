@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: bouldermaettel/askyourdocs-app:0.1.0
+    image: bouldermaettel/askyourdocs-app:0.1.2
     # build:
     #   context: .
     #   dockerfile: Dockerfile
@@ -115,3 +115,17 @@ services:
     depends_on:
       - keycloak
       - app
+  localai:
+    image: bouldermaettel/mistral-7b:0.0.1
+    ports:
+      - 8181:8080
+    env_file:
+      - .env
+    environment:
+      - MODELS_PATH=/models
+    #  - DEBUG=true
+    volumes:
+      - ./localai-models:/models:cached
+      - ./images/:/tmp/generated/images/
+    command:
+    - mistral-7b-instruct-v0.3

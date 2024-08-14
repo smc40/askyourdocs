@@ -8,39 +8,67 @@ from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, T5ForConditionalGeneration
 import os
 from openai import AzureOpenAI
+import openai
 from askyourdocs.settings import SETTINGS as settings
+from askyourdocs.storage.client import SolrClient
+
+class LocalAIClient:
+    def __init__(self, api_key: Optional[str] = None, api_endpoint: Optional[str] = None, settings=None, user_id: str | None = None):
+        self._solr_client = SolrClient  # Initialize Solr client here if needed
+        self._settings = settings or {'modelling': {'embedding_model_name': 'text-embedding-ada-002'}}
+        
+        self._api_key = api_key or os.getenv("AZURE_OPENAI_API_KEY")
+        self._api_endpoint = api_endpoint or os.getenv("LOCAL_OPENAI_ENDPOINT")
+        self._model_name = self.get_user_settings(user_id=user_id)
+
+    def get_user_settings(self, user_id: Optional[str] = None) -> str:
+        # Reload settings to ensure they are up-to-date
+        
+        if user_id:
+            settings = self._solr_client.get_user_settings(user_id)
+            print(user_id)
+            print(settings)
+        else:
+            settings = {
+                'llm_model_name': 'mistral-7b',
+            }
+        self._model_name = settings.get('llm_model_name')
+        return self._model_name
+
+    # Remaining methods...
 
 class AzureOpenAIClient:
-    def __init__(self, api_key: Optional[str] = None, azure_endpoint: Optional[str] = None, api_version: str = "2023-05-15", settings=settings):
+    def __init__(self, api_key: Optional[str] = None, api_endpoint: Optional[str] = None, api_version: str = "2023-05-15", settings=settings, user_id: str | None = None):
         self._solr_client = None  # Initialize Solr client here if needed
-        if api_key:
-            self._api_key = api_key
-        else:
-            self._api_key = os.getenv("AZURE_OPENAI_API_KEY")
-        if azure_endpoint:
-            self._azure_endpoint = azure_endpoint
-        else:
-            self._azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+        self._settings = settings
+        
+        self._api_key = api_key or os.getenv("AZURE_OPENAI_API_KEY")
+        self._api_endpoint = api_endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
         self._api_version = api_version
         self._model_name = self.get_user_settings()
 
     def get_user_settings(self, user_id: Optional[str] = None) -> str:
+        # Reload settings to ensure they are up-to-date
         if user_id:
             settings = self._solr_client.get_user_settings(user_id)
         else:
-            # Provide default settings if none exist
             settings = {
                 'llm_model_name': 'gpt-4-32k',
             }
-        return settings.get('llm_model_name')
+        self._model_name = settings.get('llm_model_name')
+        return self._model_name
+
+    # Remaining methods...
+
 
     def get_client(self):
-        if self._api_key and self._azure_endpoint:
+        if self._api_key and self._api_endpoint:
+            print('azureOpenAIClient')
             return AzureOpenAI(api_key=self._api_key, 
                             api_version=self._api_version,
-                            azure_endpoint=self._azure_endpoint)
+                            azure_endpoint=self._api_endpoint)
         else:
-            logging.error("Azure OpenAI API key or endpoint not provided")
+            logging.error("API key or endpoint not provided")
             return None
 
     def get_embedding(self, text: str, model: str = settings['modelling']['embedding_model_name']):
@@ -76,7 +104,7 @@ class TextEmbedder:
         self._model_name = model_name
         self._cache_folder = cache_folder
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'            
-        self._client, self._model = (AzureOpenAIClient(), None) if 'gpt-' in model_name else (None, SentenceTransformer(model_name, cache_folder=cache_folder, device=self._device))
+        self._client, self._model = (AzureOpenAIClient(), None) if 'gpt-' in model_name or 'mistral' in model_name else (None, SentenceTransformer(model_name, cache_folder=cache_folder, device=self._device))
 
     def apply(self, texts: str | List[str], show_progress_bar: Optional[bool] = None, normalize_embeddings: bool = True) -> np.ndarray:
         # Ensure `texts` is always treated as a list for uniform processing
@@ -159,15 +187,25 @@ class Summarizer:
     Please refer to the last user input and take the chat history into account when appropriate. Generate the answer in the language
     of the last user input."""
 
-    def __init__(self, settings: dict):
+    def __init__(self, settings: dict, user_id: str | None = None):
+        print(user_id)
         self._settings = settings
-        model_name = settings['modelling']['model_name']
+        model_name =  AzureOpenAIClient(user_id=user_id).get_user_settings()
+        print(model_name)
         cache_folder = settings['paths']['models']
-        self._client, self._model = (AzureOpenAIClient(), None) if 'gpt-' in model_name else (None, T5ForConditionalGeneration.from_pretrained(model_name, cache_dir=cache_folder))
-            
+        self.user_id = user_id
+        #TODO: user_id
+        match model_name:
+            case _ if 'gpt-' in model_name:
+                self._client, self._model = AzureOpenAIClient(user_id=self.user_id), None
+            case _ if 'mistral' in model_name:
+                self._client, self._model = LocalAIClient(api_endpoint='http://localai:8181', user_id=self.user_id), None
+            case _:
+                self._client, self._model = None, T5ForConditionalGeneration.from_pretrained(model_name, cache_dir=cache_folder)
+                    
         self._tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small") # use always the same tokenizer
         # TODO do not use T5ForConditionalGeneration but rather a generic model
-        self._ntok_max = 1000 if 'gpt-3.5' in model_name else 10000 if 'gpt-4' in model_name else 512
+        self._ntok_max = 1000 if 'gpt-3.5' in model_name else 10000 if 'gpt-4' in model_name else 2000 if 'mistral-7b' in model_name else 512
         self._no_repeat_ngram_size = settings['modelling']['no_repeat_ngram_size']
 
     def get_answer(self, query: str, context: str) -> str:

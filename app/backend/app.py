@@ -174,9 +174,10 @@ async def update_user_settings(request: Request):
 
 @app.get("/api/solr/default-model", response_model=UserSettings)
 async def get_default_model_name():
+    user_id = request.state.userinfo["id"]
     solr_url = settings['solr']['url'] + '/your_collection/select'
     query_params = {
-        'q': '*:*',
+        'q': f"user_id:{user_id}",
         'rows': 1,
         'fl': 'llm_model_name'
     }
@@ -188,7 +189,9 @@ async def get_default_model_name():
         if results['response']['numFound'] > 0:
             llm_model_name = results['response']['docs'][0].get('llm_model_name')
             if llm_model_name:
+                print(llm_model_name)
                 return {"llm_model_name": llm_model_name}
+                
         return {"llm_model_name": "gpt-4-32k"}  # Default value if no model name found
     except Exception as e:
         logging.error(f"Error querying Solr: {e}")

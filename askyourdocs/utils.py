@@ -5,6 +5,7 @@ from typing import List
 
 from askyourdocs import Environment
 from askyourdocs.settings import SETTINGS
+# from askyourdocs.storage.client import SolrClient
 
 
 def get_solr_config_dir_settings(name: str) -> Path:
@@ -32,3 +33,5 @@ def load_environment() -> Environment:
     }
     return Environment(**kwargs)
 
+# def get_user_settings_new(user_id: str) -> dict:
+#     return SolrClient.get_user_settings(user_id)

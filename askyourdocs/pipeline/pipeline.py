@@ -110,26 +110,30 @@ class IngestionPipeline(Pipeline):
 
 
 class QueryPipeline(Pipeline):
+    
 
     _txt_sep = ' '
     _nte_max = 100
 
-    def __init__(self, environment: Environment, settings: dict):
+    def __init__(self, environment: Environment, settings: dict, user_id: str = None):
         super().__init__(environment=environment, settings=settings)
         self._solr_client = SolrClient(environment=environment, settings=settings)
         self._texts_collection = settings['solr']['collections']['map']['texts']
-
-        # Text embedding service
+        self.user_id = user_id
+        self._update_clients(settings)
+        
+        
+    def _update_clients(self, settings):
         model_name = settings['modelling']['model_name']
         cache_folder = settings['paths']['models']
         self._text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=settings)
+        self._summarizer = Summarizer(settings=settings,user_id = self.user_id)
+        self._tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small") if 'gpt-' in model_name or 'mistral' in model_name else AutoTokenizer.from_pretrained(model_name)
 
-        self._ntok_max = 1000 if 'gpt-3.5' in model_name else 10000 if 'gpt-4' in model_name else 512
+        self._ntok_max = 1000 if 'gpt-3.5' in model_name else 10000 if 'gpt-4' in model_name else 2000 if 'mistral-7b' in model_name else 512
+        print(f'maximale tokenzahl: {self._ntok_max}')
         self._ntok_context_fraction = settings['modelling']['ntok_context_fraction']
         self._ntok_context = int(self._ntok_max * self._ntok_context_fraction)
-
-        self._summarizer = Summarizer(settings=settings)
-        self._tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small") if 'gpt-' in model_name else AutoTokenizer.from_pretrained(model_name)
 
     @staticmethod
     def _add_similarity_values(vector: np.ndarray, knn_embedding_entities: List[dict]):
@@ -171,7 +175,7 @@ class QueryPipeline(Pipeline):
 
         def _is_below_ntok_max(cntxt: pd.Series) -> bool:
             text = _concatenate_texts_from_series(cntxt=cntxt)
-            if 'gpt-' in self._settings['modelling']['model_name']:
+            if 'gpt-' in self._settings['modelling']['model_name'] or 'mistral' in self._settings['modelling']['model_name']:
                 ntoks = len(text.split())
             else:
                 ntoks = len(self._tokenizer.tokenize(text))
@@ -209,6 +213,7 @@ class QueryPipeline(Pipeline):
         return _concatenate_texts_from_series(context_texts)
 
     def apply(self, text: str, answer_only: bool = True, user_id: str = None) -> List[dict]:
+        self._update_clients(self._settings)  
         logging.info(f'generate text embeddings for text "{text}"')
 
         logging.info(f'search k-nearest-neighbors for text')
@@ -269,6 +274,8 @@ class SearchPipeline(Pipeline):
 
     def apply(self, query: str, collection: str, params: dict, user_id: str = None):
         response = self.solr_client.search(query=query, collection=collection, params=params)
+        if response.get('user_settings'):
+            print(response.get('user_settings'))
         return response['docs'] if 'ayd_docs' in collection else response.get('user_settings')['llm_model_name']
 
 
@@ -305,3 +312,4 @@ if __name__ == "__main__":
     result_text = query_pipeline._get_text_entities_from_knn_vecs(knn_vecs=results, user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
     text = query_pipeline._get_context_from_text_entities(text_entities=result_text, user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
     print(text)
+    # test
