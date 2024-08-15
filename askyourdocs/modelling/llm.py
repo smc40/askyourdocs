@@ -178,8 +178,7 @@ class TextTokenizer:
         return processed_sentences
 
 class Summarizer:
-
-    _task = """I want you to act like a most rational person that only give answers for which he has strong evidence. 
+    _task_template = """I want you to act like a most rational person that only gives answers for which he has strong evidence. 
     Therefore, I don't want you to give me any information that is not contained in the provided context. 
     Please just summarize the context with respect to the asked question in simple words. If there is no 
     related information in the context please inform me accordingly and do not generate the answer from your knowledge. 
@@ -187,38 +186,64 @@ class Summarizer:
     Please refer to the last user input and take the chat history into account when appropriate. Generate the answer in the language
     of the last user input."""
 
-    def __init__(self, settings: dict, user_id: str | None = None):
-        print(user_id)
+    def __init__(self, settings: dict, user_id: Optional[str] = None):
         self._settings = settings
-        model_name =  AzureOpenAIClient(user_id=user_id).get_user_settings()
-        print(model_name)
-        cache_folder = settings['paths']['models']
         self.user_id = user_id
-        #TODO: user_id
-        match model_name:
-            case _ if 'gpt-' in model_name:
-                self._client, self._model = AzureOpenAIClient(user_id=self.user_id), None
-            case _ if 'mistral' in model_name:
-                self._client, self._model = LocalAIClient(api_endpoint='http://localai:8181', user_id=self.user_id), None
-            case _:
-                self._client, self._model = None, T5ForConditionalGeneration.from_pretrained(model_name, cache_dir=cache_folder)
-                    
-        self._tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small") # use always the same tokenizer
-        # TODO do not use T5ForConditionalGeneration but rather a generic model
-        self._ntok_max = 1000 if 'gpt-3.5' in model_name else 10000 if 'gpt-4' in model_name else 2000 if 'mistral-7b' in model_name else 512
+        self._model_name = self.get_model_name(user_id)
+        print(f'Using summarizer model: {self._model_name}')
+
+        cache_folder = settings['paths']['models']
+        self._client, self._model = self._initialize_model(self._model_name)
+        self._tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small")  # Ensure consistent tokenizer
+
+        # Set max tokens based on model name
+        self._ntok_max = self._determine_max_tokens(self._model_name)
         self._no_repeat_ngram_size = settings['modelling']['no_repeat_ngram_size']
 
+    def get_model_name(self, user_id: Optional[str] = None) -> str:
+        # Fetch the model name based on user settings
+        if user_id:
+            solr_client = SolrClient()  # Initialize Solr client if needed
+            settings = solr_client.get_user_settings(user_id)
+            print(f'user settings in get model name: {settings}')
+            model_name = settings.get('llm_model_name', 'gpt-4-32k')
+        else:
+            model_name = 'gpt-4-32k'  # Fallback to default
+
+        print(f"Model selected for user {user_id}: {model_name}")
+        return model_name
+
+    def _initialize_model(self, model_name: str):
+        # Initialize the model based on the provided model name
+        if 'gpt-' in model_name:
+            return AzureOpenAIClient(user_id=self.user_id), None
+        elif 'mistral' in model_name:
+            return LocalAIClient(api_endpoint='http://localai:8181', user_id=self.user_id), None
+        else:
+            cache_folder = self._settings['paths']['models']
+            return None, T5ForConditionalGeneration.from_pretrained(model_name, cache_dir=cache_folder)
+
+    def _determine_max_tokens(self, model_name: str) -> int:
+        if 'gpt-3.5' in model_name:
+            return 1000
+        elif 'gpt-4' in model_name:
+            return 10000
+        elif 'mistral-7b' in model_name:
+            return 2000
+        return 512
+
     def get_answer(self, query: str, context: str) -> str:
-        prompt = (f'{self._task} Context: {context}\n\n. Briefly summarize the above context with respect to the'
-        f'following question: {query}')
+        prompt = (f'{self._task_template} Context: {context}\n\n. Briefly summarize the above context with respect to the'
+                  f'following question: {query}')
         if self._client:
-            answer = self._client.get_summary(task=self._task, query=query, context=context)
+            answer = self._client.get_summary(task=self._task_template, query=query, context=context)
         else:
             inputs = self._tokenizer.encode(prompt, return_tensors='pt')
             outputs = self._model.generate(inputs, max_length=self._ntok_max, no_repeat_ngram_size=self._no_repeat_ngram_size)
             answer = self._tokenizer.decode(outputs[0], skip_special_tokens=True)
-            
+
         return answer
+
     
 if __name__ ==  '__main__':
     

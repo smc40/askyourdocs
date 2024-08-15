@@ -75,23 +75,71 @@ async def read_root():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class WebSocketSession:
+    def __init__(self, websocket: WebSocket, user_info: dict):
+        self.websocket = websocket
+        self.user_info = user_info
+    
+    async def receive_json(self):
+        return await self.websocket.receive_json()
+
+    async def send_json(self, data):
+        await self.websocket.send_json(data)
+
+    async def close(self, code: int = 1000):
+        await self.websocket.close(code=code)
+        
+    async def get_user_model_name(user_id: str):
+        solr_url = settings['solr']['url'] + '/your_collection/select'
+        query_params = {
+            'q': f"user_id:{user_id}",
+            'rows': 1,
+            'fl': 'llm_model_name'
+        }
+
+        try:
+            response = solr_client.get(solr_url, params=query_params)
+            results = response.json()
+
+            if results['response']['numFound'] > 0:
+                llm_model_name = results['response']['docs'][0].get('llm_model_name')
+                if llm_model_name:
+                    return llm_model_name
+            
+            return "gpt-4-32k"  # Default value if no model name is found
+        except Exception as e:
+            logging.error(f"Error querying Solr: {e}")
+            return "gpt-4-32k"  # Return the default model in case of an error
+
+
 @app.websocket("/ws/query")
 async def websocket_endpoint(websocket: WebSocket):
     token = websocket.query_params.get('token')
     if not token:
+        logging.error("No token provided")
         await websocket.close(code=1008)
         return
 
     try:
+        # Validate the token and extract user info
         user_info = validate_token(token)
+        if not user_info or 'id' not in user_info:
+            raise Exception("Invalid token or user information")
+        
+        # Store user_id in a local variable
+        user_id = user_info['id']
+        logging.info(f"User {user_id} connected with token: {token}")
+        print(f"User {user_id} connected with token: {token}")
+        
     except Exception as e:
-        logging.error("Error during token validation: ", e)
+        logging.error(f"Error during token validation: {e}")
         await websocket.close(code=1008)
         return
 
     await websocket.accept()
     try:
         while True:
+            logging.info(f"Waiting for message from user {user_id}")
             message = await websocket.receive_json()
             data = message.get("data")
             context = message.get("context", [])
@@ -103,15 +151,22 @@ async def websocket_endpoint(websocket: WebSocket):
             combined_text += f"user: {data}"
 
             if data.strip():
-                answer = _QUERY_PIPELINE.apply(text=combined_text, answer_only=False, user_id=user_info['id'])
+                logging.info(f"Received data from user {user_id}: {data}")
+                answer = _QUERY_PIPELINE.apply(text=combined_text, answer_only=False, user_id=user_id)
                 await websocket.send_json(answer)
+                logging.info(f"Sent response to user {user_id}")
             else:
+                logging.warning(f"Empty input from user {user_id}")
                 await websocket.send_json({"error": "Empty input"})
     except WebSocketDisconnect:
-        pass
+        logging.info(f"User {user_id} disconnected")
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
     finally:
         if websocket.client_state != WebSocketState.DISCONNECTED:
+            logging.info(f"Closing connection for user {user_id}")
             await websocket.close()
+
 
 @app.get("/api/get_documents", response_model=DataList)
 async def get_documents(request: Request):
@@ -173,8 +228,9 @@ async def update_user_settings(request: Request):
     return {"data": "User settings updated successfully"}
 
 @app.get("/api/solr/default-model", response_model=UserSettings)
-async def get_default_model_name():
+async def get_default_model_name(request: Request):
     user_id = request.state.userinfo["id"]
+    print(f'User ID from default model: {user_id}')
     solr_url = settings['solr']['url'] + '/your_collection/select'
     query_params = {
         'q': f"user_id:{user_id}",

@@ -124,10 +124,10 @@ class QueryPipeline(Pipeline):
         
         
     def _update_clients(self, settings):
-        model_name = settings['modelling']['model_name']
         cache_folder = settings['paths']['models']
-        self._text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=settings)
         self._summarizer = Summarizer(settings=settings,user_id = self.user_id)
+        model_name = self._summarizer.get_model_name(self.user_id)
+        self._text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=settings)
         self._tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small") if 'gpt-' in model_name or 'mistral' in model_name else AutoTokenizer.from_pretrained(model_name)
 
         self._ntok_max = 1000 if 'gpt-3.5' in model_name else 10000 if 'gpt-4' in model_name else 2000 if 'mistral-7b' in model_name else 512
