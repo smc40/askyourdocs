@@ -26,6 +26,8 @@ const updateToken = (successCallback) => {
 
 const getUsername = () => _kc.tokenParsed.preferred_username;
 
+const getUserId = () => _kc.tokenParsed.sub;
+
 const getGivenName = () => _kc.tokenParsed.given_name;
 
 const getUserEmail = () => _kc.tokenParsed.email;
@@ -51,4 +53,5 @@ export default {
     isAdmin,
     isSupervisor,
     isUser,
+    getUserId,
 };

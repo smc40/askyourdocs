@@ -5,7 +5,7 @@ import * as homeService from '../services/home';
 import config from '../config.js';
 import Modal from 'react-modal';
 import FeedbackModalContent from './FeedbackModalContent';
-import Authentication from '../auth';
+import Authentication from '../auth'; // Import authentication
 
 import { Worker } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
@@ -118,11 +118,16 @@ const Main: React.FC = () => {
 
     useEffect(() => {
         if (!chatCleared) {
-            const token = Authentication.getToken(); // Ensure you get the token from your auth logic
-            socket.current = new WebSocket(
-                config.backendUrl.replace('http', 'ws') +
-                    `/ws/query?token=${token}`
-            );
+            const token = Authentication.getToken(); // Get the token from your authentication service
+            const userId = Authentication.getUserId(); // Get the user ID from your authentication service
+
+            // Ensure token and userId exist before opening a WebSocket connection
+            if (token && userId) {
+                socket.current = new WebSocket(
+                    config.backendUrl.replace('http', 'ws') +
+                        `/ws/query?token=${token}&user_id=${userId}`
+                );
+            }
         }
     }, [chatCleared]);
 
@@ -169,10 +174,12 @@ const Main: React.FC = () => {
                 !socket.current ||
                 socket.current.readyState !== WebSocket.OPEN
             ) {
-                const token = Authentication.getToken(); // Ensure you get the token from your auth logic
+                const token = Authentication.getToken(); // Get token
+                const userId = Authentication.getUserId(); // Get user ID
+
                 socket.current = new WebSocket(
                     config.backendUrl.replace('http', 'ws') +
-                        `/ws/query?token=${token}`
+                        `/ws/query?token=${token}&user_id=${userId}`
                 );
 
                 await new Promise((resolve) => {
@@ -188,7 +195,11 @@ const Main: React.FC = () => {
             }));
 
             socket.current.send(
-                JSON.stringify({ data: inputValue, context: contextMessages })
+                JSON.stringify({
+                    data: inputValue,
+                    context: contextMessages,
+                    userId: Authentication.getUserId(),
+                })
             );
         } catch (error) {
             console.error('Error fetching data:', error);

@@ -115,21 +115,20 @@ class WebSocketSession:
 @app.websocket("/ws/query")
 async def websocket_endpoint(websocket: WebSocket):
     token = websocket.query_params.get('token')
-    if not token:
-        logging.error("No token provided")
+    user_id = websocket.query_params.get('user_id')  # Fetch the user_id from query params
+    
+    if not token or not user_id:
+        logging.error("No token or user_id provided")
         await websocket.close(code=1008)
         return
 
     try:
-        # Validate the token and extract user info
+        # Validate the token and make sure the user_id is valid
         user_info = validate_token(token)
-        if not user_info or 'id' not in user_info:
-            raise Exception("Invalid token or user information")
+        if user_info['sub'] != user_id:
+            raise Exception("Token does not match user_id")
         
-        # Store user_id in a local variable
-        user_id = user_info['id']
         logging.info(f"User {user_id} connected with token: {token}")
-        print(f"User {user_id} connected with token: {token}")
         
     except Exception as e:
         logging.error(f"Error during token validation: {e}")
@@ -137,35 +136,18 @@ async def websocket_endpoint(websocket: WebSocket):
         return
 
     await websocket.accept()
+    
     try:
         while True:
-            logging.info(f"Waiting for message from user {user_id}")
             message = await websocket.receive_json()
             data = message.get("data")
-            context = message.get("context", [])
-            combined_text = ""
-
-            for msg in context:
-                combined_text += f"{msg['type']}: {msg['text']} "
-
-            combined_text += f"user: {data}"
-
-            if data.strip():
-                logging.info(f"Received data from user {user_id}: {data}")
-                answer = _QUERY_PIPELINE.apply(text=combined_text, answer_only=False, user_id=user_id)
-                await websocket.send_json(answer)
-                logging.info(f"Sent response to user {user_id}")
-            else:
-                logging.warning(f"Empty input from user {user_id}")
-                await websocket.send_json({"error": "Empty input"})
+            logging.info(f"Received data from user {user_id}: {data}")
+            # Process the message here and send a response
+            await websocket.send_json({"response": "Your message was received!"})
     except WebSocketDisconnect:
         logging.info(f"User {user_id} disconnected")
-    except Exception as e:
-        logging.error(f"Unexpected error: {e}")
     finally:
-        if websocket.client_state != WebSocketState.DISCONNECTED:
-            logging.info(f"Closing connection for user {user_id}")
-            await websocket.close()
+        await websocket.close()
 
 
 @app.get("/api/get_documents", response_model=DataList)

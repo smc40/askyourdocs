@@ -48,5 +48,5 @@ export const updateUserSettings = (settings: UserSettings) => {
 };
 
 export const getDefaultModelName = () => {
-    return axios.get('/api/solr/default-model');
+    return client.get('/api/solr/default-model');
 };
