@@ -10,13 +10,13 @@ class SocketService {
     }
 
     private setupSocket() {
-        this.socket.addEventListener('open', () => {
-            const userId = authService.getUserId(); // Get user ID from auth service
-            if (userId) {
-                // Send the user ID to the server upon connection
-                this.socket.send(JSON.stringify({ type: 'init', userId }));
-            }
-        });
+        // this.socket.addEventListener('open', () => {
+        //     const userId = authService.getUserId(); // Get user ID from auth service
+        //     if (userId) {
+        //         // Send the user ID to the server upon connection
+        //         this.socket.send(JSON.stringify({ type: 'init', userId }));
+        //     }
+        // });
 
         this.socket.addEventListener('message', (event) => {
             const response = JSON.parse(event.data);

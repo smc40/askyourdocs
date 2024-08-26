@@ -11,11 +11,15 @@ from openai import AzureOpenAI
 import openai
 from askyourdocs.settings import SETTINGS as settings
 from askyourdocs.storage.client import SolrClient
+import askyourdocs.utils as utl
+environment = utl.load_environment()
+
 
 class LocalAIClient:
-    def __init__(self, api_key: Optional[str] = None, api_endpoint: Optional[str] = None, settings=None, user_id: str | None = None):
-        self._solr_client = SolrClient  # Initialize Solr client here if needed
+    def __init__(self, api_key: Optional[str] = None, api_endpoint: Optional[str] = None, settings=settings, user_id: str | None = None):
+         # Initialize Solr client here if needed
         self._settings = settings or {'modelling': {'embedding_model_name': 'text-embedding-ada-002'}}
+        self._solr_client = SolrClient(environment=environment, settings=self._settings) 
         
         self._api_key = api_key or os.getenv("AZURE_OPENAI_API_KEY")
         self._api_endpoint = api_endpoint or os.getenv("LOCAL_OPENAI_ENDPOINT")
@@ -25,7 +29,7 @@ class LocalAIClient:
         # Reload settings to ensure they are up-to-date
         
         if user_id:
-            settings = self._solr_client.get_user_settings(user_id)
+            settings = self._solr_client.get_user_settings(user_id=user_id)
             print(user_id)
             print(settings)
         else:
@@ -153,7 +157,6 @@ class TextTokenizer:
 
             case _:
                 logging.error(f'unknown token entity {entity}')
-                return []
 
     @staticmethod
     def _ensure_sentence_length(sentences: List[str], original_text: str, min_length: int = 20) -> List[str]:
@@ -203,7 +206,7 @@ class Summarizer:
     def get_model_name(self, user_id: Optional[str] = None) -> str:
         # Fetch the model name based on user settings
         if user_id:
-            solr_client = SolrClient()  # Initialize Solr client if needed
+            solr_client = SolrClient(environment=environment, settings=self._settings)  # Initialize Solr client if needed
             settings = solr_client.get_user_settings(user_id)
             print(f'user settings in get model name: {settings}')
             model_name = settings.get('llm_model_name', 'gpt-4-32k')
@@ -241,30 +244,32 @@ class Summarizer:
             inputs = self._tokenizer.encode(prompt, return_tensors='pt')
             outputs = self._model.generate(inputs, max_length=self._ntok_max, no_repeat_ngram_size=self._no_repeat_ngram_size)
             answer = self._tokenizer.decode(outputs[0], skip_special_tokens=True)
-
         return answer
-
     
 if __name__ ==  '__main__':
     
     # execute in shell: export PYTHONPATH="/home/bouldermaettel/Documents/python-projects/askyourdocs:$PYTHONPATH"
     from askyourdocs.settings import SETTINGS as settings
-    summarizer = Summarizer(settings=settings)
-    query = "What is the capital of Switzerland?"
-    context = "Berlin is the capital of Germany. Belarus is a country. Switzerland is a country."
-    answer = summarizer.get_answer(query=query, context=context)
-    print(answer) 
+    summarizer = Summarizer(settings=settings, user_id="1749b037-7a7f-42a4-b57e-c543f0702863")
+    name = summarizer.get_model_name(user_id="1749b037-7a7f-42a4-b57e-c543f0702863")
+    print(name)
+    # query = "What is the capital of Switzerland?"
+    # context = "Berlin is the capital of Germany. Belarus is a country. Switzerland is a country."
+    # answer = summarizer.get_answer(query=query, context=context)
+    # print(answer) 
 
     
-    model_name = settings['modelling']['model_name']
-    cache_folder = settings['paths']['models']
+    # model_name = settings['modelling']['model_name']
+    # cache_folder = settings['paths']['models']
 
-    # text = ["Hello, world! i want more world!", 'be as you are']
-    text = "Hello, world! i want more world!"
-    text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=settings)
-    emb = text_embedder.apply(text, normalize_embeddings=True)
-    print(emb)
+    # # text = ["Hello, world! i want more world!", 'be as you are']
+    # text = "Hello, world! i want more world!"
+    # text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=settings)
+    # emb = text_embedder.apply(text, normalize_embeddings=True)
+    # print(emb)
     
-    tokenizer = TextTokenizer()
-    sents = tokenizer.get_text_entities(text="Hello, world! i want more world! 1. 2. Helllo", entity='sentence')
-    print(sents)
+    # tokenizer = TextTokenizer()
+    # sents = tokenizer.get_text_entities(text="Hello, world! i want more world! 1. 2. Helllo", entity='sentence')
+    # print(sents)
+
+    

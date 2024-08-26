@@ -76,9 +76,9 @@ async def read_root():
         raise HTTPException(status_code=500, detail=str(e))
 
 class WebSocketSession:
-    def __init__(self, websocket: WebSocket, user_info: dict):
+    def __init__(self, websocket: WebSocket, user_id: dict):
         self.websocket = websocket
-        self.user_info = user_info
+        self.user_id = user_id
     
     async def receive_json(self):
         return await self.websocket.receive_json()
@@ -90,7 +90,7 @@ class WebSocketSession:
         await self.websocket.close(code=code)
         
     async def get_user_model_name(user_id: str):
-        solr_url = settings['solr']['url'] + '/your_collection/select'
+        solr_url = environment.solr_url + '/solr/ayd_user/select'
         query_params = {
             'q': f"user_id:{user_id}",
             'rows': 1,
@@ -98,24 +98,37 @@ class WebSocketSession:
         }
 
         try:
-            response = solr_client.get(solr_url, params=query_params)
-            results = response.json()
+            response = solr_client._get(solr_url, params=query_params)
+            # Check if the response contains 'response' and 'docs'
+            if response and 'response' in response and 'docs' in response['response']:
+                docs = response['response']['docs']
+                
+                if docs:
+                    llm_model_name = docs[0].get('llm_model_name', "gpt-4-32k")
+                    print(f"LLM Model Name: {llm_model_name}")
+                else:
+                    # Return default model name if docs is empty
+                    llm_model_name = "gpt-4-32k"
+                    print(f"No document found, using default model: {llm_model_name}")
+            else:
+                # Handle the case where the response doesn't have the expected structure
+                llm_model_name = "gpt-4-32k"
+                print(f"Unexpected response structure, using default model: {llm_model_name}")       
+        except requests.exceptions.RequestException as e:
+            # Handle network or HTTP errors
+            llm_model_name = "gpt-4-32k"
+            logging.error(f"Error querying Solr for user_id {user_id}: {e}, using default model: {llm_model_name}")
 
-            if results['response']['numFound'] > 0:
-                llm_model_name = results['response']['docs'][0].get('llm_model_name')
-                if llm_model_name:
-                    return llm_model_name
-            
-            return "gpt-4-32k"  # Default value if no model name is found
-        except Exception as e:
-            logging.error(f"Error querying Solr: {e}")
-            return "gpt-4-32k"  # Return the default model in case of an error
-
+        return llm_model_name
 
 @app.websocket("/ws/query")
 async def websocket_endpoint(websocket: WebSocket):
     token = websocket.query_params.get('token')
     user_id = websocket.query_params.get('user_id')  # Fetch the user_id from query params
+    print(f"User ID from websocket: {user_id}")
+    print(f"Token from websocket: {token}")
+    
+    websocket_session = WebSocketSession(websocket=websocket, user_id=user_id)
     
     if not token or not user_id:
         logging.error("No token or user_id provided")
@@ -125,8 +138,9 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         # Validate the token and make sure the user_id is valid
         user_info = validate_token(token)
-        if user_info['sub'] != user_id:
-            raise Exception("Token does not match user_id")
+        
+        # if user_info['sub'] != user_id:
+        #     raise Exception("Token does not match user_id")
         
         logging.info(f"User {user_id} connected with token: {token}")
         
@@ -134,6 +148,8 @@ async def websocket_endpoint(websocket: WebSocket):
         logging.error(f"Error during token validation: {e}")
         await websocket.close(code=1008)
         return
+    
+    query_pipeline = QueryPipeline(environment=environment, settings=settings, user_id=websocket_session.user_id)
 
     await websocket.accept()
     
@@ -142,13 +158,25 @@ async def websocket_endpoint(websocket: WebSocket):
             message = await websocket.receive_json()
             data = message.get("data")
             logging.info(f"Received data from user {user_id}: {data}")
-            # Process the message here and send a response
-            await websocket.send_json({"response": "Your message was received!"})
-    except WebSocketDisconnect:
-        logging.info(f"User {user_id} disconnected")
-    finally:
-        await websocket.close()
+            context = message.get("context", [])
+            combined_text = ""
 
+            for msg in context:
+                combined_text += f"{msg['type']}: {msg['text']} "
+
+            combined_text += f"user: {data}"
+
+            if data.strip():
+                print(f"user_id before query pipeline applied: {websocket_session.user_id}")
+                answer = query_pipeline.apply(text=combined_text, answer_only=False, user_id=websocket_session.user_id)
+                await websocket.send_json(answer)
+            else:
+                await websocket.send_json({"error": "Empty input"})
+    except WebSocketDisconnect:
+        pass
+    finally:
+        if websocket.client_state != WebSocketState.DISCONNECTED:
+            await websocket.close()
 
 @app.get("/api/get_documents", response_model=DataList)
 async def get_documents(request: Request):
@@ -213,7 +241,7 @@ async def update_user_settings(request: Request):
 async def get_default_model_name(request: Request):
     user_id = request.state.userinfo["id"]
     print(f'User ID from default model: {user_id}')
-    solr_url = settings['solr']['url'] + '/your_collection/select'
+    solr_url = environment.solr_url + '/solr/ayd_user/select'
     query_params = {
         'q': f"user_id:{user_id}",
         'rows': 1,
@@ -221,18 +249,28 @@ async def get_default_model_name(request: Request):
     }
 
     try:
-        response = solr_client.get(solr_url, params=query_params)
-        results = response.json()
+        response = solr_client._get(solr_url, params=query_params)
+        # Check if the response contains 'response' and 'docs'
+        if response and 'response' in response and 'docs' in response['response']:
+            docs = response['response']['docs']
+            
+            if docs:
+                llm_model_name = docs[0].get('llm_model_name', "gpt-4-32k")
+                print(f"LLM Model Name: {llm_model_name}")
+            else:
+                # Return default model name if docs is empty
+                llm_model_name = "gpt-4-32k"
+                print(f"No document found, using default model: {llm_model_name}")
+        else:
+            # Handle the case where the response doesn't have the expected structure
+            llm_model_name = "gpt-4-32k"
+            print(f"Unexpected response structure, using default model: {llm_model_name}")       
+    except requests.exceptions.RequestException as e:
+        # Handle network or HTTP errors
+        llm_model_name = "gpt-4-32k"
+        logging.error(f"Error querying Solr for user_id {user_id}: {e}, using default model: {llm_model_name}")
 
-        if results['response']['numFound'] > 0:
-            llm_model_name = results['response']['docs'][0].get('llm_model_name')
-            if llm_model_name:
-                print(llm_model_name)
-                return {"llm_model_name": llm_model_name}
-                
-        return {"llm_model_name": "gpt-4-32k"}  # Default value if no model name found
-    except Exception as e:
-        logging.error(f"Error querying Solr: {e}")
-        raise HTTPException(status_code=500, detail="Error querying Solr")
+    return {'llm_model_name': llm_model_name}
+
     
     

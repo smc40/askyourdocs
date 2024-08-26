@@ -17,7 +17,7 @@ class SolrClient:
         self._environment = environment
         self._settings = settings
 
-        self._url = environment.solr_url
+        self._url = environment.solr_url # "http://localhost:8983" #local enviroinment 
         self._url_api = self._url + '/api'
         self._url_api_collections = self._url_api + '/collections'
 
@@ -207,7 +207,6 @@ class SolrClient:
 
         return document.id
 
-
     def add_documents(self, documents: DocumentList, collection: str, commit: bool = False):
         logging.info(f'add {len(documents)} documents to collection "{collection}"')
         url = f'{self._url_api_collections}/{collection}/update'
@@ -269,17 +268,46 @@ class SolrClient:
         delete_request = {'delete': {'query': by}}
         self._post(url=url, data=delete_request)
         
-    # def get_user_settings(self, user_id: str) -> dict:
-    #     query = f"user_id:{user_id}"
-    #     response = self.search(query, "ayd_user")
-    #     if response['numFound'] > 0:
-    #         return response['docs'][0]
-    #     else:
-    #         return {}
+    def get_user_settings(self, user_id: str) -> dict:
+        query = f"user_id:{user_id}"
+        response = self.search(query, "ayd_user")
+        if response['numFound'] > 0:
+            return response['docs'][0]
+        else:
+            return {}
         
-    # def add_user_settings(self, user_id: str, llm_model_name: str):
-    #     document = {
-    #         "user_id": user_id,
-    #         "llm_model_name": llm_model_name,
-    #     }
-    #     self.add_document(document, "ayd_user", commit=True)
+    def add_user_settings(self, user_id: str, llm_model_name: str):
+        document = {
+            "user_id": user_id,
+            "llm_model_name": llm_model_name,
+        }
+        self.add_document(document, "ayd_user", commit=True)
+    
+if __name__ == '__main__':
+    from askyourdocs.settings import SETTINGS as settings
+    user_id = "1749b037-7a7f-42a4-b57e-c543f0702863"
+    solr_clinet = SolrClient(environment=utl.load_environment(), settings=settings)
+    query_params = {
+            'q': f"user_id:{user_id}",
+            'rows': 1,
+            'fl': 'llm_model_name'
+        }
+
+    response=solr_clinet._get(url='http://localhost:8983/solr/ayd_user/select', params=query_params)
+    if response and 'response' in response and 'docs' in response['response']:
+        docs = response['response']['docs']
+        
+        if docs:
+            llm_model_name = docs[0].get('llm_model_name', "gpt-4-32k")
+            print(f"LLM Model Name: {llm_model_name}")
+        else:
+            # Return default model name if docs is empty
+            llm_model_name = "gpt-4-32k"
+            print(f"No document found, using default model: {llm_model_name}")
+    else:
+        # Handle the case where the response doesn't have the expected structure
+        llm_model_name = "gpt-4-32k"
+                
+    print(f"Unexpected response structure, using default model: {llm_model_name}")
+    
+    

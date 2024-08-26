@@ -55,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
                     })
                 );
                 setList(documents);
-                if (documents.length === 0) {
+                if (documents.length == 0) {
                     setNoDocuments(true);
                 }
             })
@@ -88,7 +88,6 @@ const Sidebar: React.FC<SidebarProps> = () => {
             }
         }
     };
-
     const handleRemoveItem = (index: number) => {
         const itemID = list[index].id;
         homeService.deleteDocument(itemID).then(() => {
