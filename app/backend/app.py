@@ -237,7 +237,7 @@ async def update_user_settings(request: Request):
 
     return {"data": "User settings updated successfully"}
 
-@app.get("/api/solr/default-model", response_model=UserSettings)
+@app.get("/api/default-model", response_model=UserSettings)
 async def get_default_model_name(request: Request):
     user_id = request.state.userinfo["id"]
     print(f'User ID from default model: {user_id}')
@@ -272,5 +272,4 @@ async def get_default_model_name(request: Request):
 
     return {'llm_model_name': llm_model_name}
 
-    
     

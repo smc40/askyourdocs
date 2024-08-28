@@ -16,8 +16,10 @@ class SolrClient:
     def __init__(self, environment: Environment, settings: dict):
         self._environment = environment
         self._settings = settings
-
-        self._url = environment.solr_url # "http://localhost:8983" #local enviroinment 
+        
+        ##for local testing
+        # environment.solr_url = "http://localhost:8983"
+        self._url = environment.solr_url 
         self._url_api = self._url + '/api'
         self._url_api_collections = self._url_api + '/collections'
 

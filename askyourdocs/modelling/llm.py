@@ -1,5 +1,6 @@
 import logging
 from typing import List, Optional
+import requests
 
 import torch.cuda
 import nltk.data
@@ -7,8 +8,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, T5ForConditionalGeneration
 import os
-from openai import AzureOpenAI
-import openai
+from openai import AzureOpenAI, OpenAI
 from askyourdocs.settings import SETTINGS as settings
 from askyourdocs.storage.client import SolrClient
 import askyourdocs.utils as utl
@@ -22,7 +22,7 @@ class LocalAIClient:
         self._solr_client = SolrClient(environment=environment, settings=self._settings) 
         
         self._api_key = api_key or os.getenv("AZURE_OPENAI_API_KEY")
-        self._api_endpoint = api_endpoint or os.getenv("LOCAL_OPENAI_ENDPOINT")
+        self._api_endpoint = api_endpoint or os.getenv("LOCAL_OPENAI_ENDPOINT", "http://localai:8080")
         self._model_name = self.get_user_settings(user_id=user_id)
 
     def get_user_settings(self, user_id: Optional[str] = None) -> str:
@@ -34,12 +34,40 @@ class LocalAIClient:
             print(settings)
         else:
             settings = {
-                'llm_model_name': 'mistral-7b',
+                'llm_model_name': 'mistral-7b-instruct-v0.3',
             }
         self._model_name = settings.get('llm_model_name')
         return self._model_name
 
-    # Remaining methods...
+    def get_client(self):
+        if self._api_key and self._api_endpoint:
+            print('LocalAIClient')
+            print(f"api_key: {self._api_key}")
+            print(f"base_url: {self._api_endpoint}/v1")
+            return OpenAI(api_key=self._api_key,
+                            base_url=f"{self._api_endpoint}/v1")
+        else:
+            logging.error("API key or endpoint not provided")
+            return None
+
+    def get_summary(self, task: str, query: str, context: str, summarizing_model: Optional[str] = None):
+        if summarizing_model is None:
+            summarizing_model = self._model_name
+            print(f"summarizing_model: {summarizing_model}")
+        client = self.get_client()
+        if client:
+            messages = [
+                {"role": "system", "content": f'{task}'},
+                {"role": "user", "content": f'{query}'},
+                {"role": "assistant", "content": f'{context}'},
+            ]
+            response = client.chat.completions.create(
+                model=summarizing_model,
+                messages=messages
+            )
+            return response.choices[0].message.content
+        else:
+            return None
 
 class AzureOpenAIClient:
     def __init__(self, api_key: Optional[str] = None, api_endpoint: Optional[str] = None, api_version: str = "2023-05-15", settings=settings, user_id: str | None = None):
@@ -61,9 +89,6 @@ class AzureOpenAIClient:
             }
         self._model_name = settings.get('llm_model_name')
         return self._model_name
-
-    # Remaining methods...
-
 
     def get_client(self):
         if self._api_key and self._api_endpoint:
@@ -221,7 +246,7 @@ class Summarizer:
         if 'gpt-' in model_name:
             return AzureOpenAIClient(user_id=self.user_id), None
         elif 'mistral' in model_name:
-            return LocalAIClient(api_endpoint='http://localai:8181', user_id=self.user_id), None
+            return LocalAIClient(user_id=self.user_id), None
         else:
             cache_folder = self._settings['paths']['models']
             return None, T5ForConditionalGeneration.from_pretrained(model_name, cache_dir=cache_folder)
@@ -249,10 +274,10 @@ class Summarizer:
 if __name__ ==  '__main__':
     
     # execute in shell: export PYTHONPATH="/home/bouldermaettel/Documents/python-projects/askyourdocs:$PYTHONPATH"
-    from askyourdocs.settings import SETTINGS as settings
-    summarizer = Summarizer(settings=settings, user_id="1749b037-7a7f-42a4-b57e-c543f0702863")
-    name = summarizer.get_model_name(user_id="1749b037-7a7f-42a4-b57e-c543f0702863")
-    print(name)
+    # from askyourdocs.settings import SETTINGS as settings
+    # summarizer = Summarizer(settings=settings, user_id="1749b037-7a7f-42a4-b57e-c543f0702863")
+    # name = summarizer.get_model_name(user_id="1749b037-7a7f-42a4-b57e-c543f0702863")
+    # print(name)
     # query = "What is the capital of Switzerland?"
     # context = "Berlin is the capital of Germany. Belarus is a country. Switzerland is a country."
     # answer = summarizer.get_answer(query=query, context=context)
@@ -271,5 +296,6 @@ if __name__ ==  '__main__':
     # tokenizer = TextTokenizer()
     # sents = tokenizer.get_text_entities(text="Hello, world! i want more world! 1. 2. Helllo", entity='sentence')
     # print(sents)
-
-    
+    client = LocalAIClient(api_endpoint='http://localhost:8181', api_key='test' ,user_id="1749b037-7a7f-42a4-b57e-c543f0702863")
+    summary = client.get_summary(task="summarize", query="What is the capital of Switzerland?", context="Berlin is the capital of Germany. Belarus is a country. Switzerland is a country.", summarizing_model="mistral-7b-instruct-v0.3")
+    print(summary)

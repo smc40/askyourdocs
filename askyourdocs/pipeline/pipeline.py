@@ -123,14 +123,15 @@ class QueryPipeline(Pipeline):
         self._update_clients(settings)
         
         
-    def _update_clients(self, settings):
+    def _update_clients(self, settings, user_id = None):
         cache_folder = settings['paths']['models']
-        self._summarizer = Summarizer(settings=settings,user_id = self.user_id)
-        model_name = self._summarizer.get_model_name(self.user_id)
+        self._summarizer = Summarizer(settings=settings,user_id = user_id)
+        model_name = self._summarizer.get_model_name(user_id)
+        print(f"model_name in _update_clients: {model_name}")
         self._text_embedder = TextEmbedder(model_name=model_name, cache_folder=cache_folder, settings=settings)
         self._tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small") if 'gpt-' in model_name or 'mistral' in model_name else AutoTokenizer.from_pretrained(model_name)
 
-        self._ntok_max = 1000 if 'gpt-3.5' in model_name else 10000 if 'gpt-4' in model_name else 2000 if 'mistral-7b' in model_name else 512
+        self._ntok_max = 1000 if 'gpt-3.5' in model_name else 10000 if 'gpt-4' in model_name else 500 if 'mistral-7b' in model_name else 512
         print(f'maximale tokenzahl: {self._ntok_max}')
         self._ntok_context_fraction = settings['modelling']['ntok_context_fraction']
         self._ntok_context = int(self._ntok_max * self._ntok_context_fraction)
@@ -213,7 +214,8 @@ class QueryPipeline(Pipeline):
         return _concatenate_texts_from_series(context_texts)
 
     def apply(self, text: str, answer_only: bool = True, user_id: str = None) -> List[dict]:
-        self._update_clients(self._settings)  
+        print(user_id)
+        self._update_clients(self._settings, user_id=user_id)  
         logging.info(f'generate text embeddings for text "{text}"')
 
         logging.info(f'search k-nearest-neighbors for text')
@@ -306,10 +308,12 @@ if __name__ == "__main__":
     
     query_pipeline = QueryPipeline(environment=Environment, settings=settings)
 
-    # Perform a query
-    results = query_pipeline._get_knn_vecs_from_text(text="is bern considered a city?", user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
-    print([result.get('score') for result in results])
-    result_text = query_pipeline._get_text_entities_from_knn_vecs(knn_vecs=results, user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
-    text = query_pipeline._get_context_from_text_entities(text_entities=result_text, user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
-    print(text)
-    # test
+    # # Perform a query
+    # results = query_pipeline._get_knn_vecs_from_text(text="is bern considered a city?", user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
+    # print([result.get('score') for result in results])
+    # result_text = query_pipeline._get_text_entities_from_knn_vecs(knn_vecs=results, user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
+    # text = query_pipeline._get_context_from_text_entities(text_entities=result_text, user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
+    # print(text)
+    # # test
+    test = query_pipeline.apply(text="is bern considered a city?", user_id='1749b037-7a7f-42a4-b57e-c543f0702863')
+    print(test[0].get('answer'))

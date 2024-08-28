@@ -32,13 +32,13 @@ const Sidebar: React.FC<SidebarProps> = () => {
         homeService
             .getDefaultModelName()
             .then((response: { data: UserSettings }) => {
+                console.log('Response received:', response);
                 const defaultModelName =
                     response.data.llm_model_name || 'gpt-4-32k';
                 setSelectedModel(defaultModelName);
             })
             .catch((error: unknown) => {
                 console.error('Error fetching default model name:', error);
-                // Optionally handle the error or set a fallback value
                 setSelectedModel('gpt-4-32k'); // Fallback value
             });
 
@@ -142,7 +142,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 >
                     <option value="gpt-35-turbo">gpt-3.5</option>
                     <option value="gpt-4-32k">gpt-4</option>
-                    <option value="mistral-7b">mistral-7b</option>
+                    <option value="mistral-7b-instruct-v0.3">mistral-7b</option>
                 </select>
             </div>
 

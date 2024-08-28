@@ -20,6 +20,7 @@ services:
       - HTTPS_PROXY=${HTTP_PROXY}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - LOCAL_OPENAI_ENDPOINT=${LOCAL_OPENAI_ENDPOINT:-http://localai:8080}
     depends_on:
       solr:
         condition: service_healthy

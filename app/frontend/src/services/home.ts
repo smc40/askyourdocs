@@ -1,5 +1,4 @@
 import client from '../utils/client';
-import axios from 'axios';
 
 // Define the type for UserSettings
 export interface UserSettings {
@@ -48,5 +47,5 @@ export const updateUserSettings = (settings: UserSettings) => {
 };
 
 export const getDefaultModelName = () => {
-    return client.get('/api/solr/default-model');
+    return client.get('/api/default-model');
 };
