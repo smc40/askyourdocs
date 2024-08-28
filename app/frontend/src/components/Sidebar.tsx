@@ -24,22 +24,22 @@ const Sidebar: React.FC<SidebarProps> = () => {
     const [noDocuments, setNoDocuments] = useState(false);
     const [serverDown, setServerDown] = useState(false);
     const [wrongFiletype, setWrongFiletype] = useState(false);
-    const [selectedModel, setSelectedModel] = useState(''); // Initialize with an empty string
+    const [selectedModel, setSelectedModel] = useState('gpt-4-32k'); // Set default model to "gpt-4-32k"
     const [isUpdatingModel, setIsUpdatingModel] = useState(false); // Track model update status
 
     useEffect(() => {
-        // Fetch default model name from Solr
+        // Set the model to "gpt-4-32k" in the backend
+        const settings: UserSettings = { llm_model_name: 'gpt-4-32k' };
         homeService
-            .getDefaultModelName()
-            .then((response: { data: UserSettings }) => {
-                console.log('Response received:', response);
-                const defaultModelName =
-                    response.data.llm_model_name || 'gpt-4-32k';
-                setSelectedModel(defaultModelName);
+            .updateUserSettings(settings)
+            .then(() => {
+                console.log('Model set to gpt-4-32k successfully');
             })
             .catch((error: unknown) => {
-                console.error('Error fetching default model name:', error);
-                setSelectedModel('gpt-4-32k'); // Fallback value
+                console.error(
+                    'Error setting default model to gpt-4-32k:',
+                    error
+                );
             });
 
         // Fetch documents
