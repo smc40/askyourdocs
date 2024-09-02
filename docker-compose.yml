@@ -2,9 +2,6 @@ version: '3.7'
 services:
   app:
     image: bouldermaettel/askyourdocs-app:0.1.5
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -12,12 +9,10 @@ services:
       - TIKA_URL=http://tika:9998
       - SOLR_URL=http://solr:8983
       - ZK_URLS=zoo1:2181
-      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://172.17.0.1:8080}
-      - BACKEND_URL=${BACKEND_URL:-http://app:8000}
-      - FRONTEND_URL=${FRONTEND_URL:-http://app:8000}
-      - BACKEND_KEYCLOAK_SECRET:${BACKEND_KEYCLOAK_SECRET:-bQwuuesYTIfcJmOxI4t4fltV48OQsAQq}
-      - HTTP_PROXY=${HTTP_PROXY}
-      - HTTPS_PROXY=${HTTP_PROXY}
+      - BACKEND_URL=${BACKEND_URL:-http://api.ayd-sandbox.4punkt0.ch:8000}
+      - FRONTEND_URL=${FRONTEND_URL:-http://app.ayd-sandbox.4punkt0.ch:8000}
+      - KEYCLOAK_URL=${KEYCLOAK_URL:-http://auth.ayd-sandbox.4punkt0.ch:8080}
+      - BACKEND_KEYCLOAK_SECRET=${BACKEND_KEYCLOAK_SECRET:-bQwuuesYTIfcJmOxI4t4fltV48OQsAQq} 
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
       - LOCAL_OPENAI_ENDPOINT=${LOCAL_OPENAI_ENDPOINT:-http://localai:8080}
@@ -84,8 +79,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./app/keycloak/realm-export.json:/tmp/realm/realm.json
-      - ./app/keycloak/template:/opt/bitnami/keycloak/themes/ayd/login
+      - /opt/keycloak-config/realm-export.json:/tmp/realm/realm.json
+      - /opt/keycloak-theme:/opt/bitnami/keycloak/themes/ayd/login
     environment:
       - KEYCLOAK_ADMIN_USER=${AYD_KC_USER:-admin}
       - KEYCLOAK_ADMIN_PASSWORD=${AYD_KC_PASSWORD:-admin}
