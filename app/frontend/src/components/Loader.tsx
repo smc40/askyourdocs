@@ -10,7 +10,7 @@ const Loader: React.FC<LoaderProps> = ({ message = '' }) => {
                 <div className="flex items-center">
                     <svg
                         className="animate-spin h-5 w-5 mr-3 text-blue-600"
-                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns="https://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                     >

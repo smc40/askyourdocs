@@ -1,8 +1,8 @@
 {
     "realm": "ayd",
-    "auth-server-url": "http://localhost:8080",
+    "auth-server-url": "https://auth.ayd-sandbox.4punkt0.ch",
     "resource": "ayd-frontend",
-    "ssl-required": "none",
+    "ssl-required": "all",
     "public-client": true,
     "confidential-port": 0
 }

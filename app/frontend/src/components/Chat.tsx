@@ -124,7 +124,7 @@ const Main: React.FC = () => {
             // Ensure token and userId exist before opening a WebSocket connection
             if (token && userId) {
                 socket.current = new WebSocket(
-                    config.backendUrl.replace('http', 'ws') +
+                    config.backendUrl.replace('https', 'wss') +
                         `/ws/query?token=${token}&user_id=${userId}`
                 );
             }
@@ -178,7 +178,7 @@ const Main: React.FC = () => {
                 const userId = Authentication.getUserId(); // Get user ID
 
                 socket.current = new WebSocket(
-                    config.backendUrl.replace('http', 'ws') +
+                    config.backendUrl.replace('https', 'wss') +
                         `/ws/query?token=${token}&user_id=${userId}`
                 );
 
