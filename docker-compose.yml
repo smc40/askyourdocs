@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: bouldermaettel/askyourdocs-app:${AYD_IMAGE_TAG:-0.2.0}
+    image: bouldermaettel/askyourdocs-app:${AYD_IMAGE_TAG:-0.2.5}
     ports:
       - "8000:8000"
     environment:
@@ -12,7 +12,7 @@ services:
       - BACKEND_URL=${BACKEND_URL:-http://api.ayd-sandbox.4punkt0.ch:8000}
       - FRONTEND_URL=${FRONTEND_URL:-http://app.ayd-sandbox.4punkt0.ch:8000}
       - KEYCLOAK_URL=${KEYCLOAK_URL:-http://auth.ayd-sandbox.4punkt0.ch:8080}
-      - BACKEND_KEYCLOAK_SECRET=${BACKEND_KEYCLOAK_SECRET:-bQwuuesYTIfcJmOxI4t4fltV48OQsAQq} 
+      - BACKEND_KEYCLOAK_SECRET=${BACKEND_KEYCLOAK_SECRET:-bQwuuesYTIfcJmOxI4t4fltV48OQsAQq}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
       - LOCAL_OPENAI_ENDPOINT=${LOCAL_OPENAI_ENDPOINT:-http://localai:8080}
@@ -21,11 +21,36 @@ services:
         condition: service_healthy
     volumes:
       - /opt/models:/app/models
+
+  nginx-certbot:
+    image: jonasal/nginx-certbot:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - AYD_BASE_DOMAIN=${AYD_BASE_DOMAIN:-ayd-sandbox.4punkt0.ch}
+      - NGINX_CERTBOT_DOMAINS=api.ayd-sandbox.4punkt0.ch,app.ayd-sandbox.4punkt0.ch,auth.ayd-sandbox.4punkt0.ch
+      - NGINX_CERTBOT_EMAIL=bouldermaettel@gmail.com
+      - CERTBOT_EMAIL=bouldermaettel@gmail.com
+      - NGINX_CERTBOT_RENEW_CRON="0 0 * * *"
+      - NGINX_CERTBOT_TEST=false  # Set to true for testing, false for production
+      - DHPARAM_SIZE=${DHPARAM_SIZE:-2048}
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+      - ./nginx/certbot/logs:/var/log/letsencrypt
+    depends_on:
+      - app
+      - keycloak
+
   tika:
     image: apache/tika:latest
     restart: always
     ports:
       - "9998:9998"
+
   zoo1:
     image: zookeeper
     restart: always
@@ -36,6 +61,7 @@ services:
       ZOO_MY_ID: 1
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181
       ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
+
   solr:
     image: bitnami/solr:9.3.0
     restart: always
@@ -53,6 +79,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 30
+
   postgres:
     image: postgres:15
     volumes:
@@ -70,6 +97,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
   keycloak:
     image: bitnami/keycloak:22.0.4
     links:
@@ -77,7 +105,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - /opt/keycloak-config/realm-export.json:/tmp/realm/realm.json
+      - ./app/keylocak/realm-export-https.json:/tmp/realm/realm.json
+      # - /opt/keycloak-config/realm-export-https.json:/tmp/realm/realm.json
       - /opt/keycloak-theme:/opt/bitnami/keycloak/themes/ayd/login
     environment:
       - KEYCLOAK_ADMIN_USER=${AYD_KC_USER:-admin}
@@ -87,28 +116,12 @@ services:
       - KEYCLOAK_DATABASE_PASSWORD=${AYD_PSQL_PASSWORD:-aydvault}
       - KEYCLOAK_DATABASE_HOST=database
       - KEYCLOAK_EXTRA_ARGS="-Dkeycloak.import=/tmp/realm/"
+      - PROXY_ADDRESS_FORWARDING="true" 
+      - KEYCLOAK_FRONTEND_URL=https://auth.ayd-sandbox.4punkt0.ch
     depends_on:
       postgres:
         condition: service_healthy
-  nginx:
-    image: nginx
-    restart: always
-    volumes:
-      - ./nginx:/etc/nginx/templates
-    ports:
-      - "80:80"
-    environment:
-      AYD_BASE_DOMAIN: ayd-sandbox.4punkt0.ch
-      NGINX_PORT: 80
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost']
-      timeout: 1s
-      start_period: 0s
-      interval: 5s
-      retries: 1
-    depends_on:
-      - keycloak
-      - app
+
   localai:
     image: bouldermaettel/mistral-7b:0.0.1
     ports:
@@ -117,9 +130,8 @@ services:
       - .env
     environment:
       - MODELS_PATH=/models
-    #  - DEBUG=true
     volumes:
       - ./localai-models:/models:cached
       - ./images/:/tmp/generated/images/
     command:
-    - mistral-7b-instruct-v0.3
+      - mistral-7b-instruct-v0.3

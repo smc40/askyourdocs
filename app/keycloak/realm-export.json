@@ -651,9 +651,10 @@
         {
             "id": "ec2e86f7-2033-4d83-9b9f-bfd53b7d504a",
             "clientId": "ayd-frontend",
-            "rootUrl": "http://localhost:8000/",
-            "adminUrl": "http://localhost:8000/",
-            "baseUrl": "http://localhost:8000/",
+            "rootUrl": "https://app.ayd-sandbox.4punkt0.ch/",
+            "adminUrl": "https://app.ayd-sandbox.4punkt0.ch/",
+            "baseUrl": "https://app.ayd-sandbox.4punkt0.ch/",
+            "enabled": true,
             "surrogateAuthRequired": false,
             "enabled": true,
             "alwaysDisplayInConsole": false,
@@ -661,11 +662,14 @@
             "secret": "bQwuuesYTIfcJmOxI4t4fltV48OQsAQq",
             "redirectUris": [
                 "http://localhost:8000/*",
-                "http://localhost:3000/*"
+                "http://localhost:3000/*",
+                "https://app.ayd-sandbox.4punkt0.ch/*",
+                "https://app.ayd-sandbox.4punkt0.ch/app/index.html"
             ],
             "webOrigins": [
                 "http://localhost:8000",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "https://app.ayd-sandbox.4punkt0.ch"
             ],
             "notBefore": 0,
             "bearerOnly": false,
@@ -733,11 +737,14 @@
                 "http://localhost:8000/*",
                 "http://localhost:8000*",
                 "http://localhost:8000/*",
-                "http://localhost:8000*"
+                "http://localhost:8000*",
+                "https://app.ayd-sandbox.4punkt0.ch/*",
+                "https://app.ayd-sandbox.4punkt0.ch/*"
             ],
             "webOrigins": [
                 "http://localhost:8000/*",
-                "http://localhost:8000*"
+                "http://localhost:8000*",
+                "https://app.ayd-sandbox.4punkt0.ch"
             ],
             "notBefore": 0,
             "bearerOnly": false,
