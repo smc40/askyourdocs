@@ -141,6 +141,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
                     disabled={isUpdatingModel} // Disable the dropdown while updating
                 >
                     <option value="gpt-35-turbo">gpt-3.5</option>
+                    <option value="gpt-4o">gpt-4o</option>
                     <option value="gpt-4-32k">gpt-4</option>
                     <option value="mistral-7b-instruct-v0.3">mistral-7b</option>
                 </select>

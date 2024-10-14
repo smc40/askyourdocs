@@ -9,7 +9,7 @@ MODEL_EMBEDDING_DIMENSION = (
     1536 if 'ada-002' in EMBEDDING_MODEL_NAME else 512
 )  # 1024 #512 #to find out, load the HF model and print the model in a console. look for the 'in_feature' variable
 MODEL_NTOKENS = (
-    10000 if 'gpt-4-32k' in MODEL_NAME else 2000 if 'mistral-7b' in MODEL_NAME else 1024 if 'gpt-35-turbo' in MODEL_NAME else 512
+    10000 if 'gpt-4' in MODEL_NAME else 2000 if 'mistral-7b' in MODEL_NAME else 1024 if 'gpt-35-turbo' in MODEL_NAME else 512
 )
 FILTER_ON_SCORE = 0.5  # use None if you want to disable the filter
 

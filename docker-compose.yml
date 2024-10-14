@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: bouldermaettel/askyourdocs-app:0.1.5
+    image: bouldermaettel/askyourdocs-app:${AYD_IMAGE_TAG:-0.2.0}
     # build:
     #   context: .
     #   dockerfile: Dockerfile
@@ -30,7 +30,7 @@ services:
       - ./app/backend:/app/app/backend
       - /opt/askyourdocs/uploads:/app/app/backend/uploads
   tika:
-    image: apache/tika:latest
+    image: apache/tika:2.9.2.1-full
     restart: always
     ports:
       - "9998:9998"

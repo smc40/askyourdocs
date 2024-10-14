@@ -1,5 +1,5 @@
 #!/bin/bash
-source .env_local_dev
+source envs_to_source
 
 docker rm $(docker ps -aq) -f
 
@@ -13,7 +13,8 @@ set -u
 sudo chown 1001 /opt/solr
 sudo chown 1001 /opt/askyourdocs/uploads
 
-# docker compose -p ayd build --no-cache
+docker compose -p ayd build --no-cache
+# docker compose --env-file local_dev.env -p ayd up -d
 docker compose -p ayd up -d
 # docker-compose -p ayd up -d
 

@@ -1,66 +1,71 @@
-from abc import abstractmethod
 import logging
 from pathlib import Path
 import re
-
 import requests
 from tika import parser
 import validators
 
 from askyourdocs import Environment, Service, TextDocument
 
-class Extractor(Service):
-    """Abstract base class for all scrapers (text-extractors)"""
+import logging
+import requests
+from pathlib import Path
+from tika import parser
+import re
 
-    def __init__(self, environment: Environment, settings: dict):
-        super().__init__(environment=environment, settings=settings)
+from askyourdocs import Environment, Service, TextDocument
 
-    @abstractmethod
-    def apply(self, url: str) -> TextDocument:
-        pass
-
-
-class TikaExtractor(Extractor):
-    """Text extractors for pdfs using tika."""
+class TikaExtractor(Service):
+    """Text extractor for PDFs using Tika with OCR capabilities."""
 
     _nchar_log_text = 150
     _success_status = 200
 
     def __init__(self, environment: Environment, settings: dict):
         super().__init__(environment=environment, settings=settings)
-        self._tika_url = self._environment.tika_url
+        self._tika_url = "http://localhost:9999"  # Default Tika server URL
 
     def _get_log_text(self, text: str):
+        """Truncate and clean log text for easier readability."""
         text = re.sub('\n', ' ', text.strip())
         text = re.sub('\s{2,}', ' ', text)[:self._nchar_log_text]
         return text
 
     def apply(self, filename: str, user_id: str = None) -> TextDocument:
-        """Extracting the text from pdfs."""
+        """Extract text from PDFs with OCR enabled using Tika."""
+        tika_ocr_headers = {
+            'X-Tika-PDFOcrStrategy': 'ocr_and_text',  # 'ocr_only' if you want OCR only
+            'X-Tika-OCRLanguage': 'deu',              # Adjust OCR language (e.g., 'eng', 'deu')
+            'Accept': 'application/json'
+        }
 
-        if Path(filename).is_file():
-            logging.info(f'parsing local file "{filename}"')
-            parsed = parser.from_file(filename, self._tika_url) 
-            text = parsed['content']
+        try:
+            # Reading file content to send manually using requests
+            with open(filename, 'rb') as file:
+                response = requests.put(
+                    f'{self._tika_url}/tika',
+                    headers=tika_ocr_headers,
+                    data=file,
+                    timeout=1200  # Set timeout to 1200 seconds or adjust as necessary
+                )
+            
+            # Check if response was successful
+            if response.status_code != self._success_status:
+                logging.error(f"Failed to extract text. Status code: {response.status_code}")
+                return None
+            
+            # Get text content from the response
+            text = response.text
 
-        elif validators.url(filename):
-            logging.info(f'parsing url "{filename}"')
-            response = requests.get(filename)
+        except requests.exceptions.Timeout:
+            logging.error(f"Timeout occurred while extracting text from '{filename}'")
+            return None
 
-            if not (status := response.status_code) == self._success_status:
-                logging.error(f'pdf request for url="{filename}" exited with status code {status}')
-                text = None
+        except Exception as e:
+            logging.error(f"Error occurred while extracting text: {e}")
+            return None
 
-            else:
-                parsed = parser.from_buffer(response.content, self._tika_url)
-                text = parsed['content']
+        # Log and return extracted text
+        logging.info(f"text (len={len(text)}): '{self._get_log_text(text=text)}...'")
 
-        else:
-            logging.error(f'unable to parse document "{filename}"')
-            text = None
-
-        if text:
-            # Clean newline characters
-            logging.info(f'text (len={len(text)}): "{self._get_log_text(text=text)}..."')
-        filename = Path(filename)
-        return TextDocument(id=str(filename), user_id=user_id, name=filename.name, source=str(filename.parent), text=text)
+        return TextDocument(id=str(filename), user_id=user_id, name=Path(filename).name, source=str(Path(filename).parent), text=text)
