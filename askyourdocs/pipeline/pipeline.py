@@ -111,7 +111,6 @@ class IngestionPipeline(Pipeline):
 
 class QueryPipeline(Pipeline):
     
-
     _txt_sep = ' '
     _nte_max = 100
 

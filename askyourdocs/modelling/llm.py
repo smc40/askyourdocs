@@ -1,6 +1,7 @@
 import logging
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 import requests
+from abc import ABC, abstractmethod
 
 import torch.cuda
 import nltk.data
@@ -15,114 +16,123 @@ import askyourdocs.utils as utl
 environment = utl.load_environment()
 
 
-class LocalAIClient:
-    def __init__(self, api_key: Optional[str] = None, api_endpoint: Optional[str] = None, settings=settings, user_id: str | None = None):
-         # Initialize Solr client here if needed
+class BaseAIClient(ABC):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        api_endpoint: Optional[str] = None,
+        settings: Dict[str, Any] = None,
+        user_id: Optional[str] = None,
+    ):
         self._settings = settings or {'modelling': {'embedding_model_name': 'text-embedding-ada-002'}}
-        self._solr_client = SolrClient(environment=environment, settings=self._settings) 
-        
-        self._api_key = api_key or os.getenv("AZURE_OPENAI_API_KEY")
-        self._api_endpoint = api_endpoint or os.getenv("LOCAL_OPENAI_ENDPOINT", "http://localai:8080")
+        self.user_id = user_id
+        self._api_key = api_key
+        self._api_endpoint = api_endpoint
+        self._solr_client = SolrClient(environment=environment, settings=self._settings)
         self._model_name = self.get_user_settings(user_id=user_id)
 
     def get_user_settings(self, user_id: Optional[str] = None) -> str:
-        # Reload settings to ensure they are up-to-date
-        
         if user_id:
             settings = self._solr_client.get_user_settings(user_id=user_id)
-            print(user_id)
-            print(settings)
+            logging.info(f"User ID: {user_id}")
+            logging.info(f"User settings: {settings}")
         else:
-            settings = {
-                'llm_model_name': 'mistral-7b-instruct-v0.3',
-            }
-        self._model_name = settings.get('llm_model_name')
+            settings = {'llm_model_name': 'default-model-name'}
+        self._model_name = settings.get('llm_model_name', 'default-model-name')
         return self._model_name
 
+    @abstractmethod
     def get_client(self):
-        if self._api_key and self._api_endpoint:
-            print('LocalAIClient')
-            print(f"api_key: {self._api_key}")
-            print(f"base_url: {self._api_endpoint}/v1")
-            return OpenAI(api_key=self._api_key,
-                            base_url=f"{self._api_endpoint}/v1")
-        else:
-            logging.error("API key or endpoint not provided")
-            return None
+        pass
 
-    def get_summary(self, task: str, query: str, context: str, summarizing_model: Optional[str] = None):
+    def get_summary(
+        self,
+        task: str,
+        query: str,
+        context: str,
+        summarizing_model: Optional[str] = None,
+    ) -> Optional[str]:
         if summarizing_model is None:
             summarizing_model = self._model_name
-            print(f"summarizing_model: {summarizing_model}")
+            logging.info(f"Summarizing model: {summarizing_model}")
+
         client = self.get_client()
         if client:
             messages = [
-                {"role": "system", "content": f'{task}'},
-                {"role": "user", "content": f'{query}'},
-                {"role": "assistant", "content": f'{context}'},
+                {"role": "system", "content": f"{task}\n\nContext: {context}"},
+                {"role": "user", "content": f"{query}"},
             ]
-            response = client.chat.completions.create(
-                model=summarizing_model,
-                messages=messages
-            )
-            return response.choices[0].message.content
+            try:
+                response = client.chat.completions.create(
+                    model=summarizing_model,
+                    messages=messages
+                )
+                return response.choices[0].message.content
+            except Exception as e:
+                logging.error(f"Error during summary generation: {e}")
+                return None
         else:
             return None
 
-class AzureOpenAIClient:
-    def __init__(self, api_key: Optional[str] = None, api_endpoint: Optional[str] = None, api_version: str = "2023-05-15", settings=settings, user_id: str | None = None):
-        self._solr_client = None  # Initialize Solr client here if needed
-        self._settings = settings
-        
-        self._api_key = api_key or os.getenv("AZURE_OPENAI_API_KEY")
-        self._api_endpoint = api_endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
+class LocalAIClient(BaseAIClient):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        api_endpoint: Optional[str] = None,
+        settings: Dict[str, Any] = None,
+        user_id: Optional[str] = None,
+    ):
+        super().__init__(api_key, api_endpoint, settings, user_id)
+        self._api_key = self._api_key or os.getenv("LOCALAI_API_KEY")
+        self._api_endpoint = self._api_endpoint or os.getenv("LOCAL_OPENAI_ENDPOINT", "http://localai:8080")
+
+    def get_client(self):
+        if self._api_key and self._api_endpoint:
+            logging.info("Initializing LocalAIClient")
+            return OpenAI(
+                api_key=self._api_key,
+                base_url=f"{self._api_endpoint}/v1"
+            )
+        else:
+            logging.error("API key or endpoint not provided for LocalAIClient")
+            return None
+
+class AzureOpenAIClient(BaseAIClient):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        api_endpoint: Optional[str] = None,
+        api_version: str = "2023-05-15",
+        settings: Dict[str, Any] = None,
+        user_id: Optional[str] = None,
+    ):
+        super().__init__(api_key, api_endpoint, settings, user_id)
+        self._api_key = self._api_key or os.getenv("AZURE_OPENAI_API_KEY")
+        self._api_endpoint = self._api_endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
         self._api_version = api_version
-        self._model_name = self.get_user_settings()
-
-    def get_user_settings(self, user_id: Optional[str] = None) -> str:
-        # Reload settings to ensure they are up-to-date
-        if user_id:
-            settings = self._solr_client.get_user_settings(user_id)
-        else:
-            settings = {
-                'llm_model_name': 'gpt-4-32k',
-            }
-        self._model_name = settings.get('llm_model_name')
-        return self._model_name
 
     def get_client(self):
         if self._api_key and self._api_endpoint:
-            print('azureOpenAIClient')
-            return AzureOpenAI(api_key=self._api_key, 
-                            api_version=self._api_version,
-                            azure_endpoint=self._api_endpoint)
-        else:
-            logging.error("API key or endpoint not provided")
-            return None
-
-    def get_embedding(self, text: str, model: str = settings['modelling']['embedding_model_name']):
-        client = self.get_client()
-        if client:
-            return client.embeddings.create(input=[text], model=model).data[0].embedding
-        else:
-            return None
-
-    def get_summary(self, task: str, query: str, context: str, summarizing_model: Optional[str] = None):
-        if summarizing_model is None:
-            summarizing_model = self._model_name
-        client = self.get_client()
-        if client:
-            messages = [
-                {"role": "system", "content": f'{task}'},
-                {"role": "user", "content": f'{query}'},
-                {"role": "assistant", "content": f'{context}'},
-            ]
-            
-            response = client.chat.completions.create(
-                model=summarizing_model,
-                messages=messages
+            logging.info("Initializing AzureOpenAIClient")
+            return AzureOpenAI(
+                api_key=self._api_key,
+                api_version=self._api_version,
+                azure_endpoint=self._api_endpoint
             )
-            return response.choices[0].message.content
+        else:
+            logging.error("API key or endpoint not provided for AzureOpenAIClient")
+            return None
+
+    def get_embedding(self, text: str, model: str = None):
+        client = self.get_client()
+        if client:
+            model = model or self._settings['modelling']['embedding_model_name']
+            try:
+                response = client.embeddings.create(input=[text], model=model)
+                return response.data[0].embedding
+            except Exception as e:
+                logging.error(f"Error during embedding generation: {e}")
+                return None
         else:
             return None
 
@@ -231,7 +241,7 @@ class Summarizer:
     def get_model_name(self, user_id: Optional[str] = None) -> str:
         # Fetch the model name based on user settings
         if user_id:
-            solr_client = SolrClient(environment=environment, settings=self._settings)  # Initialize Solr client if needed
+            solr_client = SolrClient(environment=environment, settings=self._settings)  
             settings = solr_client.get_user_settings(user_id)
             print(f'user settings in get model name: {settings}')
             model_name = settings.get('llm_model_name', 'gpt-4-32k')
